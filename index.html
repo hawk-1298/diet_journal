@@ -85,6 +85,8 @@ button.ghost:hover{color:var(--fg)}
 .wd i{width:6px;height:6px;border-radius:50%;background:var(--line)}
 .wd.ok i{background:var(--accent)} .wd.low i{background:var(--carb)}
 .wd[aria-current="date"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.dayrow{display:flex;gap:6px 12px;align-items:center;flex-wrap:wrap}
+.wd .gym{font-size:.7rem;line-height:1;height:.8rem}
 .weekinfo{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .seg button{border:0;border-radius:0;padding:7px 12px;font-size:.85rem;background:var(--surface);color:var(--muted)}
@@ -301,15 +303,13 @@ table.months tr.sel td{background:var(--accent-soft)}
     </div>
 
     <div class="week" id="week"></div>
-    <div class="weekinfo">
-      <div class="seg" role="group" aria-label="Tipo di settimana">
-        <button type="button" id="modeTrain" aria-pressed="true">Settimana con allenamento</button>
-        <button type="button" id="modeRest" aria-pressed="false">Senza allenamento</button>
-      </div>
-      <span id="weekAvg"></span>
-    </div>
+    <div class="weekinfo"><span id="weekAvg"></span><span id="weekTrain"></span></div>
 
     <section class="summary" aria-live="polite">
+      <div class="dayrow"><div class="seg" role="group" aria-label="Tipo di giorno">
+        <button type="button" id="modeTrain" aria-pressed="true">🏋 Allenamento</button>
+        <button type="button" id="modeRest" aria-pressed="false">Riposo</button>
+      </div><span class="note" id="modeNote"></span></div>
       <div class="big"><div><strong id="total">0</strong> <span class="u">kcal</span><span id="exampleTag" class="tag" hidden>Esempio</span></div><span class="goalText" id="goalText"></span></div>
       <div class="bar" id="bar"><i></i></div>
       <div class="macros" id="macros"></div>
@@ -420,6 +420,7 @@ table.months tr.sel td{background:var(--accent-soft)}
         <label>Grassi g al giorno<input id="gFat" type="number" min="0" step="5"></label>
         <label>Fibre g al giorno<input id="gFib" type="number" min="0" step="1"></label>
         <label>Acqua ml al giorno<input id="gWater" type="number" min="0" step="250"></label>
+        <label>Giorni non segnati<select id="gDef"><option value="train">Allenamento</option><option value="rest">Riposo</option></select></label>
       </div>
       <p class="note" style="margin-top:8px">Stima di partenza per 80 kg e 28 anni in fase di massa. I carboidrati sono le calorie che restano. Correggi in base alla bilancia: punta a +0,5–1 kg al mese.</p>
     </details>
@@ -475,7 +476,7 @@ table.months tr.sel td{background:var(--accent-soft)}
       <div class="ai-out" id="reportOut"></div>
     </section>
     <div id="dashBody" class="view"></div>
-    <p class="note">Le medie contano solo i giorni in cui hai inserito almeno un alimento. L'obiettivo di ogni giorno dipende dalla settimana (con o senza allenamento).</p>
+    <p class="note">Le medie contano solo i giorni in cui hai inserito almeno un alimento. Ogni giorno è confrontato con il suo obiettivo (allenamento o riposo).</p>
   </div>
 
   <p class="note">Valori indicativi per 100 g di parte edibile, da tabelle nutrizionali comuni; per i prodotti di marca controlla l'etichetta. Pasta, riso e udon secchi sono indicati da crudi. Le percentuali usano 4 kcal per grammo di proteine e carboidrati e 9 per i grassi.</p>
@@ -514,7 +515,7 @@ const BASE = {
 };
 const MEALS = ["Colazione","Pranzo","Cena","Spuntini"];
 const MAPS = ["weights","water","weeks","templates","reports"];
-const DEF_SETTINGS = {train:2900, rest:2550, prot:155, fat:75, fib:30, waterGoal:2500, mode:"train", used:false};
+const DEF_SETTINGS = {train:2900, rest:2550, prot:155, fat:75, fib:30, waterGoal:2500, mode:"train", defMode:"train", used:false};
 // alimenti usati dal suggeritore, con una porzione tipica in grammi
 const CORE = {"Whey protein dm Sportness":30,"Yogurt greco 0%":170,"Albume d'uovo":150,"Banana":120,"Mela":150,"Riso (crudo)":80,"Pane comune":60,"Crackers di riso":25,"Fiocchi d'avena":50,"Petto di pollo":150,"Tonno al naturale":80,"Carne salata":80,"Bresaola":60,"Latte di soia Alpro senza zuccheri":250,"Patate":250,"Castagne arrosto (sbucciate)":80,"Udon precotti / freschi":200,"Mozzarella light":125,"Uova":120,"Mandorle":20,"Miele":15,"Pasta (cruda)":80,"Kiwi":100,"Arancia":150};
 const NOT_SUGGEST = /olio|burro|maionese|zucchero|vino|birra|bibita|marmellata|passata|cipolla/i;
@@ -556,7 +557,8 @@ function normEntries(list){
     return {...e, v:pad5(v)};
   });
 }
-const dayMode = d => S.weeks[weekStart(d)] || S.modes[d] || S.settings.mode || "train";
+const dayMode = d => S.modes[d] || S.weeks[weekStart(d)] || S.settings.defMode || "train";
+const marked = d => !!S.modes[d];
 const goalFor = d => dayMode(d)==="rest" ? S.settings.rest : S.settings.train;
 const carbFor = g => Math.max(0, (g - S.settings.prot*4 - S.settings.fat*9)/4);
 
@@ -648,6 +650,7 @@ function render(){
   const mode = dayMode(day);
   $("#modeTrain").setAttribute("aria-pressed", mode!=="rest");
   $("#modeRest").setAttribute("aria-pressed", mode==="rest");
+  $("#modeNote").textContent = marked(day) ? `obiettivo ${fmt(goalK())} kcal` : `non segnato: uso ${mode==="rest"?"riposo":"allenamento"}`;
   if(document.activeElement!==$("#weight")) $("#weight").value = S.weights[day] ?? "";
 
   const goal = goalK(), bar=$("#bar"), d = goal-k;
@@ -669,6 +672,7 @@ function render(){
   renderMeals(entries);
   renderChips();
   renderHelper(entries);
+  if(document.activeElement!==$("#gDef")) $("#gDef").value = S.settings.defMode || "train";
   for(const [id,k2] of [["#gTrain","train"],["#gRest","rest"],["#gProt","prot"],["#gFat","fat"],["#gFib","fib"],["#gWater","waterGoal"]]){
     if(document.activeElement!==$(id)) $(id).value = S.settings[k2];
   }
@@ -678,15 +682,17 @@ function render(){
 
 function renderWeek(){
   const ws = weekStart(day), names=["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
-  let tk=0, tp=0, n=0, html="";
+  let tk=0, tp=0, n=0, tg=0, html="";
   for(let i=0;i<7;i++){
     const d = shiftDay(ws,i), list=normEntries(S.days[d]), t=sum(list), g=goalFor(d);
     const cls = !list.length ? "" : (t[0]>=g*0.9 ? "ok" : "low");
     if(list.length){ tk+=t[0]; tp+=t[1]; n++; }
-    html += `<button type="button" class="wd ${cls}" data-day="${d}" ${d===day?'aria-current="date"':""}><small>${names[i]}</small><b>${Number(d.slice(8))}</b><span>${list.length?g1(t[0]/1000)+"k":"–"}</span><i></i></button>`;
+    const gym = marked(d) && S.modes[d]==="train"; if(gym) tg++;
+    html += `<button type="button" class="wd ${cls}" data-day="${d}" ${d===day?'aria-current="date"':""} aria-label="${names[i]} ${Number(d.slice(8))}${gym?", allenamento":""}"><small>${names[i]}</small><b>${Number(d.slice(8))}</b><span>${list.length?g1(t[0]/1000)+"k":"–"}</span><span class="gym">${gym?"🏋":""}</span><i></i></button>`;
   }
   $("#week").innerHTML = html;
   $("#weekAvg").textContent = n ? `Media settimana: ${fmt(tk/n)} kcal · P ${fmt(tp/n)} g · ${n}/7 giorni` : "Nessun giorno registrato questa settimana";
+  $("#weekTrain").textContent = `🏋 ${tg} ${tg===1?"allenamento":"allenamenti"}`;
 }
 
 function renderMeals(entries){
@@ -888,6 +894,7 @@ function renderDash(){
   h += `<div class="grid2">
     <div class="card"><h3>Costanza</h3>
       <div class="stat"><span>Giorni registrati</span><b>${st.n} su ${st.elapsed} ${regPill}</b></div>
+      <div class="stat"><span>Allenamenti nel mese</span><b>🏋 ${Object.keys(S.modes).filter(d=>d.startsWith(selMonth) && S.modes[d]==="train").length}</b></div>
       <div class="stat"><span>Serie attuale</span><b>${sk} ${sk===1?"giorno":"giorni"} di fila</b></div>
       <div class="stat"><span>Ripartizione media</span><b>P ${Math.round(st.avg[1]*4/mt*100)}% · C ${Math.round(st.avg[2]*4/mt*100)}% · G ${Math.round(st.avg[3]*9/mt*100)}%</b></div>
       <div class="stat"><span>Fibre medie</span><b>${fmt(st.avg[4])} / ${fmt(S.settings.fib)} g ${st.avg[4]<S.settings.fib*0.7?'<span class="pill warn">poche</span>':""}</b></div>
@@ -1098,7 +1105,7 @@ async function askCoach(){
   const now = new Date(), isToday = day===today();
   const prompt = `Sei un coach di nutrizione sportiva. Rispondi in italiano, breve e pratico.
 ${profileText()}
-Giorno: ${day} (${dayMode(day)==="rest"?"settimana senza allenamento":"settimana con allenamento"}). Obiettivo calorie oggi: ${fmt(g)} kcal, carboidrati ${fmt(carbFor(g))} g.
+Giorno: ${day} (${dayMode(day)==="rest"?"giorno di riposo":"giorno di allenamento"}). Obiettivo calorie oggi: ${fmt(g)} kcal, carboidrati ${fmt(carbFor(g))} g.
 ${isToday?`Ora attuale: ${now.getHours()}:${String(now.getMinutes()).padStart(2,"0")}.`:""}
 Totali finora: ${fmt(t[0])} kcal, proteine ${fmt(t[1])} g, carboidrati ${fmt(t[2])} g, grassi ${fmt(t[3])} g, fibre ${fmt(t[4])} g. Acqua: ${g1((S.water[day]||0)/1000)} L.
 Cosa ha mangiato:
@@ -1263,10 +1270,15 @@ $("#importNo").onclick=()=>{ pendingImport=null; $("#importConfirm").hidden=true
 $("#importYes").onclick=async ()=>{
   const d = pendingImport; if(!d) return;
   $("#importConfirm").hidden=true;
-  for(const k in d.days) if(Array.isArray(d.days[k]) && d.days[k].length){ S.days[k]=d.days[k]; if(d.modes && d.modes[k]) S.modes[k]=d.modes[k]; }
+  for(const k in d.days) if(Array.isArray(d.days[k]) && d.days[k].length){
+    S.days[k]=d.days[k];
+    const m = (d.settings && d.settings.modesV2) ? (d.modes||{})[k] : ((d.weeks||{})[weekStart(k)] || (d.modes||{})[k]);
+    if(m) S.modes[k]=m;
+  }
   if(d.custom) for(const n in d.custom) S.custom[n]=pad5(d.custom[n]);
   if(d.settings) Object.assign(S.settings, d.settings);
-  for(const m of MAPS) if(d[m]) Object.assign(S[m], d[m]);
+  for(const m of MAPS) if(d[m] && m!=="weeks") Object.assign(S[m], d[m]);
+  local.set("cal_modes", S.modes);
   for(const k in d.days) if(hasDay(k)) saveDay(k);
   saveCustom(); saveSettings(true); MAPS.forEach(m=>saveMap(m,true));
   pendingImport=null; render();
@@ -1312,7 +1324,7 @@ $("#nextDay").onclick=()=>setDay(shiftDay(day,1));
 $("#todayBtn").onclick=()=>setDay(today());
 $("#week").addEventListener("click", ev=>{ const b=ev.target.closest("[data-day]"); if(b) setDay(b.dataset.day); });
 
-function setMode(m){ S.weeks[weekStart(day)] = m; S.settings.mode = m; saveMap("weeks",true); saveSettings(true); render(); }
+function setMode(m){ S.modes[day] = m; if(hasDay(day)) saveDay(day); else local.set("cal_modes", S.modes); render(); }
 $("#modeTrain").onclick=()=>setMode("train");
 $("#modeRest").onclick=()=>setMode("rest");
 
@@ -1400,6 +1412,7 @@ $("#customForm").addEventListener("submit", ev=>{
   ["#cName","#cKcal","#cP","#cC","#cF","#cFib"].forEach(s=>$(s).value="");
   render(); $("#food").value=n; updatePreview(); $("#grams").focus();
 });
+$("#gDef").addEventListener("change", ()=>{ S.settings.defMode = $("#gDef").value; saveSettings(true); render(); });
 for(const [id,k] of [["#gTrain","train"],["#gRest","rest"],["#gProt","prot"],["#gFat","fat"],["#gFib","fib"],["#gWater","waterGoal"]]){
   $(id).addEventListener("input", ()=>{ const v=Number($(id).value); if(v>=0 && $(id).value!==""){ S.settings[k]=v; saveSettings(); render(); } });
 }
@@ -1434,6 +1447,13 @@ $("#reportStop").onclick=()=>reportCtl && reportCtl.abort();
 let summaryVisible = true;
 function updateMini(){ $("#miniBar").hidden = summaryVisible || $("#viewDiario").hidden; }
 try{ new IntersectionObserver(es=>{ summaryVisible = es[0].isIntersecting; updateMini(); }).observe($(".summary")); }catch(e){}
+(function migrateModes(){
+  if(S.settings.modesV2) return;
+  const old = d => S.weeks[weekStart(d)] || S.modes[d] || S.settings.mode || "train";
+  for(const d in S.days) if(hasDay(d)) S.modes[d] = old(d);
+  local.set("cal_modes", S.modes);
+  S.settings.defMode = S.settings.defMode || "train"; S.settings.modesV2 = true; saveSettings(true);
+})();
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
