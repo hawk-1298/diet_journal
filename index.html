@@ -77,7 +77,11 @@ button.ghost:hover{color:var(--fg)}
 .dayctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .dayctl input{width:auto}
 .dayctl button{padding:8px 11px}
-.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.week{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-behavior:auto}
+.week::-webkit-scrollbar{display:none}
+.wpage{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:2px 1px}
+.weeklabel{font-size:.78rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.weeklabel button{padding:2px 8px;font-size:.78rem}
 .wd{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:1px;font-variant-numeric:tabular-nums;min-width:0}
 .wd small{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .wd b{font-size:.95rem}
@@ -302,7 +306,8 @@ table.months tr.sel td{background:var(--accent-soft)}
       <button type="button" id="todayBtn">Oggi</button>
     </div>
 
-    <div class="week" id="week"></div>
+    <div><div class="weeklabel"><span id="weekLabel"></span><button type="button" class="ghost" id="weekToday" hidden>Torna a oggi</button></div>
+    <div class="week" id="week" aria-label="Calendario: scorri per cambiare settimana"></div></div>
     <div class="weekinfo"><span id="weekAvg"></span><span id="weekTrain"></span></div>
 
     <section class="summary" aria-live="polite">
@@ -680,20 +685,59 @@ function render(){
   if(!$("#viewMesi").hidden) renderDash();
 }
 
-function renderWeek(){
-  const ws = weekStart(day), names=["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
-  let tk=0, tp=0, n=0, tg=0, html="";
+// calendario a scorrimento: una pagina per settimana, 26 settimane indietro e 8 avanti
+const WEEK_NAMES=["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
+let viewWeek = null, weekPages = [], weekScrollTimer = null, programmaticScroll = false;
+function dayCell(d){
+  const list=normEntries(S.days[d]), t=sum(list), g=goalFor(d), i=(new Date(d+"T12:00").getDay()+6)%7;
+  const cls = !list.length ? "" : (t[0]>=g*0.9 ? "ok" : "low");
+  const gym = marked(d) && S.modes[d]==="train";
+  return `<button type="button" class="wd ${cls}" data-day="${d}" ${d===day?'aria-current="date"':""} aria-label="${WEEK_NAMES[i]} ${Number(d.slice(8))}${gym?", allenamento":""}"><small>${WEEK_NAMES[i]}</small><b>${Number(d.slice(8))}</b><span>${list.length?g1(t[0]/1000)+"k":"–"}</span><span class="gym">${gym?"🏋":""}</span><i></i></button>`;
+}
+function weekSummary(ws){
+  let tk=0, tp=0, n=0, tg=0;
   for(let i=0;i<7;i++){
-    const d = shiftDay(ws,i), list=normEntries(S.days[d]), t=sum(list), g=goalFor(d);
-    const cls = !list.length ? "" : (t[0]>=g*0.9 ? "ok" : "low");
-    if(list.length){ tk+=t[0]; tp+=t[1]; n++; }
-    const gym = marked(d) && S.modes[d]==="train"; if(gym) tg++;
-    html += `<button type="button" class="wd ${cls}" data-day="${d}" ${d===day?'aria-current="date"':""} aria-label="${names[i]} ${Number(d.slice(8))}${gym?", allenamento":""}"><small>${names[i]}</small><b>${Number(d.slice(8))}</b><span>${list.length?g1(t[0]/1000)+"k":"–"}</span><span class="gym">${gym?"🏋":""}</span><i></i></button>`;
+    const d=shiftDay(ws,i), list=normEntries(S.days[d]);
+    if(list.length){ const t=sum(list); tk+=t[0]; tp+=t[1]; n++; }
+    if(marked(d) && S.modes[d]==="train") tg++;
   }
-  $("#week").innerHTML = html;
-  $("#weekAvg").textContent = n ? `Media settimana: ${fmt(tk/n)} kcal · P ${fmt(tp/n)} g · ${n}/7 giorni` : "Nessun giorno registrato questa settimana";
+  const a=new Date(ws+"T12:00"), b=new Date(shiftDay(ws,6)+"T12:00");
+  const label = a.getMonth()===b.getMonth()
+    ? `${a.getDate()}–${b.getDate()} ${b.toLocaleDateString("it-IT",{month:"long"})}`
+    : `${a.toLocaleDateString("it-IT",{day:"numeric",month:"short"})} – ${b.toLocaleDateString("it-IT",{day:"numeric",month:"short"})}`;
+  $("#weekLabel").textContent = ws===weekStart(today()) ? `Questa settimana · ${label}` : label;
+  $("#weekToday").hidden = ws===weekStart(today()) && day===today();
+  $("#weekAvg").textContent = n ? `Media settimana: ${fmt(tk/n)} kcal · P ${fmt(tp/n)} g · ${n}/7 giorni` : "Nessun giorno registrato in questa settimana";
   $("#weekTrain").textContent = `🏋 ${tg} ${tg===1?"allenamento":"allenamenti"}`;
 }
+function renderWeek(){
+  const sel = weekStart(day);
+  if(!viewWeek) viewWeek = sel;
+  const anchor = weekStart(today()) < sel ? weekStart(today()) : sel;
+  const first = shiftDay(anchor, -26*7), last = shiftDay(sel > weekStart(today()) ? sel : weekStart(today()), 8*7);
+  weekPages = [];
+  for(let w=first; w<=last; w=shiftDay(w,7)) weekPages.push(w);
+  if(!weekPages.includes(viewWeek)) viewWeek = sel;
+  const el = $("#week");
+  el.innerHTML = weekPages.map(ws=>`<div class="wpage" data-week="${ws}">${[0,1,2,3,4,5,6].map(i=>dayCell(shiftDay(ws,i))).join("")}</div>`).join("");
+  scrollToWeek(viewWeek, false);
+  weekSummary(viewWeek);
+}
+function scrollToWeek(ws, smooth){
+  const el=$("#week"), i=weekPages.indexOf(ws); if(i<0) return;
+  programmaticScroll = true;
+  el.scrollTo({left: i*el.clientWidth, behavior: smooth ? "smooth" : "auto"});
+  setTimeout(()=>{ programmaticScroll = false; }, smooth ? 500 : 50);
+}
+$("#week").addEventListener("scroll", ()=>{
+  clearTimeout(weekScrollTimer);
+  weekScrollTimer = setTimeout(()=>{
+    const el=$("#week"), i=Math.round(el.scrollLeft/Math.max(1,el.clientWidth)), ws=weekPages[i];
+    if(ws && ws!==viewWeek){ viewWeek=ws; weekSummary(ws); }
+  }, 90);
+}, {passive:true});
+window.addEventListener("resize", ()=>scrollToWeek(viewWeek,false));
+$("#weekToday").onclick = ()=>{ viewWeek = weekStart(today()); setDay(today()); };
 
 function renderMeals(entries){
   const keepName = $("#tplName") ? $("#tplName").value : null;
@@ -1317,7 +1361,7 @@ $("#tplChips").addEventListener("click", ev=>{
 });
 $("#tplList").addEventListener("click", ev=>{ const b=ev.target.closest("[data-tpldel]"); if(!b) return; delete S.templates[b.dataset.tpldel]; saveMap("templates",true); render(); });
 
-function setDay(d){ day=d||today(); editIdx=null; savingMeal=null; $("#coachOut").innerHTML=""; $("#coachStatus").textContent=""; render(); }
+function setDay(d){ day=d||today(); if(weekStart(day)!==viewWeek){ viewWeek=weekStart(day); } editIdx=null; savingMeal=null; $("#coachOut").innerHTML=""; $("#coachStatus").textContent=""; render(); }
 $("#day").addEventListener("change", ()=>setDay($("#day").value));
 $("#prevDay").onclick=()=>setDay(shiftDay(day,-1));
 $("#nextDay").onclick=()=>setDay(shiftDay(day,1));
