@@ -139,12 +139,17 @@ button.ghost:hover{color:var(--fg)}
 .meal header{display:flex;justify-content:space-between;align-items:baseline;gap:6px 10px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:6px}
 .meal header .tot{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.88rem}
 .meal .acts{display:flex;gap:2px;flex-wrap:wrap;margin-left:-8px}
-.row{display:grid;grid-template-columns:1fr auto auto;gap:2px 12px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
+.row{display:grid;grid-template-columns:auto 1fr auto auto;gap:2px 12px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
 .row:last-child{border-bottom:0}
 .row .name{min-width:0;overflow-wrap:anywhere}
 .gbtn{border:1px dashed transparent;background:none;padding:1px 6px;margin-left:4px;color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums;border-radius:6px}
-.mv{width:auto;padding:2px 6px;font-size:.78rem;border-radius:6px;color:var(--muted);background:none}
-.mv:hover{color:var(--fg);border-color:var(--accent)}
+.grip{border:0;background:none;padding:2px 4px;margin-right:-4px;font-size:1.25rem;line-height:1;color:var(--muted);cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;min-width:30px;min-height:34px}
+.grip:hover{color:var(--accent)}
+.row.dragging{opacity:.3}
+.ghost-row{position:fixed;z-index:80;pointer-events:none;background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:6px 10px;box-shadow:0 12px 30px rgba(0,0,0,.28);transform:rotate(-1.5deg)}
+.ghost-row .mx,.ghost-row .grip{display:none}
+.meal.drop{outline:2px dashed var(--accent);outline-offset:4px;border-radius:12px;background:var(--accent-soft)}
+body.dragmode{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .gbtn:hover{border-color:var(--line);color:var(--fg)}
 .gedit{width:80px;padding:3px 6px;margin-left:4px;font-size:.9rem}
 .row .k{font-variant-numeric:tabular-nums;font-weight:600;text-align:right;min-width:70px}
@@ -923,11 +928,11 @@ function renderMeals(entries){
       const g = editIdx===i && !isExample
         ? `<input class="gedit" type="number" min="1" step="1" value="${e.g}" data-gedit="${i}" aria-label="Grammi di ${esc(e.f)}" inputmode="decimal">`
         : `<button type="button" class="gbtn" data-edit="${i}" title="Cambia i grammi">${fmt(e.g)} g ✎</button>`;
-      return `<div class="row"><span class="name">${esc(e.f)}${g}</span><span class="k">${fmt(ek)} kcal</span><button class="link" data-del="${i}" aria-label="Rimuovi ${esc(e.f)}">✕</button>
-      <div class="mx"><select class="mv" data-move="${i}" aria-label="Sposta ${esc(e.f)} in un altro pasto"><option value="">⇄ Sposta in…</option>${MEALS.filter(x=>x!==m).map(x=>`<option>${x}</option>`).join("")}</select><span><i class="dot" style="--c:var(--prot)"></i>P ${g1(ep)} g</span><span><i class="dot" style="--c:var(--carb)"></i>C ${g1(ec)} g</span><span><i class="dot" style="--c:var(--fat)"></i>G ${g1(ef)} g</span></div></div>`;
+      return `<div class="row"><button type="button" class="grip" data-grip="${i}" title="Trascina in un altro pasto" aria-label="Sposta ${esc(e.f)} in un altro pasto: trascina, oppure usa le frecce su e giù">⠿</button><span class="name">${esc(e.f)}${g}</span><span class="k">${fmt(ek)} kcal</span><button class="link" data-del="${i}" aria-label="Rimuovi ${esc(e.f)}">✕</button>
+      <div class="mx"><span><i class="dot" style="--c:var(--prot)"></i>P ${g1(ep)} g</span><span><i class="dot" style="--c:var(--carb)"></i>C ${g1(ec)} g</span><span><i class="dot" style="--c:var(--fat)"></i>G ${g1(ef)} g</span></div></div>`;
     }).join("") : `<p class="empty">Niente ancora.</p>`;
     const saveForm = savingMeal===m ? `<form class="inline-form" data-tplform="${m}"><input id="tplName" value="${esc(m)} abituale" aria-label="Nome del pasto salvato"><button class="primary small" type="submit">Salva</button><button class="small" type="button" data-tplcancel>Annulla</button></form>` : "";
-    return `<section class="meal"><header><h2>${m}</h2><span class="tot">${fmt(t[0])} kcal · P ${g1(t[1])} · C ${g1(t[2])} · G ${g1(t[3])} g</span>
+    return `<section class="meal" data-meal="${m}"><header><h2>${m}</h2><span class="tot">${fmt(t[0])} kcal · P ${g1(t[1])} · C ${g1(t[2])} · G ${g1(t[3])} g</span>
       <div class="acts" style="flex-basis:100%"><button type="button" class="ghost" data-copymeal="${m}">⧉ Copia da ieri</button>${list.length&&!isExample?`<button type="button" class="ghost" data-savemeal="${m}">☆ Salva pasto</button>`:""}</div></header>${saveForm}${rows}</section>`;
   }).join("");
   const inp = document.querySelector("[data-gedit]"); if(inp){ if(keepG!==null) inp.value=keepG; inp.focus(); if(keepG===null) inp.select(); }
@@ -1924,11 +1929,48 @@ $("#meals").addEventListener("click", ev=>{
   if(sm){ savingMeal=sm.dataset.savemeal; render(); return; }
   if(ev.target.closest("[data-tplcancel]")){ savingMeal=null; render(); }
 });
-$("#meals").addEventListener("change", ev=>{
-  const mv=ev.target.closest("[data-move]"); if(!mv || !mv.value) return;
-  if(isExample){ mv.value=""; flash("Questo è un esempio: aggiungi il tuo primo alimento per iniziare."); return; }
-  const list=normEntries(S.days[day]), i=Number(mv.dataset.move), to=mv.value;
-  if(!list[i]) return; list[i].m=to; S.days[day]=list; editIdx=null; saveDay(day); render(); flash(`${list[i].f} spostato in ${to}.`, true);
+/* sposta un alimento in un altro pasto: trascina la maniglia ⠿ (o frecce su/giù da tastiera) */
+function moveEntry(i, to){
+  const list=normEntries(S.days[day]); if(!list[i] || list[i].m===to || !MEALS.includes(to)) return false;
+  list[i].m=to; S.days[day]=list; editIdx=null; saveDay(day); render(); flash(`${list[i].f} spostato in ${to}.`, true); return true;
+}
+let drag=null;
+function dragEnd(ev, cancel){
+  if(!drag) return;
+  document.removeEventListener("pointermove", dragMove); document.removeEventListener("pointerup", dragUp); document.removeEventListener("pointercancel", dragCancel);
+  clearInterval(drag.timer); drag.ghost.remove(); drag.row.classList.remove("dragging"); document.body.classList.remove("dragmode");
+  document.querySelectorAll(".meal.drop").forEach(m=>m.classList.remove("drop"));
+  const d=drag; drag=null;
+  if(!cancel && d.over) moveEntry(d.i, d.over);
+}
+function dragPlace(){
+  const d=drag; if(!d) return;
+  d.ghost.style.left=(d.x-d.w/2)+"px"; d.ghost.style.top=(d.y-22)+"px";
+  const sec=document.elementFromPoint(d.x, d.y), meal=sec && sec.closest(".meal");
+  d.over = meal ? meal.dataset.meal : null;
+  document.querySelectorAll(".meal").forEach(m=>m.classList.toggle("drop", m.dataset.meal===d.over && d.over!==d.from));
+}
+function dragMove(ev){ if(!drag || ev.pointerId!==drag.pid) return; drag.x=ev.clientX; drag.y=ev.clientY; dragPlace(); }
+function dragUp(ev){ if(drag && ev.pointerId===drag.pid) dragEnd(ev,false); }
+function dragCancel(ev){ if(drag && ev.pointerId===drag.pid) dragEnd(ev,true); }
+$("#meals").addEventListener("pointerdown", ev=>{
+  const g=ev.target.closest("[data-grip]"); if(!g || (ev.pointerType==="mouse" && ev.button!==0)) return;
+  if(isExample){ flash("Questo è un esempio: aggiungi il tuo primo alimento per iniziare."); return; }
+  ev.preventDefault();
+  const row=g.closest(".row"), i=Number(g.dataset.grip), from=g.closest(".meal").dataset.meal;
+  const ghost=row.cloneNode(true); ghost.classList.add("ghost-row"); const w=Math.min(row.offsetWidth, 320); ghost.style.width=w+"px"; document.body.appendChild(ghost);
+  row.classList.add("dragging"); document.body.classList.add("dragmode");
+  drag={i, from, row, ghost, w, pid:ev.pointerId, x:ev.clientX, y:ev.clientY, over:from,
+    timer:setInterval(()=>{ if(!drag) return; if(drag.y<90) window.scrollBy(0,-14); else if(drag.y>innerHeight-90) window.scrollBy(0,14); dragPlace(); }, 30)};
+  document.addEventListener("pointermove", dragMove); document.addEventListener("pointerup", dragUp); document.addEventListener("pointercancel", dragCancel);
+  dragPlace();
+});
+$("#meals").addEventListener("keydown", ev=>{
+  const g=ev.target.closest("[data-grip]"); if(!g || (ev.key!=="ArrowUp" && ev.key!=="ArrowDown")) return;
+  ev.preventDefault(); if(isExample) return;
+  const i=Number(g.dataset.grip), e=normEntries(S.days[day])[i]; if(!e) return;
+  const to=MEALS[MEALS.indexOf(e.m)+(ev.key==="ArrowDown"?1:-1)];
+  if(to && moveEntry(i,to)){ const n=document.querySelector(`[data-grip="${i}"]`); if(n) n.focus(); }
 });
 $("#meals").addEventListener("submit", ev=>{
   const f=ev.target.closest("[data-tplform]"); if(!f) return;
