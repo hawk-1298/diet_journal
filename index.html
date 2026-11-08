@@ -34,7 +34,8 @@
   --accent:#7cc39c; --accent-soft:#1f3328; --warn:#e3a06a; --danger:#f2867e;
   --prot:#7cc39c; --carb:#e2b75a; --fat:#86aee8; --fib:#b79be0; --water:#74c0e0; color-scheme:dark}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;color-scheme:light}
+html{-webkit-text-size-adjust:100%;color-scheme:light;touch-action:manipulation}
+button,input,select,summary,label,a{touch-action:manipulation}
 :root{padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0}
 img{max-width:100%}
@@ -142,6 +143,8 @@ button.ghost:hover{color:var(--fg)}
 .row:last-child{border-bottom:0}
 .row .name{min-width:0;overflow-wrap:anywhere}
 .gbtn{border:1px dashed transparent;background:none;padding:1px 6px;margin-left:4px;color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums;border-radius:6px}
+.mv{width:auto;padding:2px 6px;font-size:.78rem;border-radius:6px;color:var(--muted);background:none}
+.mv:hover{color:var(--fg);border-color:var(--accent)}
 .gbtn:hover{border-color:var(--line);color:var(--fg)}
 .gedit{width:80px;padding:3px 6px;margin-left:4px;font-size:.9rem}
 .row .k{font-variant-numeric:tabular-nums;font-weight:600;text-align:right;min-width:70px}
@@ -519,20 +522,6 @@ button:active:not(:disabled){transform:scale(.97)}
       <p class="msg" id="cMsg"></p>
     </details>
 
-    <details>
-      <summary>I miei obiettivi</summary>
-      <div class="settings">
-        <label>kcal con allenamento<input id="gTrain" type="number" min="0" step="50"></label>
-        <label>kcal senza allenamento<input id="gRest" type="number" min="0" step="50"></label>
-        <label>Proteine g al giorno<input id="gProt" type="number" min="0" step="5"></label>
-        <label>Grassi g al giorno<input id="gFat" type="number" min="0" step="5"></label>
-        <label>Fibre g al giorno<input id="gFib" type="number" min="0" step="1"></label>
-        <label>Acqua ml al giorno<input id="gWater" type="number" min="0" step="250"></label>
-        <label>Giorni non segnati<select id="gDef"><option value="train">Allenamento</option><option value="rest">Riposo</option></select></label>
-      </div>
-      <p class="note" style="margin-top:8px">Calcolati in automatico dal tuo obiettivo nella scheda Corpo. Se li cambi qui a mano, il calcolo automatico si ferma finché non lo riattivi. I carboidrati sono le calorie che restano.</p>
-    </details>
-
     <details id="tplDetails">
       <summary>Pasti salvati</summary>
       <p class="note" style="margin-top:8px">Per salvare un pasto usa "☆ Salva pasto" accanto al suo nome. Qui puoi eliminarli.</p>
@@ -589,6 +578,15 @@ button:active:not(:disabled){transform:scale(.97)}
       <p class="note" id="goalDesc"></p>
       <div class="tgrid" id="targets"></div>
       <div class="banner" id="manualNote" hidden><span>Hai modificato gli obiettivi a mano, quindi la scelta dell'obiettivo non li cambia.</span><button type="button" class="small" id="autoBack">Usa di nuovo il calcolo</button></div>
+      <details style="padding:10px 12px">
+        <summary class="note">Altri obiettivi del diario</summary>
+        <div class="settings">
+          <label>Fibre g al giorno<input id="gFib" type="number" min="0" step="1"></label>
+          <label>Acqua ml al giorno<input id="gWater" type="number" min="0" step="250"></label>
+          <label>Giorni non segnati<select id="gDef"><option value="train">Allenamento</option><option value="rest">Riposo</option></select></label>
+        </div>
+        <p class="note" style="margin-top:8px">Calorie, proteine e grassi arrivano da qui: il Diario li usa da solo. I carboidrati sono le calorie che restano.</p>
+      </details>
       <details style="padding:10px 12px">
         <summary class="note">Come lo calcolo · profilo e attività</summary>
         <div class="settings">
@@ -853,7 +851,7 @@ function render(){
   renderChips();
   renderHelper(entries);
   if(document.activeElement!==$("#gDef")) $("#gDef").value = S.settings.defMode || "train";
-  for(const [id,k2] of [["#gTrain","train"],["#gRest","rest"],["#gProt","prot"],["#gFat","fat"],["#gFib","fib"],["#gWater","waterGoal"]]){
+  for(const [id,k2] of [["#gFib","fib"],["#gWater","waterGoal"]]){
     if(document.activeElement!==$(id)) $(id).value = S.settings[k2];
   }
   updatePreview();
@@ -926,7 +924,7 @@ function renderMeals(entries){
         ? `<input class="gedit" type="number" min="1" step="1" value="${e.g}" data-gedit="${i}" aria-label="Grammi di ${esc(e.f)}" inputmode="decimal">`
         : `<button type="button" class="gbtn" data-edit="${i}" title="Cambia i grammi">${fmt(e.g)} g ✎</button>`;
       return `<div class="row"><span class="name">${esc(e.f)}${g}</span><span class="k">${fmt(ek)} kcal</span><button class="link" data-del="${i}" aria-label="Rimuovi ${esc(e.f)}">✕</button>
-      <div class="mx"><span><i class="dot" style="--c:var(--prot)"></i>P ${g1(ep)} g</span><span><i class="dot" style="--c:var(--carb)"></i>C ${g1(ec)} g</span><span><i class="dot" style="--c:var(--fat)"></i>G ${g1(ef)} g</span></div></div>`;
+      <div class="mx"><select class="mv" data-move="${i}" aria-label="Sposta ${esc(e.f)} in un altro pasto"><option value="">⇄ Sposta in…</option>${MEALS.filter(x=>x!==m).map(x=>`<option>${x}</option>`).join("")}</select><span><i class="dot" style="--c:var(--prot)"></i>P ${g1(ep)} g</span><span><i class="dot" style="--c:var(--carb)"></i>C ${g1(ec)} g</span><span><i class="dot" style="--c:var(--fat)"></i>G ${g1(ef)} g</span></div></div>`;
     }).join("") : `<p class="empty">Niente ancora.</p>`;
     const saveForm = savingMeal===m ? `<form class="inline-form" data-tplform="${m}"><input id="tplName" value="${esc(m)} abituale" aria-label="Nome del pasto salvato"><button class="primary small" type="submit">Salva</button><button class="small" type="button" data-tplcancel>Annulla</button></form>` : "";
     return `<section class="meal"><header><h2>${m}</h2><span class="tot">${fmt(t[0])} kcal · P ${g1(t[1])} · C ${g1(t[2])} · G ${g1(t[3])} g</span>
@@ -1926,6 +1924,12 @@ $("#meals").addEventListener("click", ev=>{
   if(sm){ savingMeal=sm.dataset.savemeal; render(); return; }
   if(ev.target.closest("[data-tplcancel]")){ savingMeal=null; render(); }
 });
+$("#meals").addEventListener("change", ev=>{
+  const mv=ev.target.closest("[data-move]"); if(!mv || !mv.value) return;
+  if(isExample){ mv.value=""; flash("Questo è un esempio: aggiungi il tuo primo alimento per iniziare."); return; }
+  const list=normEntries(S.days[day]), i=Number(mv.dataset.move), to=mv.value;
+  if(!list[i]) return; list[i].m=to; S.days[day]=list; editIdx=null; saveDay(day); render(); flash(`${list[i].f} spostato in ${to}.`, true);
+});
 $("#meals").addEventListener("submit", ev=>{
   const f=ev.target.closest("[data-tplform]"); if(!f) return;
   ev.preventDefault();
@@ -1970,9 +1974,8 @@ $("#customForm").addEventListener("submit", ev=>{
   ["#cName","#cKcal","#cP","#cC","#cF","#cFib"].forEach(s=>$(s).value="");
   render(); $("#food").value=n; updatePreview(); $("#grams").focus();
 });
-for(const id of ["#gTrain","#gRest","#gProt","#gFat"]) $(id).addEventListener("change", ()=>{ if(S.settings.auto){ S.settings.auto=false; saveSettings(true); } });
 $("#gDef").addEventListener("change", ()=>{ S.settings.defMode = $("#gDef").value; saveSettings(true); render(); });
-for(const [id,k] of [["#gTrain","train"],["#gRest","rest"],["#gProt","prot"],["#gFat","fat"],["#gFib","fib"],["#gWater","waterGoal"]]){
+for(const [id,k] of [["#gFib","fib"],["#gWater","waterGoal"]]){
   $(id).addEventListener("input", ()=>{ const v=Number($(id).value); if(v>=0 && $(id).value!==""){ S.settings[k]=v; saveSettings(); render(); } });
 }
 $("#clearBtn").onclick=()=>{ $("#clearConfirm").hidden=false; };
