@@ -35,12 +35,12 @@
   --prot:#7cc39c; --carb:#e2b75a; --fat:#86aee8; --fib:#b79be0; --water:#74c0e0; color-scheme:dark}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;color-scheme:light}
-:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0}
 img{max-width:100%}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
-.wrap{max-width:760px;margin:0 auto;padding-block:28px 60px;
+.wrap{max-width:760px;margin:0 auto;padding-block:20px 60px;
   padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));
   display:flex;flex-direction:column;gap:20px}
 h1{font-family:var(--display);font-weight:700;font-size:2rem;margin:0;letter-spacing:-.01em;text-wrap:balance}
@@ -63,9 +63,6 @@ button.link:hover{color:var(--danger)}
 button.ghost{border:0;background:none;padding:4px 8px;color:var(--muted);font-size:.82rem}
 button.ghost:hover{color:var(--fg)}
 
-.tabs{display:flex;gap:4px;background:var(--accent-soft);padding:4px;border-radius:10px;align-self:flex-start}
-.tabs button{border:0;background:none;padding:8px 16px;border-radius:7px;color:var(--muted);font-weight:600}
-.tabs button[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .view{display:flex;flex-direction:column;gap:20px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .card .sub{color:var(--muted);font-size:.82rem;margin:-6px 0 0}
@@ -186,6 +183,22 @@ details summary{cursor:pointer;font-weight:600}
 .backup{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
 .backup textarea{min-height:120px;font-size:.75rem;font-family:ui-monospace,Menlo,Consolas,monospace}
 
+/* corpo */
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tgt{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0;font-variant-numeric:tabular-nums}
+.tgt small{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.tgt b{font-family:var(--display);font-size:1.25rem;line-height:1.1}
+.tgt span{font-size:.75rem;color:var(--muted)}
+.bodynums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chat{display:flex;flex-direction:column;gap:8px}
+.chat:empty{display:none}
+.bubble{max-width:88%;padding:8px 12px;border-radius:12px;font-size:.92rem;line-height:1.45;white-space:pre-wrap}
+.bubble.ai{background:var(--bg);align-self:flex-start;border-top-left-radius:4px}
+.bubble.me{background:var(--accent-soft);align-self:flex-end;border-top-right-radius:4px}
+.planbox{border:1px solid var(--accent);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+table.months.body td{cursor:default}
+@media (max-width:560px){ .tgrid,.bodynums{grid-template-columns:repeat(2,1fr)} }
+
 /* dashboard */
 .dashhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .dashhead h2{font-size:1.5rem;font-weight:700}
@@ -243,18 +256,14 @@ table.months tr.sel td{background:var(--accent-soft)}
 .banner span{flex:1;min-width:180px}
 .banner.warn{background:color-mix(in srgb, var(--warn) 14%, var(--surface))}
 .offline-note{font-size:.82rem;color:var(--warn)}
-.minibar{position:fixed;top:0;left:0;right:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);
-  padding:calc(8px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) 8px max(16px, env(safe-area-inset-left,0px));
+.minibar{position:fixed;top:calc(54px + env(safe-area-inset-top,0px));left:0;right:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);
+  padding:8px max(16px, env(safe-area-inset-right,0px)) 8px max(16px, env(safe-area-inset-left,0px));
   font-variant-numeric:tabular-nums;font-size:.85rem;color:var(--muted);box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .minibar .in{max-width:760px;margin:0 auto;display:flex;gap:6px 14px;flex-wrap:wrap;align-items:baseline}
 .minibar b{font-family:var(--display);font-size:1.15rem;color:var(--fg)}
 
 @media (max-width:560px){
-  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;border-radius:0;align-self:auto;background:var(--surface);border-top:1px solid var(--line);
-    padding:6px max(12px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(12px, env(safe-area-inset-left,0px))}
-  .tabs button{flex:1;padding:12px 8px}
-  .tabs button[aria-selected="true"]{background:var(--accent-soft);box-shadow:none}
-  .wrap{padding-block:20px 120px}
+  .wrap{padding-block:16px 60px}
   input,select,textarea{font-size:16px}
   .add{grid-template-columns:1fr 1fr}
   .add label:first-child,.add button{grid-column:1/-1}
@@ -276,13 +285,112 @@ table.months tr.sel td{background:var(--accent-soft)}
   .wd span{font-size:.65rem}
 }
 @media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+/* ---- barra superiore con menu a tendina ---- */
+.appbar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(10px);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.appbar-in{max-width:760px;margin:0 auto;height:54px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
+.appbar h1{display:flex;align-items:center;gap:9px;font-size:1.2rem;min-width:0;white-space:nowrap}
+.appbar h1 span{overflow:hidden;text-overflow:ellipsis}
+.appbar h1 svg{flex:none}
+.ddwrap{position:relative;min-width:0}
+.menubtn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:11px;background:var(--surface);font-weight:600;flex:none}
+.menubtn:hover{border-color:var(--accent)}
+.chev{flex:none;transition:transform .2s}
+[aria-expanded="true"] > .chev,[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.ddpanel{position:absolute;right:0;top:calc(100% + 8px);min-width:250px;max-width:min(92vw,360px);background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 14px 34px rgba(0,0,0,.18);padding:6px;z-index:50;display:flex;flex-direction:column;gap:2px;transform-origin:top right;animation:pop .16s ease-out}
+.ddpanel button{border:0;background:none;text-align:left;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:9px;width:100%}
+.ddpanel button:hover,.ddpanel button:focus-visible{background:var(--accent-soft)}
+.ddpanel button[aria-current="page"],.ddpanel button[aria-selected="true"]{background:var(--accent-soft)}
+.ddpanel .ic{width:34px;height:34px;border-radius:10px;background:var(--bg);display:grid;place-items:center;flex:none;color:var(--accent)}
+.ddpanel [aria-current="page"] .ic{background:var(--accent);color:var(--bg)}
+.ddpanel .mt{display:flex;flex-direction:column;min-width:0}
+.ddpanel .mt small{color:var(--muted);font-size:.78rem}
+@keyframes pop{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes vin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.wrap > .view:not([hidden]){animation:vin .28s ease-out}
+button{transition:transform .08s,background-color .15s,border-color .15s}
+button:active:not(:disabled){transform:scale(.97)}
+.card{transition:border-color .2s,box-shadow .2s}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+
+/* ---- obiettivo a tendina ---- */
+.ddbtn{width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);text-align:left}
+.ddbtn:hover{border-color:var(--accent)}
+.ddbtn .gtxt{flex:1;display:flex;flex-direction:column;min-width:0}
+.ddbtn .gtxt small{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.ddbtn .gtxt b{font-family:var(--display);font-size:1.2rem;font-weight:700}
+.pips{display:flex;gap:3px;align-items:flex-end}
+.pips i{width:6px;border-radius:3px;background:var(--line)}
+.pips i:nth-child(1){height:10px}.pips i:nth-child(2){height:13px}.pips i:nth-child(3){height:16px}.pips i:nth-child(4){height:19px}.pips i:nth-child(5){height:22px}
+.pips i.on{background:var(--accent)}
+.goaldd .ddpanel{left:0;right:0;min-width:0;max-width:none}
+.goaldd .ddpanel button{flex-direction:column;align-items:flex-start;gap:1px}
+.goaldd .ddpanel .gname{font-weight:600}
+.goaldd .ddpanel .gsub{font-size:.78rem;color:var(--muted)}
+
+/* ---- composizione: ciambella ---- */
+.chead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.chip{font-size:.78rem;color:var(--muted);background:var(--accent-soft);padding:3px 10px;border-radius:99px}
+.chip:empty{display:none}
+.compgrid{display:grid;grid-template-columns:176px 1fr;gap:20px;align-items:center}
+.donutwrap{position:relative;width:176px;height:176px}
+.donutwrap svg{width:100%;height:100%;display:block}
+.donutwrap .track{stroke:var(--line)}
+.seg{cursor:pointer;outline:none;transition:stroke-dasharray .9s cubic-bezier(.2,.8,.2,1),stroke-width .15s,opacity .15s}
+.seg:hover,.seg.sel,.seg:focus-visible{stroke-width:27}
+.donutwrap.has-sel .seg:not(.sel){opacity:.3}
+.dcenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center;padding:0 34px}
+.dcenter b{font-family:var(--display);font-size:2rem;line-height:1;font-variant-numeric:tabular-nums}
+.dcenter small{color:var(--muted);font-size:.74rem;margin-top:3px}
+.dleg{display:flex;flex-direction:column;gap:8px;min-width:0}
+.dli{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;padding:9px 12px;background:var(--surface);text-align:left;width:100%}
+.dli i{width:11px;height:11px;border-radius:50%;background:var(--c);flex:none}
+.dli .n{flex:1;min-width:0;line-height:1.25}
+.dli .n small{display:block;color:var(--muted);font-size:.72rem}
+.dli b{font-variant-numeric:tabular-nums}
+.dli .pc{color:var(--muted);font-variant-numeric:tabular-nums;min-width:3.4em;text-align:right}
+.dli:hover{border-color:var(--c)}
+.dli.sel{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,var(--surface))}
+@media (max-width:560px){.compgrid{grid-template-columns:1fr;justify-items:center}.dleg{width:100%}}
+
+/* ---- andamento ---- */
+.range{display:inline-flex;gap:2px;background:var(--accent-soft);padding:3px;border-radius:10px}
+.range button{border:0;background:none;padding:5px 10px;border-radius:7px;font-size:.8rem;color:var(--muted);font-weight:600}
+.range button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.ttiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:560px){.ttiles{grid-template-columns:repeat(2,1fr)}}
+.ttile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);text-align:left;min-width:0;overflow:hidden}
+.ttile small{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.ttile b{font-family:var(--display);font-size:1.2rem;line-height:1.15;font-variant-numeric:tabular-nums}
+.ttile em{font-style:normal;font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.ttile:hover{border-color:var(--c)}
+.ttile[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c);background:color-mix(in srgb,var(--c) 9%,var(--surface))}
+.trend{position:relative;touch-action:pan-y;-webkit-user-select:none;user-select:none;min-height:120px}
+.trend svg{display:block;max-width:100%}
+.trend text{fill:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.trend text.val{fill:var(--fg);font-weight:600;font-size:12px}
+.tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);padding:5px 10px;border-radius:9px;font-size:.78rem;line-height:1.3;white-space:nowrap;z-index:2}
+.tip b{font-family:var(--display);font-size:.95rem}
+@media (prefers-reduced-motion:reduce){.seg{transition:none}.ddpanel,.wrap > .view:not([hidden]){animation:none}}
+
 </style>
 </head>
 <body>
 <div class="minibar" id="miniBar" hidden><div class="in" id="miniIn"></div></div>
+<header class="appbar"><div class="appbar-in">
+  <h1><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><g transform="rotate(-90 16 16)" fill="none" stroke-width="6"><circle cx="16" cy="16" r="11" style="stroke:var(--prot)" stroke-dasharray="25 69.1"/><circle cx="16" cy="16" r="11" style="stroke:var(--carb)" stroke-dasharray="25 69.1" stroke-dashoffset="-26.5"/><circle cx="16" cy="16" r="11" style="stroke:var(--fat)" stroke-dasharray="14 69.1" stroke-dashoffset="-53"/></g></svg><span>Diario delle calorie</span></h1>
+  <div class="ddwrap" id="navWrap">
+    <button type="button" class="menubtn" id="menuBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="menuPanel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span id="menuLabel">Diario</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+    <div class="ddpanel" id="menuPanel" role="menu" aria-label="Sezioni" hidden>
+      <button type="button" role="menuitem" data-tab="diario"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 12h4"/></svg></span><span class="mt"><b>Diario</b><small>Cosa mangi ogni giorno</small></span></button>
+      <button type="button" role="menuitem" data-tab="corpo"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="2"/><path d="M12 7.5V14M6.5 9.5 12 11l5.5-1.5M9 21l3-7 3 7"/></svg></span><span class="mt"><b>Corpo</b><small>Obiettivo e composizione corporea</small></span></button>
+      <button type="button" role="menuitem" data-tab="mesi"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg></span><span class="mt"><b>Dashboard</b><small>Medie e andamento per mese</small></span></button>
+    </div>
+  </div>
+</div></header>
 <div class="wrap">
   <div class="top">
-    <h1>Diario delle calorie</h1>
     <p>Scrivi cosa hai mangiato e quanti grammi: calorie e macronutrienti si aggiornano da soli.</p>
     <div class="sync on" id="sync"><i></i><span>Salvato su questo dispositivo · funziona anche offline</span></div>
   </div>
@@ -290,11 +398,6 @@ table.months tr.sel td{background:var(--accent-soft)}
   <div class="banner" id="installBanner" hidden><span id="installText"></span><button type="button" class="primary small" id="installBtn" hidden>Installa</button><button type="button" class="ghost" id="installClose" aria-label="Chiudi">✕</button></div>
   <div class="banner warn" id="backupBanner" hidden><span id="backupText"></span><button type="button" class="small" id="backupNow">Esporta ora</button><button type="button" class="ghost" id="backupClose" aria-label="Chiudi">✕</button></div>
   <div hidden>
-  </div>
-
-  <div class="tabs" role="tablist">
-    <button role="tab" id="tabDiario" aria-selected="true">Diario</button>
-    <button role="tab" id="tabMesi" aria-selected="false">Dashboard</button>
   </div>
 
   <!-- DIARIO -->
@@ -427,7 +530,7 @@ table.months tr.sel td{background:var(--accent-soft)}
         <label>Acqua ml al giorno<input id="gWater" type="number" min="0" step="250"></label>
         <label>Giorni non segnati<select id="gDef"><option value="train">Allenamento</option><option value="rest">Riposo</option></select></label>
       </div>
-      <p class="note" style="margin-top:8px">Stima di partenza per 80 kg e 28 anni in fase di massa. I carboidrati sono le calorie che restano. Correggi in base alla bilancia: punta a +0,5–1 kg al mese.</p>
+      <p class="note" style="margin-top:8px">Calcolati in automatico dal tuo obiettivo nella scheda Corpo. Se li cambi qui a mano, il calcolo automatico si ferma finché non lo riattivi. I carboidrati sono le calorie che restano.</p>
     </details>
 
     <details id="tplDetails">
@@ -469,6 +572,77 @@ table.months tr.sel td{background:var(--accent-soft)}
       </details>
       <p class="note" style="margin-top:8px">La chiave resta salvata solo su questo dispositivo e viene inviata solo ad Anthropic. Creala su console.anthropic.com → API keys e imposta un limite di spesa mensile basso. Ogni richiesta costa in genere pochi centesimi.</p>
     </details>
+  </div>
+
+  <!-- CORPO -->
+  <div class="view" id="viewCorpo" hidden>
+    <section class="card" id="goalCard">
+      <h3>Il mio obiettivo</h3>
+      <p class="sub">Un obiettivo dura almeno 2–3 mesi, quindi si cambia di rado. Calorie e macro si adattano da soli.</p>
+      <div class="ddwrap goaldd" id="goalWrap">
+        <button type="button" class="ddbtn" id="goalBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="goalPanel">
+          <span class="gtxt"><small>Obiettivo attuale</small><b id="goalBtnText"></b></span><span class="pips" id="goalPips" aria-hidden="true"></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="ddpanel" id="goalPanel" role="listbox" aria-label="Obiettivo" hidden></div>
+      </div>
+      <p class="note" id="goalSince"></p>
+      <p class="note" id="goalDesc"></p>
+      <div class="tgrid" id="targets"></div>
+      <div class="banner" id="manualNote" hidden><span>Hai modificato gli obiettivi a mano, quindi la scelta dell'obiettivo non li cambia.</span><button type="button" class="small" id="autoBack">Usa di nuovo il calcolo</button></div>
+      <details style="padding:10px 12px">
+        <summary class="note">Come lo calcolo · profilo e attività</summary>
+        <div class="settings">
+          <label>Altezza (cm)<input id="pHeight" type="number" min="120" max="230" step="1"></label>
+          <label>Età<input id="pAge" type="number" min="14" max="99" step="1"></label>
+          <label>Sesso<select id="pSex"><option value="M">Uomo</option><option value="F">Donna</option></select></label>
+          <label>Attività senza allenamento<select id="pAct"><option value="sed">Sedentaria (scrivania, pochi passi)</option><option value="light">Leggera (in piedi, 6–9 mila passi)</option><option value="active">Attiva (lavoro in movimento, 10 mila+)</option></select></label>
+          <label>kcal in più nei giorni di allenamento<input id="pTrainK" type="number" min="0" max="1500" step="25"></label>
+        </div>
+        <p class="note" id="calcExplain" style="margin-top:8px"></p>
+      </details>
+    </section>
+
+    <section class="card ai" id="goalAICard" hidden>
+      <h3>Definisci l'obiettivo con Claude</h3>
+      <p class="sub">Qualche domanda veloce sui tuoi obiettivi, poi Claude ti propone obiettivo e calorie. Applichi tu, dopo averli visti.</p>
+      <div class="chat" id="chat"></div>
+      <form class="ai-row" id="chatForm" hidden autocomplete="off"><input id="chatInput" placeholder="Rispondi qui…" style="flex:1"><button type="submit" class="primary">Invia</button></form>
+      <div class="ai-row"><button type="button" class="primary" id="chatStart">Inizia</button><button type="button" id="chatReset" hidden>Ricomincia</button><span class="note" id="chatStatus"></span></div>
+      <div class="planbox" id="planBox" hidden></div>
+    </section>
+
+    <section class="card" id="bodyCard">
+      <div class="chead"><h3>Composizione corporea</h3><span class="chip" id="bodyDate"></span></div>
+      <div id="bodyLatest" style="display:flex;flex-direction:column;gap:14px"></div>
+    </section>
+
+    <section class="card" id="trendCard">
+      <div class="chead"><h3>Andamento</h3>
+        <div class="range" id="trendRange" role="group" aria-label="Periodo"><button type="button" data-r="30">1 mese</button><button type="button" data-r="91">3 mesi</button><button type="button" data-r="182">6 mesi</button><button type="button" data-r="all">Tutto</button></div>
+      </div>
+      <div class="ttiles" id="trendTiles"></div>
+      <div class="trend" id="trendChart"></div>
+      <p class="note" id="trendNote"></p>
+    </section>
+
+    <section class="card" id="histCard">
+      <h3>Misurazioni</h3>
+      <details style="padding:10px 12px">
+        <summary>Aggiungi una misurazione</summary>
+        <form class="settings" id="bodyForm" autocomplete="off">
+          <label>Data<input id="bDate" type="date"></label>
+          <label>Peso (kg)<input id="bW" type="number" min="30" max="250" step="0.1" inputmode="decimal"></label>
+          <label>Grasso %<input id="bFat" type="number" min="2" max="70" step="0.1" inputmode="decimal"></label>
+          <label>Muscoli %<input id="bMus" type="number" min="20" max="95" step="0.1" inputmode="decimal"></label>
+          <label>Ossa %<input id="bBone" type="number" min="1" max="15" step="0.1" inputmode="decimal"></label>
+          <label>Acqua %<input id="bWater" type="number" min="30" max="80" step="0.1" inputmode="decimal"></label>
+          <button type="submit" class="primary" style="grid-column:1/-1;justify-self:start">Salva misurazione</button>
+        </form>
+        <p class="note" style="margin-top:8px">Per confronti affidabili misura sempre con la stessa bilancia, alla stessa ora, a digiuno e prima dell'allenamento. Se salvi una data già presente, la sostituisci.</p>
+        <p class="msg" id="bMsg2"></p>
+      </details>
+      <div id="bodyHistory"></div>
+    </section>
   </div>
 
   <!-- DASHBOARD -->
@@ -519,8 +693,9 @@ const BASE = {
 "Bake rolls":[443,12,63,15,3],"Sugo Cacio e pepe":[218,15,1.2,17,0],"farina 00":[345,11,69.9,1.7,2.2],"Buitoni impasto pizza":[280,8.5,46.1,5.4,2.5],"Pane ai 5 cereali":[277,10,44,4,6],"Pesto tigullio":[477,5.2,10,46,2],"Wasa":[330,9,60,1.5,14],"Dumplings":[600,20,50,20,2],"Aloe Vera":[36,0,9,0,0.2],"Pudding proteico":[76,10,5.5,1.5,0.5],"Tacos":[461,6.5,61,20,5],"Tortellini":[309,12,43,9,2],"Ragu di soja":[255,3.5,7.6,23,2],"patate surgelate":[139,2.6,23.4,3.4,2.5],"Alici":[435,14,0,42,0],"Lamponi":[34,1,6.5,0.6,6.5],"Gin tonic":[135,0,13,0,0],"Trota":[86,14.7,0,3,0],"Ragu di carne":[196,12,1.9,15.4,0.8]
 };
 const MEALS = ["Colazione","Pranzo","Cena","Spuntini"];
-const MAPS = ["weights","water","weeks","templates","reports"];
-const DEF_SETTINGS = {train:2900, rest:2550, prot:155, fat:75, fib:30, waterGoal:2500, mode:"train", defMode:"train", used:false};
+const MAPS = ["weights","water","weeks","templates","reports","body"];
+const DEF_SETTINGS = {train:2900, rest:2550, prot:155, fat:75, fib:30, waterGoal:2500, mode:"train", defMode:"train", used:false,
+  height:185, age:28, sex:"M", act:"sed", trainK:350, goal:1, auto:true};
 // alimenti usati dal suggeritore, con una porzione tipica in grammi
 const CORE = {"Whey protein dm Sportness":30,"Yogurt greco 0%":170,"Albume d'uovo":150,"Banana":120,"Mela":150,"Riso (crudo)":80,"Pane comune":60,"Crackers di riso":25,"Fiocchi d'avena":50,"Petto di pollo":150,"Tonno al naturale":80,"Carne salata":80,"Bresaola":60,"Latte di soia Alpro senza zuccheri":250,"Patate":250,"Castagne arrosto (sbucciate)":80,"Udon precotti / freschi":200,"Mozzarella light":125,"Uova":120,"Mandorle":20,"Miele":15,"Pasta (cruda)":80,"Kiwi":100,"Arancia":150};
 const NOT_SUGGEST = /olio|burro|maionese|zucchero|vino|birra|bibita|marmellata|passata|cipolla/i;
@@ -538,7 +713,7 @@ const weekStart = s => { const [y,m,d]=s.split("-").map(Number); const w=(new Da
 const pad5 = v => { const a=(v||[]).map(Number); while(a.length<5) a.push(0); return a.slice(0,5); };
 
 /* ---------- stato ---------- */
-let S = { days:{}, custom:{}, settings:{...DEF_SETTINGS}, weights:{}, modes:{}, water:{}, weeks:{}, templates:{}, reports:{} };
+let S = { days:{}, custom:{}, settings:{...DEF_SETTINGS}, weights:{}, modes:{}, water:{}, weeks:{}, templates:{}, reports:{}, body:{} };
 let backend = "local", dbCol = null;
 let day = today(), isExample = false, selMonth = null, editIdx = null, savingMeal = null;
 const dirty = new Set();
@@ -962,6 +1137,8 @@ function renderDash(){
   } else {
     wHtml = `<p class="sub" style="margin:0">Nessuna pesata in questo mese. Scrivi il peso nel Diario (1–2 volte a settimana, al mattino) per capire se le calorie sono giuste.</p>`;
   }
+  const lb = latestBody();
+  if(lb && lb.fat!=null) wHtml += `<div class="stat"><span>Ultima composizione (${new Date(lb.date+"T12:00").toLocaleDateString("it-IT",{day:"numeric",month:"short"})})</span><b>grasso ${g1(lb.fat)}% · massa magra ${g1(lb.w*(1-lb.fat/100))} kg</b></div>`;
   h += `<div class="card"><h3>Peso</h3>${wHtml}</div>`;
 
   const tm = ms.filter(m=>monthStats(m)).slice(-8), series = tm.map(m=>monthStats(m).avg);
@@ -1072,7 +1249,7 @@ function makeSample(){
 function setAIVisible(){
   sampleFn = aiCfg().key ? makeSample() : null;
   const on = !!sampleFn;
-  $("#aiLogCard").hidden = !on; $("#coachWrap").hidden = !on; $("#reportCard").hidden = !on;
+  $("#aiLogCard").hidden = !on; $("#coachWrap").hidden = !on; $("#reportCard").hidden = !on; $("#goalAICard").hidden = !on;
   if(on) renderReport();
   updatePreview();
 }
@@ -1082,7 +1259,8 @@ function foodTable(names){
   return names.filter(n=>all[n]).map(n=>`${n}: ${all[n].slice(0,4).map(x=>g1(x)).join(" / ")}`).join("\n");
 }
 function profileText(){
-  return `Profilo: uomo, 28 anni, circa 80 kg, obiettivo aumentare la massa muscolare. Si allena in modo irregolare e viaggia spesso.
+  const g = (GOALS[String(S.settings.goal)]||GOALS["1"]).name, w = currentWeight();
+  return `Profilo: ${S.settings.sex==="F"?"donna":"uomo"}, ${S.settings.age} anni, ${S.settings.height} cm, ${w?g1(w)+" kg":"peso non registrato"}; obiettivo attuale: ${g}. Si allena in modo irregolare e viaggia spesso. ${bodyText()}
 Obiettivi: ${fmt(S.settings.train)} kcal nei giorni con allenamento, ${fmt(S.settings.rest)} kcal senza; proteine ${S.settings.prot} g; grassi ${S.settings.fat} g; carboidrati = calorie restanti; fibre ${S.settings.fib} g.`;
 }
 
@@ -1334,16 +1512,352 @@ $("#copyExport").onclick = async ()=>{
   catch(e){ $("#exportText").select(); $("#copyExport").textContent="Seleziona e copia"; }
 };
 
+/* ---------- corpo e obiettivo ---------- */
+const GOALS = {
+  "-2":{name:"Perdere grasso", delta:-500, prot:2.2, fat:0.8, desc:"Deficit di circa 500 kcal al giorno: si perde grasso più in fretta. Proteine alte per proteggere i muscoli."},
+  "-1":{name:"Definizione", delta:-250, prot:2.2, fat:0.8, desc:"Deficit leggero: perdi grasso lentamente e mantieni forza e muscoli."},
+  "0":{name:"Mantenere", delta:0, prot:1.8, fat:0.9, desc:"Calorie di mantenimento: il peso resta stabile, utile per consolidare."},
+  "1":{name:"Massa pulita", delta:250, prot:2.0, fat:0.9, desc:"Surplus moderato: aumenti muscoli limitando il grasso. Ideale partendo da una percentuale di grasso bassa o media."},
+  "2":{name:"Massa", delta:450, prot:2.0, fat:1.0, desc:"Surplus più alto: si cresce più in fretta, ma con più grasso. Utile per periodi brevi."}
+};
+const ACT = {sed:{f:1.25, name:"sedentaria"}, light:{f:1.35, name:"leggera"}, active:{f:1.5, name:"attiva"}};
+const round10 = x => Math.round(x/10)*10, round5 = x => Math.round(x/5)*5;
+function latestBody(){ const ks=Object.keys(S.body).sort(); return ks.length ? {date:ks[ks.length-1], ...S.body[ks[ks.length-1]]} : null; }
+function currentWeight(){
+  const all = {...S.weights}; for(const d in S.body) if(S.body[d].w) all[d]=S.body[d].w;
+  const ks = Object.keys(all).filter(d=>all[d]>0).sort(); if(!ks.length) return null;
+  const last = ks[ks.length-1], from = shiftDay(last,-6), rec = ks.filter(d=>d>=from).map(d=>all[d]);
+  return rec.reduce((a,b)=>a+b,0)/rec.length;
+}
+function calcTargets(over){
+  const st = {...S.settings, ...(over||{})};
+  const w = currentWeight() || 80, b = latestBody();
+  const g = GOALS[String(st.goal)] || GOALS["1"];
+  const lean = b && b.fat ? w*(1-b.fat/100) : null;
+  const bmr = lean ? 370 + 21.6*lean : (10*w + 6.25*(st.height||180) - 5*(st.age||30) + (st.sex==="F"?-161:5));
+  const rest0 = bmr*(ACT[st.act]||ACT.sed).f;
+  const rest = round10(rest0 + g.delta), train = round10(rest0 + (st.trainK||0) + g.delta);
+  const prot = round5(w*g.prot), fat = round5(w*g.fat);
+  return {w, lean, bmr, rest0, rest, train, prot, fat, g, kgMonth: g.delta*30/7700, method: lean ? "Katch-McArdle (dalla massa magra)" : "Mifflin-St Jeor (da peso, altezza ed età)"};
+}
+function applyTargets(){
+  if(!S.settings.auto) return false;
+  const t = calcTargets(); let changed=false;
+  for(const [k,v] of [["train",t.train],["rest",t.rest],["prot",t.prot],["fat",t.fat]]) if(S.settings[k]!==v){ S.settings[k]=v; changed=true; }
+  if(changed) saveSettings(true);
+  return changed;
+}
+function renderCorpo(){
+  const st = S.settings, t = calcTargets();
+  renderGoalDD();
+  $("#goalDesc").textContent = `${t.g.name}: ${t.g.desc}`;
+  const sign = t.kgMonth>0?"+":t.kgMonth<0?"−":"±";
+  const cg = carbFor(st.train), cr = carbFor(st.rest);
+  $("#targets").innerHTML = [
+    ["Allenamento", fmt(st.train), "kcal al giorno"], ["Riposo", fmt(st.rest), "kcal al giorno"], ["Peso previsto", `${sign}${g1(Math.abs(t.kgMonth))} kg`, "al mese, circa"],
+    ["Proteine", `${fmt(st.prot)} g`, `${g1(st.prot/(t.w||1))} g per kg`], ["Grassi", `${fmt(st.fat)} g`, `${g1(st.fat/(t.w||1))} g per kg`], ["Carboidrati", `${fmt(cr)}–${fmt(cg)} g`, "riposo – allenamento"]
+  ].map(([a,b,c])=>`<div class="tgt"><small>${a}</small><b>${b}</b><span>${c}</span></div>`).join("");
+  $("#manualNote").hidden = !!st.auto;
+  for(const [id,k] of [["#pHeight","height"],["#pAge","age"],["#pTrainK","trainK"]]) if(document.activeElement!==$(id)) $(id).value = st[k];
+  $("#pSex").value = st.sex; $("#pAct").value = st.act;
+  $("#calcExplain").textContent = `Metabolismo basale ${fmt(t.bmr)} kcal con la formula ${t.method}${t.lean?`, massa magra ${g1(t.lean)} kg`:""}. Con attività ${(ACT[st.act]||ACT.sed).name} il mantenimento è circa ${fmt(t.rest0)} kcal nei giorni di riposo e ${fmt(t.rest0+st.trainK)} in quelli di allenamento; l'obiettivo "${t.g.name}" aggiunge ${t.g.delta>=0?"+":""}${t.g.delta} kcal. Peso usato: ${g1(t.w)} kg (media dell'ultima settimana di pesate). Sono stime: la bilancia nelle prossime settimane dirà se servono ritocchi.`;
+  renderBody();
+}
+/* ---------- obiettivo a tendina ---------- */
+function renderGoalDD(){
+  const st = S.settings, cur = Number(st.goal);
+  if(!st.goalSince){ st.goalSince = today(); saveSettings(true); }
+  const g = GOALS[String(cur)] || GOALS["1"];
+  $("#goalBtnText").textContent = g.name;
+  $("#goalPips").innerHTML = [-2,-1,0,1,2].map(n=>`<i class="${n<=cur ? "on" : ""}"></i>`).join("");
+  $("#goalPanel").innerHTML = [-2,-1,0,1,2].map(n=>{
+    const x = GOALS[String(n)], kg = x.delta*30/7700, sg = x.delta>0?"+":x.delta<0?"−":"±";
+    return `<button type="button" role="option" aria-selected="${n===cur}" data-goal="${n}"><span class="gname">${x.name}</span><span class="gsub">${x.delta?`${sg}${Math.abs(x.delta)} kcal al giorno · ${sg}${g1(Math.abs(kg))} kg al mese`:"calorie di mantenimento · peso stabile"}</span></button>`;
+  }).join("");
+  const weeks = Math.floor((new Date(today()+"T12:00") - new Date(st.goalSince+"T12:00"))/(7*864e5));
+  $("#goalSince").textContent = `Attivo dal ${dLong(st.goalSince)}${weeks>=1?` (${weeks} ${weeks===1?"settimana":"settimane"})`:""}. Valutalo verso il ${dLong(shiftDay(st.goalSince, 70))}, guardando peso e composizione.`;
+}
+
+/* ---------- composizione: ciambella e andamento ---------- */
+const DR = 62, DC = 2*Math.PI*DR;
+let donutSel = -1, donutSegs = [], donutKey = "", trendMetric = "peso", trendRange = "all", trendLastW = 0;
+const dShort = d => new Date(d+"T12:00").toLocaleDateString("it-IT",{day:"numeric",month:"short"});
+const dLong = d => new Date(d+"T12:00").toLocaleDateString("it-IT",{day:"numeric",month:"long",year:"numeric"});
+function fatCategory(f){
+  if(f==null) return "";
+  return S.settings.sex==="F" ? (f<21?"bassa":f<=33?"nella fascia sana":f<=39?"sopra la fascia sana":"alta")
+                              : (f<8?"bassa":f<=19?"nella fascia sana":f<=24?"sopra la fascia sana":"alta");
+}
+function donutData(b){
+  if(b.fat==null) return [];
+  const segs = [{n:"Grasso", v:b.fat, c:"--carb", sub:fatCategory(b.fat)}];
+  const mus = b.mus!=null ? b.mus : Math.max(0, 100-b.fat-(b.bone||0));
+  segs.push({n:b.mus!=null?"Muscoli":"Massa magra", v:mus, c:"--accent", sub:b.mus!=null?"include l'acqua nei muscoli":""});
+  if(b.bone!=null) segs.push({n:"Ossa", v:b.bone, c:"--fat", sub:""});
+  const rest = 100 - segs.reduce((a,x)=>a+x.v,0);
+  if(rest>1.5) segs.push({n:"Altro", v:rest, c:"--muted", sub:""});
+  segs.forEach(x=>x.kg = b.w*x.v/100);
+  return segs;
+}
+function donutHTML(segs, animate){
+  const total = segs.reduce((a,x)=>a+x.v,0), gap = segs.length>1 ? 3 : 0; let off = 0;
+  const arcs = segs.map((x,i)=>{
+    const len = x.v/total*DC, dash = Math.max(len-gap, 1);
+    const el = `<circle class="seg" data-i="${i}" cx="80" cy="80" r="${DR}" fill="none" stroke-width="22" stroke-dashoffset="${(-off).toFixed(2)}" data-dash="${dash.toFixed(2)}" style="stroke:var(${x.c});stroke-dasharray:${animate?0:dash.toFixed(2)} ${DC.toFixed(2)}" tabindex="0" role="button" aria-label="${x.n} ${g1(x.v)}%, ${g1(x.kg)} kg"/>`;
+    off += len; return el;
+  }).join("");
+  return `<div class="compgrid"><div class="donutwrap" id="donutWrap"><svg viewBox="0 0 160 160" role="img" aria-label="Composizione corporea"><circle class="track" cx="80" cy="80" r="${DR}" fill="none" stroke-width="22"/><g transform="rotate(-90 80 80)">${arcs}</g></svg><div class="dcenter" id="dCenter"></div></div>
+    <div class="dleg">${segs.map((x,i)=>`<button type="button" class="dli" data-i="${i}" style="--c:var(${x.c})"><i></i><span class="n">${x.n}${x.sub?`<small>${x.sub}</small>`:""}</span><b>${g1(x.kg)} kg</b><span class="pc">${g1(x.v)}%</span></button>`).join("")}</div></div>`;
+}
+function paintDonut(){
+  const wrap = $("#donutWrap"); if(!wrap) return;
+  const b = latestBody(), x = donutSegs[donutSel];
+  wrap.classList.toggle("has-sel", !!x);
+  document.querySelectorAll("#bodyLatest [data-i]").forEach(el=>el.classList.toggle("sel", Number(el.dataset.i)===donutSel));
+  $("#dCenter").innerHTML = x ? `<b>${g1(x.v)}%</b><small>${x.n} · ${g1(x.kg)} kg</small>` : `<b>${g1(b.w)}</b><small>kg · ${dShort(b.date)}</small>`;
+}
+function renderBody(){
+  const ks = Object.keys(S.body).sort(), b = latestBody();
+  $("#bodyDate").textContent = b ? dLong(b.date) : "";
+  if(!b){
+    $("#bodyLatest").innerHTML = `<p class="empty">Nessuna misurazione. Aggiungi la prima qui sotto: peso, grasso, muscoli, ossa e acqua dalla tua bilancia o analisi.</p>`;
+    $("#bodyHistory").innerHTML = ""; renderTrend(); return;
+  }
+  const h = (S.settings.height||180)/100, w = b.w;
+  const fatKg = b.fat!=null ? w*b.fat/100 : null, lean = fatKg!=null ? w-fatKg : null;
+  const bmi = w/(h*h), ffmi = lean!=null ? lean/(h*h) : null, t = calcTargets();
+  const waterOk = b.water==null ? null : (S.settings.sex==="F" ? b.water>=45&&b.water<=60 : b.water>=50&&b.water<=65);
+  const prev = ks.length>1 ? S.body[ks[ks.length-2]] : null;
+  const d = (a,bb,u)=> (a==null||bb==null) ? "" : ` <span class="note">(${a-bb>=0?"+":"−"}${g1(Math.abs(a-bb))}${u})</span>`;
+  donutSegs = donutData(b);
+  if(donutSel>=donutSegs.length) donutSel = -1;
+  const key = JSON.stringify(donutSegs.map(x=>[x.n,x.v])), animate = key!==donutKey; donutKey = key;
+  $("#bodyLatest").innerHTML = (donutSegs.length ? donutHTML(donutSegs, animate) : `<p class="empty">Aggiungi la percentuale di grasso per vedere la ciambella.</p>`) + `
+    <div class="bodynums">
+      ${lean!=null?`<div class="tgt"><small>Massa magra</small><b>${g1(lean)} kg</b><span>tutto tranne il grasso</span></div>`:""}
+      ${b.water!=null?`<div class="tgt"><small>Acqua</small><b>${g1(b.water)}%</b><span>${waterOk?"nel range sano":"fuori dal range tipico"}</span></div>`:""}
+      <div class="tgt"><small>BMI</small><b>${g1(bmi)}</b><span>${bmi<18.5?"sottopeso":bmi<25?"normopeso":bmi<30?"sovrappeso":"obesità"} · poco utile per chi si allena</span></div>
+      ${ffmi!=null?`<div class="tgt"><small>FFMI</small><b>${g1(ffmi)}</b><span>indice di massa magra${S.settings.sex==="M"?(ffmi<18?" · sotto la media":ffmi<20?" · nella media":ffmi<22?" · sopra la media":" · molto alto"):""}</span></div>`:""}
+      <div class="tgt"><small>Metabolismo basale</small><b>${fmt(t.bmr)} kcal</b><span>a riposo, stima</span></div>
+      <div class="tgt"><small>Peso</small><b>${g1(w)} kg</b><span>${dShort(b.date)}</span></div>
+    </div>
+    ${prev?`<p class="note">Rispetto alla misurazione precedente: peso${d(w,prev.w," kg")}, grasso${d(b.fat,prev.fat," punti")}, massa magra${d(lean, prev.fat!=null?prev.w*(1-prev.fat/100):null," kg")}.</p>`:""}
+    <p class="note">Tocca una parte della ciambella per vedere i valori. "Muscoli" sulle bilance a impedenza include l'acqua nei muscoli: per questo è così alto. Usa grasso % e massa magra per seguire i progressi.</p>`;
+  if(donutSegs.length){
+    paintDonut();
+    if(animate) requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll("#bodyLatest .seg").forEach(c=>{ c.style.strokeDasharray = `${c.dataset.dash} ${DC.toFixed(2)}`; })));
+  }
+  $("#bodyHistory").innerHTML = ks.length ? `<div class="tablewrap"><table class="months body"><thead><tr><th>Data</th><th>Peso</th><th>Grasso</th><th>Magra</th><th>Acqua</th><th></th></tr></thead><tbody>${ks.slice().reverse().map(k=>{ const x=S.body[k]; const ln = x.fat!=null? x.w*(1-x.fat/100):null; return `<tr><td>${new Date(k+"T12:00").toLocaleDateString("it-IT",{day:"numeric",month:"short",year:"2-digit"})}</td><td>${g1(x.w)} kg</td><td>${x.fat!=null?g1(x.fat)+"%":"–"}</td><td>${ln!=null?g1(ln)+" kg":"–"}</td><td>${x.water!=null?g1(x.water)+"%":"–"}</td><td><button type="button" class="link" data-bdel="${k}" aria-label="Elimina misurazione del ${k}">✕</button></td></tr>`; }).join("")}</tbody></table></div>` : "";
+  renderTrend();
+}
+
+const TREND = {
+  peso:{label:"Peso", unit:"kg", c:"--accent"},
+  fat:{label:"Grasso", unit:"%", c:"--carb"},
+  lean:{label:"Massa magra", unit:"kg", c:"--fat"},
+  water:{label:"Acqua", unit:"%", c:"--water"}
+};
+function trendSeries(k){
+  const pts = {};
+  if(k==="peso"){ for(const d in S.weights) if(S.weights[d]>0) pts[d] = S.weights[d]; for(const d in S.body) if(S.body[d].w) pts[d] = S.body[d].w; }
+  else for(const d in S.body){ const x = S.body[d]; const v = k==="fat" ? x.fat : k==="water" ? x.water : (x.fat!=null ? x.w*(1-x.fat/100) : null); if(v!=null) pts[d] = v; }
+  let arr = Object.keys(pts).sort().map(d=>({d, v:pts[d]}));
+  if(trendRange!=="all"){ const from = shiftDay(today(), -Number(trendRange)); arr = arr.filter(p=>p.d>=from); }
+  return arr;
+}
+const tMs = d => new Date(d+"T12:00").getTime();
+function renderTrend(){
+  const has = Object.keys(S.body).length>0;
+  $("#trendCard").hidden = !has; if(!has) return;
+  $("#trendTiles").innerHTML = Object.entries(TREND).map(([k,m])=>{
+    const s = trendSeries(k), last = s[s.length-1], first = s[0];
+    const val = last ? `${g1(last.v)} ${m.unit}` : "–";
+    const dl = s.length>1 ? `${last.v-first.v>=0?"+":"−"}${g1(Math.abs(last.v-first.v))} ${m.unit==="%"?"pt":m.unit}` : (s.length ? "1 misura" : "nessun dato");
+    return `<button type="button" class="ttile" data-m="${k}" aria-pressed="${k===trendMetric}" style="--c:var(${m.c})"><small>${m.label}</small><b>${val}</b><em>${dl}</em></button>`;
+  }).join("");
+  document.querySelectorAll("#trendRange button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.r===trendRange));
+  const n = trendSeries(trendMetric).length;
+  $("#trendNote").textContent = (n<2 ? "Servono almeno due misurazioni per vedere un andamento. " : "Tocca o trascina sul grafico per leggere i valori. ") + "Il peso usa tutte le pesate; grasso, massa magra e acqua solo le misurazioni di composizione. Le variazioni sono nel periodo scelto.";
+  drawTrend();
+}
+function drawTrend(){
+  const host = $("#trendChart"); if(!host) return;
+  const m = TREND[trendMetric], s = trendSeries(trendMetric);
+  if(!s.length){ host.innerHTML = `<p class="empty">Nessun dato in questo periodo.</p>`; return; }
+  const W = Math.max(host.clientWidth, 260), H = 220, L = 40, R = 16, T = 22, B = 26, DAY = 864e5;
+  trendLastW = host.clientWidth;
+  let t0 = tMs(s[0].d), t1 = tMs(s[s.length-1].d); if(t1-t0<DAY){ t0 -= 3.5*DAY; t1 += 3.5*DAY; }
+  let lo = Math.min(...s.map(p=>p.v)), hi = Math.max(...s.map(p=>p.v));
+  const pad = (hi-lo)*0.25 || 1.5; lo -= pad; hi += pad;
+  const raw = (hi-lo)/3, mag = Math.pow(10, Math.floor(Math.log10(raw))), nr = raw/mag, step = (nr<1.5?1:nr<3?2:nr<7?5:10)*mag;
+  const ticks = []; for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9; v+=step) ticks.push(v);
+  const dec = step>=1 ? 0 : step>=0.1 ? 1 : 2;
+  const X = t => L + (t-t0)/(t1-t0)*(W-L-R), Y = v => T + (1-(v-lo)/(hi-lo))*(H-T-B);
+  const pts = s.map(p=>({x:X(tMs(p.d)), y:Y(p.v), d:p.d, v:p.v}));
+  const f = n => n.toFixed(1), line = pts.map((p,i)=>`${i?"L":"M"}${f(p.x)},${f(p.y)}`).join("");
+  const last = pts[pts.length-1];
+  const area = pts.length>1 ? `${line}L${f(last.x)},${H-B}L${f(pts[0].x)},${H-B}Z` : "";
+  const xl = pts.length>1 ? [0,1/3,2/3,1].map((q,i)=>({x:X(t0+(t1-t0)*q), l:dShort(iso(new Date(t0+(t1-t0)*q))), a:i===0?"start":i===3?"end":"middle"})) : [{x:last.x, l:dShort(last.d), a:"middle"}];
+  host.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Andamento di ${m.label.toLowerCase()}">
+    <defs><linearGradient id="tgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(${m.c});stop-opacity:.3"/><stop offset="1" style="stop-color:var(${m.c});stop-opacity:0"/></linearGradient></defs>
+    ${ticks.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f(Y(v))}" y2="${f(Y(v))}" style="stroke:var(--line)" stroke-dasharray="3 4"/><text x="${L-7}" y="${f(Y(v)+4)}" text-anchor="end">${v.toLocaleString("it-IT",{minimumFractionDigits:dec,maximumFractionDigits:dec})}</text>`).join("")}
+    ${area?`<path d="${area}" fill="url(#tgrad)"/>`:""}
+    ${pts.length>1?`<path d="${line}" fill="none" style="stroke:var(${m.c})" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>`:""}
+    ${pts.length<=45 ? pts.map(p=>`<circle cx="${f(p.x)}" cy="${f(p.y)}" r="3.6" style="fill:var(--surface);stroke:var(${m.c})" stroke-width="2"/>`).join("") : ""}
+    <circle cx="${f(last.x)}" cy="${f(last.y)}" r="5.5" style="fill:var(${m.c});stroke:var(--surface)" stroke-width="2.5"/>
+    <text class="val" x="${f(Math.min(last.x, W-R-4))}" y="${f(Math.max(last.y-12, 12))}" text-anchor="${last.x>W-60?"end":"middle"}">${g1(last.v)} ${m.unit}</text>
+    ${xl.map(x=>`<text x="${f(x.x)}" y="${H-7}" text-anchor="${x.a}">${x.l}</text>`).join("")}
+    <g id="thov" hidden><line id="thl" y1="${T-4}" y2="${H-B}" style="stroke:var(--muted)" stroke-dasharray="3 3"/><circle id="thc" r="6.5" style="fill:var(${m.c});stroke:var(--surface)" stroke-width="2.5"/></g>
+  </svg><div class="tip" id="tip" hidden></div>`;
+  const show = p => {
+    $("#thov").hidden = false; $("#thl").setAttribute("x1", p.x); $("#thl").setAttribute("x2", p.x); $("#thc").setAttribute("cx", p.x); $("#thc").setAttribute("cy", p.y);
+    const tip = $("#tip"); tip.hidden = false;
+    tip.innerHTML = `${dLong(p.d)}<br><b>${g1(p.v)} ${m.unit}</b>`;
+    tip.style.left = Math.max(70, Math.min(W-70, p.x)) + "px"; tip.style.top = p.y + "px";
+    tip.style.transform = p.y<70 ? "translate(-50%,16px)" : "translate(-50%,calc(-100% - 14px))";
+  };
+  const hit = ev => { const r = host.getBoundingClientRect(), x = ev.clientX - r.left; let best = pts[0]; for(const p of pts) if(Math.abs(p.x-x) < Math.abs(best.x-x)) best = p; show(best); };
+  host.onpointermove = hit; host.onpointerdown = hit;
+  host.onpointerleave = ev => { if(ev.pointerType==="mouse"){ $("#thov").hidden = true; $("#tip").hidden = true; } };
+}
+try{ new ResizeObserver(()=>{ const h = $("#trendChart"); if(h && h.clientWidth && Math.abs(h.clientWidth-trendLastW)>2) drawTrend(); }).observe($("#trendChart")); }catch(e){}
+
+// intervista AI sull'obiettivo
+let chat = [], chatCtl = null, chatPlan = null;
+function bodyText(){
+  const b = latestBody(); if(!b) return "Nessuna analisi della composizione corporea.";
+  return `Ultima analisi (${b.date}): peso ${b.w} kg, grasso ${b.fat ?? "?"}%, muscoli ${b.mus ?? "?"}%, ossa ${b.bone ?? "?"}%, acqua ${b.water ?? "?"}%.`;
+}
+function recentText(){
+  const ds=[...Array(14)].map((_,i)=>shiftDay(today(),-i)).filter(hasDay);
+  if(!ds.length) return "Nessun giorno registrato nelle ultime 2 settimane.";
+  const a = ds.map(d=>sum(normEntries(S.days[d]))).reduce((x,t)=>x.map((v,i)=>v+t[i]),[0,0,0,0,0]).map(v=>v/ds.length);
+  const ws = Object.keys(S.weights).sort().slice(-6).map(d=>`${d}: ${S.weights[d]} kg`).join(", ");
+  return `Ultime 2 settimane (${ds.length} giorni registrati): media ${fmt(a[0])} kcal, P ${fmt(a[1])} g, C ${fmt(a[2])} g, G ${fmt(a[3])} g. Allenamenti segnati: ${ds.filter(d=>S.modes[d]==="train").length}. Pesate recenti: ${ws||"nessuna"}.`;
+}
+function renderChat(){
+  $("#chat").innerHTML = chat.map(m=>`<div class="bubble ${m.role==="ai"?"ai":"me"}">${esc(m.text)}</div>`).join("");
+  $("#chatStart").hidden = chat.length>0; $("#chatReset").hidden = chat.length===0;
+  $("#chatForm").hidden = chat.length===0 || !!chatPlan;
+}
+async function chatTurn(){
+  const st=S.settings, asked = chat.filter(m=>m.role==="ai").length;
+  const prompt = `Sei un coach di nutrizione sportiva. Devi capire l'obiettivo dell'utente con poche domande brevi, in italiano, UNA alla volta, poi proporre un piano.
+Profilo: ${st.sex==="F"?"donna":"uomo"}, ${st.age} anni, ${st.height} cm. ${bodyText()}
+${recentText()}
+Impostazioni attuali: obiettivo "${(GOALS[String(st.goal)]||GOALS["1"]).name}", attività ${ACT[st.act].name}, +${st.trainK} kcal nei giorni di allenamento.
+Obiettivi possibili (numero): -2 Perdere grasso (−500 kcal), -1 Definizione (−250), 0 Mantenere, 1 Massa pulita (+250), 2 Massa (+450).
+Cose utili da sapere (chiedi solo quello che non sai già): cosa vuole ottenere e entro quando, quante volte si allena e che tipo di allenamento, quanto si muove fuori dall'allenamento (lavoro, passi), come sta andando il peso, preferenze o difficoltà (fame, appetito, viaggi).
+Hai già fatto ${asked} domande. Fai al massimo 4 domande in tutto; se le risposte bastano, proponi subito il piano.
+
+Conversazione finora:
+${chat.map(m=>`${m.role==="ai"?"Coach":"Utente"}: ${m.text}`).join("\n")||"(nessuna: inizia con la prima domanda)"}
+
+Rispondi SOLO con JSON, in uno di questi due formati:
+{"domanda":"testo della domanda, breve"}
+{"piano":{"obiettivo":1,"attivita":"sed","kcal_allenamento":350},"spiegazione":"3-5 frasi: perché questo obiettivo, cosa aspettarsi sul peso, quando rivalutare"}
+"attivita" è uno tra "sed" (sedentaria), "light" (leggera), "active" (attiva). "kcal_allenamento" sono le kcal in più nei giorni di allenamento (tra 150 e 800).${asked>=4?"\nHai finito le domande: ora proponi il piano.":""}`;
+  chatCtl = new AbortController();
+  $("#chatStatus").textContent = "Claude sta scrivendo…"; $("#chatForm").hidden = true;
+  try{
+    const r = await sampleFn.json(prompt, {signal:chatCtl.signal});
+    if(r && r.domanda && asked<5){ chat.push({role:"ai", text:String(r.domanda)}); }
+    else if(r && r.piano){
+      const pl = r.piano, goal = Math.max(-2, Math.min(2, Math.round(Number(pl.obiettivo)))), act = ACT[pl.attivita] ? pl.attivita : st.act;
+      const tk = Math.max(0, Math.min(1500, Math.round((Number(pl.kcal_allenamento)||st.trainK)/25)*25));
+      chatPlan = {goal: isNaN(goal)?st.goal:goal, act, trainK: tk, text: String(r.spiegazione||"")};
+      chat.push({role:"ai", text:"Ecco la mia proposta."});
+      showPlan();
+    } else throw {code:"invalid_json"};
+    $("#chatStatus").textContent = "";
+  }catch(e){ aiFail(e, $("#chatStatus")); }
+  renderChat();
+  if(!chatPlan) setTimeout(()=>$("#chatInput").focus(), 50);
+}
+function showPlan(){
+  const p = chatPlan; if(!p){ $("#planBox").hidden=true; return; }
+  const t = calcTargets({goal:p.goal, act:p.act, trainK:p.trainK});
+  $("#planBox").innerHTML = `<b>${t.g.name}</b>
+    <div class="tgrid">${[["Allenamento",`${fmt(t.train)} kcal`],["Riposo",`${fmt(t.rest)} kcal`],["Proteine",`${fmt(t.prot)} g`],["Grassi",`${fmt(t.fat)} g`],["Attività",ACT[p.act].name],["Peso previsto",`${t.kgMonth>=0?"+":"−"}${g1(Math.abs(t.kgMonth))} kg/mese`]].map(([a,b])=>`<div class="tgt"><small>${a}</small><b style="font-size:1.05rem">${b}</b></div>`).join("")}</div>
+    <p style="margin:0;font-size:.92rem;white-space:pre-wrap">${esc(p.text)}</p>
+    <div class="ai-row"><button type="button" class="primary" id="planApply">Applica</button><button type="button" id="planDiscard">Non ora</button></div>`;
+  $("#planBox").hidden = false;
+}
+
 /* ---------- eventi ---------- */
+const TABS = {diario:{v:"#viewDiario", n:"Diario"}, corpo:{v:"#viewCorpo", n:"Corpo"}, mesi:{v:"#viewMesi", n:"Dashboard"}};
 function setTab(t){
-  const mesi = t==="mesi";
-  $("#viewDiario").hidden = mesi; $("#viewMesi").hidden = !mesi;
-  $("#tabDiario").setAttribute("aria-selected", !mesi); $("#tabMesi").setAttribute("aria-selected", mesi);
-  if(mesi) renderDash();
+  for(const k in TABS) $(TABS[k].v).hidden = k!==t;
+  $("#menuLabel").textContent = TABS[t].n;
+  document.querySelectorAll("#menuPanel [data-tab]").forEach(b=>{ if(b.dataset.tab===t) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+  closeDD();
+  if(t==="mesi") renderDash();
+  if(t==="corpo") renderCorpo();
   window.scrollTo(0,0); updateMini();
 }
-$("#tabDiario").onclick=()=>setTab("diario");
-$("#tabMesi").onclick=()=>setTab("mesi");
+/* menu a tendina (sezioni e obiettivo) */
+function closeDD(except){
+  document.querySelectorAll(".ddwrap").forEach(w=>{
+    if(w===except) return;
+    const p = w.querySelector(".ddpanel"), b = w.querySelector("[aria-haspopup]");
+    if(!p || p.hidden) return; p.hidden = true; b.setAttribute("aria-expanded","false");
+  });
+}
+function toggleDD(w){
+  const p = w.querySelector(".ddpanel"), b = w.querySelector("[aria-haspopup]"), open = p.hidden;
+  closeDD(open ? w : null); p.hidden = !open; b.setAttribute("aria-expanded", String(open));
+  if(open){ const el = p.querySelector('[aria-current="page"],[aria-selected="true"]') || p.querySelector("button"); if(el) el.focus(); }
+}
+document.querySelectorAll(".ddwrap").forEach(w=>{
+  w.querySelector("[aria-haspopup]").addEventListener("click", ()=>toggleDD(w));
+  w.addEventListener("keydown", ev=>{
+    const p = w.querySelector(".ddpanel"), items = [...p.querySelectorAll("button")];
+    if(ev.key==="Escape" && !p.hidden){ closeDD(); w.querySelector("[aria-haspopup]").focus(); ev.preventDefault(); }
+    if(!p.hidden && (ev.key==="ArrowDown" || ev.key==="ArrowUp")){
+      ev.preventDefault(); const i = items.indexOf(document.activeElement);
+      items[(i + (ev.key==="ArrowDown"?1:-1) + items.length) % items.length].focus();
+    }
+  });
+});
+document.addEventListener("click", ev=>{ if(!ev.target.closest(".ddwrap")) closeDD(); });
+$("#menuPanel").addEventListener("click", ev=>{ const b = ev.target.closest("[data-tab]"); if(b) setTab(b.dataset.tab); });
+$("#goalPanel").addEventListener("click", ev=>{
+  const b = ev.target.closest("[data-goal]"); if(!b) return;
+  const n = Number(b.dataset.goal); closeDD(); $("#goalBtn").focus();
+  if(n!==Number(S.settings.goal)){ S.settings.goal = n; S.settings.goalSince = today(); saveSettings(true); applyTargets(); render(); }
+  renderCorpo();
+});
+/* ciambella e andamento */
+$("#bodyLatest").addEventListener("click", ev=>{ const el = ev.target.closest("[data-i]"); if(!el) return; const i = Number(el.dataset.i); donutSel = i===donutSel ? -1 : i; paintDonut(); });
+$("#bodyLatest").addEventListener("keydown", ev=>{ const el = ev.target.closest(".seg"); if(el && (ev.key==="Enter" || ev.key===" ")){ ev.preventDefault(); const i = Number(el.dataset.i); donutSel = i===donutSel ? -1 : i; paintDonut(); } });
+$("#trendTiles").addEventListener("click", ev=>{ const b = ev.target.closest("[data-m]"); if(!b) return; trendMetric = b.dataset.m; renderTrend(); });
+$("#trendRange").addEventListener("click", ev=>{ const b = ev.target.closest("[data-r]"); if(!b) return; trendRange = b.dataset.r; renderTrend(); });
+$("#autoBack").onclick = ()=>{ S.settings.auto = true; saveSettings(true); applyTargets(); render(); renderCorpo(); };
+for(const [id,k,num] of [["#pHeight","height",1],["#pAge","age",1],["#pTrainK","trainK",1],["#pSex","sex",0],["#pAct","act",0]]){
+  $(id).addEventListener(num?"input":"change", ()=>{ const v = num ? Number($(id).value) : $(id).value; if(num && !(v>0) && k!=="trainK") return; S.settings[k] = num ? (v||0) : v; saveSettings(); applyTargets(); render(); renderCorpo(); });
+}
+$("#bodyForm").addEventListener("submit", ev=>{
+  ev.preventDefault();
+  const date = $("#bDate").value || today(), w = Number($("#bW").value);
+  if(!(w>=30 && w<=250)){ $("#bMsg2").textContent = "Inserisci il peso in kg."; return; }
+  const num = id => $(id).value==="" ? null : Number($(id).value);
+  S.body[date] = {w:Math.round(w*10)/10, fat:num("#bFat"), mus:num("#bMus"), bone:num("#bBone"), water:num("#bWater")};
+  S.weights[date] = S.body[date].w;
+  saveMap("body", true); saveMap("weights", true); applyTargets();
+  $("#bMsg2").classList.add("ok-msg"); $("#bMsg2").textContent = "Misurazione salvata."; $("#bodyForm").reset(); $("#bDate").value = today();
+  render(); renderCorpo();
+});
+$("#bodyHistory").addEventListener("click", ev=>{ const b=ev.target.closest("[data-bdel]"); if(!b) return; delete S.body[b.dataset.bdel]; saveMap("body", true); applyTargets(); render(); renderCorpo(); });
+$("#chatStart").onclick = ()=>{ chat=[]; chatPlan=null; $("#planBox").hidden=true; renderChat(); chatTurn(); };
+$("#chatReset").onclick = ()=>{ if(chatCtl) chatCtl.abort(); chat=[]; chatPlan=null; $("#planBox").hidden=true; $("#chatStatus").textContent=""; renderChat(); };
+$("#chatForm").addEventListener("submit", ev=>{ ev.preventDefault(); const t=$("#chatInput").value.trim(); if(!t) return; chat.push({role:"me", text:t}); $("#chatInput").value=""; renderChat(); chatTurn(); });
+$("#planBox").addEventListener("click", ev=>{
+  if(ev.target.closest("#planApply") && chatPlan){
+    Object.assign(S.settings, {goal:chatPlan.goal, act:chatPlan.act, trainK:chatPlan.trainK, auto:true, goalSince: chatPlan.goal!==Number(S.settings.goal) ? today() : (S.settings.goalSince||today())}); saveSettings(true); applyTargets();
+    chatPlan=null; $("#planBox").hidden=true; chat.push({role:"ai", text:"Fatto: obiettivo e calorie aggiornati. Ricontrolliamo tra 2–3 settimane, guardando il peso."}); renderChat(); render(); renderCorpo();
+  }
+  if(ev.target.closest("#planDiscard")){ chatPlan=null; $("#planBox").hidden=true; renderChat(); }
+});
 $("#dashMonth").addEventListener("change", ()=>{ selMonth=$("#dashMonth").value; renderDash(); });
 $("#dashBody").addEventListener("click", ev=>{ const r=ev.target.closest("tr[data-month]"); if(!r) return; selMonth=r.dataset.month; renderDash(); window.scrollTo(0,0); });
 
@@ -1456,6 +1970,7 @@ $("#customForm").addEventListener("submit", ev=>{
   ["#cName","#cKcal","#cP","#cC","#cF","#cFib"].forEach(s=>$(s).value="");
   render(); $("#food").value=n; updatePreview(); $("#grams").focus();
 });
+for(const id of ["#gTrain","#gRest","#gProt","#gFat"]) $(id).addEventListener("change", ()=>{ if(S.settings.auto){ S.settings.auto=false; saveSettings(true); } });
 $("#gDef").addEventListener("change", ()=>{ S.settings.defMode = $("#gDef").value; saveSettings(true); render(); });
 for(const [id,k] of [["#gTrain","train"],["#gRest","rest"],["#gProt","prot"],["#gFat","fat"],["#gFib","fib"],["#gWater","waterGoal"]]){
   $(id).addEventListener("input", ()=>{ const v=Number($(id).value); if(v>=0 && $(id).value!==""){ S.settings[k]=v; saveSettings(); render(); } });
@@ -1498,6 +2013,18 @@ try{ new IntersectionObserver(es=>{ summaryVisible = es[0].isIntersecting; updat
   local.set("cal_modes", S.modes);
   S.settings.defMode = S.settings.defMode || "train"; S.settings.modesV2 = true; saveSettings(true);
 })();
+(function seedBody(){
+  if(S.settings.seedBody) return;
+  // analisi del 08/11/2026: 81,1 kg, grasso 15%, muscoli 81%, ossa 4%, acqua 58,6%
+  if(!S.body["2026-11-08"]) S.body["2026-11-08"] = {w:81.1, fat:15, mus:81, bone:4, water:58.6};
+  if(!S.weights["2026-11-08"]) S.weights["2026-11-08"] = 81.1;
+  for(const k of Object.keys(DEF_SETTINGS)) if(S.settings[k]===undefined) S.settings[k] = DEF_SETTINGS[k];
+  S.settings.seedBody = true;
+  saveMap("body", true); saveMap("weights", true); saveSettings(true);
+})();
+applyTargets();
+$("#bDate").value = today();
+if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
