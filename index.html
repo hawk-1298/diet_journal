@@ -533,6 +533,23 @@ button:active:not(:disabled){transform:scale(.97)}
       <div class="tpl-list" id="tplList"></div>
     </details>
 
+    <details id="syncDetails">
+      <summary>Sincronizzazione online <span class="chip" id="syChip">non collegato</span></summary>
+      <div id="syncOut">
+        <p class="note" style="margin-top:8px">Accedi con un account per avere gli stessi dati su telefono e PC. I dati restano anche sul dispositivo e l'app funziona offline: si sincronizza quando c'è rete.</p>
+        <form class="settings" id="syncForm" autocomplete="on">
+          <label>Email<input id="syEmail" type="email" autocomplete="email" required></label>
+          <label>Password (almeno 6 caratteri)<input id="syPass" type="password" autocomplete="current-password" minlength="6" required></label>
+          <div style="grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap"><button type="submit" class="primary" id="syIn">Accedi</button><button type="button" id="syUp">Crea account</button></div>
+        </form>
+      </div>
+      <div id="syncIn" hidden>
+        <p style="margin-top:8px">Collegato come <b id="syUser"></b></p>
+        <p class="note" id="syStatus"></p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="primary" id="syNow">Sincronizza ora</button><button type="button" id="syOutBtn">Esci</button></div>
+      </div>
+      <p class="msg" id="syMsg" role="status"></p>
+    </details>
     <details>
       <summary>Backup dei dati</summary>
       <p class="note" style="margin-top:8px">Salva un file con tutti i tuoi dati (giorni, alimenti, pasti salvati, peso, acqua, obiettivi). Importandolo, i giorni del backup sostituiscono quelli con la stessa data; gli altri restano.</p>
@@ -762,19 +779,19 @@ function saveDay(d){
     const ref = dbCol.doc("day-"+d), body = {date:d, entries:list, mode:S.modes[d]||"train"};
     queue("day-"+d, ()=> list.length ? ref.set(body) : ref.delete());
   } else {
-    local.set("cal_day_"+d, list); local.set("cal_modes", S.modes);
+    local.set("cal_day_"+d, list); local.set("cal_modes", S.modes); syncTouch("day:"+d);
   }
 }
 function saveCustom(){
   if(backend==="db"){ const body={foods:{...S.custom}}; queue("custom", ()=>dbCol.doc("custom").set(body)); }
-  else local.set("cal_custom", S.custom);
+  else { local.set("cal_custom", S.custom); syncTouch("custom"); }
 }
 const mapTimers = {};
 function saveMap(name, now){
   dirty.add(name); clearTimeout(mapTimers[name]);
   const go = () => {
     if(backend==="db"){ const body={w:JSON.parse(JSON.stringify(S[name]))}; queue(name, ()=>dbCol.doc(name).set(body)).finally(()=>dirty.delete(name)); }
-    else { local.set("cal_"+name, S[name]); dirty.delete(name); }
+    else { local.set("cal_"+name, S[name]); dirty.delete(name); syncTouch(name); }
   };
   now ? go() : (mapTimers[name] = setTimeout(go, 500));
 }
@@ -783,7 +800,7 @@ function saveSettings(now){
   clearTimeout(settingsTimer);
   const go = () => {
     if(backend==="db"){ const body={...S.settings}; queue("settings", ()=>dbCol.doc("settings").set(body)); }
-    else { local.set("cal_settings", S.settings); local.set("cal_used", S.settings.used); }
+    else { local.set("cal_settings", S.settings); local.set("cal_used", S.settings.used); syncTouch("settings"); }
   };
   now ? go() : (settingsTimer = setTimeout(go, 700));
 }
@@ -1464,7 +1481,7 @@ $("#aiFoodSave").onclick=()=>{
 /* ---------- backup ---------- */
 async function exportData(){
   const data = JSON.stringify({app:"diario-calorie", version:2, exportedAt:new Date().toISOString(),
-    data:{days:S.days, custom:S.custom, settings:S.settings, weights:S.weights, modes:S.modes, water:S.water, weeks:S.weeks, templates:S.templates, reports:S.reports}}, null, 1);
+    data:{days:S.days, custom:S.custom, settings:S.settings, weights:S.weights, modes:S.modes, water:S.water, weeks:S.weeks, templates:S.templates, reports:S.reports, body:S.body}}, null, 1);
   const name = `diario-calorie-backup-${today()}.json`;
   const file = new File([data], name, {type:"application/json"});
   const done = () => { local.set("cal_lastBackup", Date.now()); $("#bMsg").classList.add("ok-msg"); $("#bMsg").textContent="Backup creato. Conservalo in iCloud, Google Drive o via email."; checkBanners(); };
@@ -1514,6 +1531,177 @@ $("#copyExport").onclick = async ()=>{
   try{ await navigator.clipboard.writeText($("#exportText").value); $("#copyExport").textContent="Copiato"; }
   catch(e){ $("#exportText").select(); $("#copyExport").textContent="Seleziona e copia"; }
 };
+
+/* ---------- sincronizzazione online (Supabase) ---------- */
+/* La chiave "publishable" è pubblica per progetto: i dati sono protetti dalle regole di sicurezza del database (RLS), non dalla chiave. */
+var SB_URL = "https://irnpfpcgfwmdsshqmnwv.supabase.co", SB_KEY = "sb_publishable_egcvKFbIFenRMivkE9ee3g_zr_LSzzP";
+var sync = { meta: local.get("cal_syncmeta", {enabled:false, init:false, dirty:{}, lastPull:null, last:null}), session: local.get("cal_session", null), busy:false, timer:null, err:"" };
+if(!sync.meta.dirty) sync.meta.dirty = {};
+function syncSaveMeta(){ local.set("cal_syncmeta", sync.meta); }
+function canon(x){ return JSON.stringify(x, (k,v)=> v && typeof v==="object" && !Array.isArray(v) ? Object.keys(v).sort().reduce((o,q)=>(o[q]=v[q],o),{}) : v); }
+function syncTouch(key){
+  if(typeof sync==="undefined" || !sync || !sync.meta || !sync.meta.enabled) return;
+  sync.meta.dirty[key] = Date.now(); syncSaveMeta();
+  if(sync.session){ clearTimeout(sync.timer); sync.timer = setTimeout(()=>syncNow(true), 2500); }
+}
+function keyValue(k){
+  if(k.startsWith("day:")){ const d = k.slice(4); return {e:S.days[d]||[], m:S.modes[d]||null}; }
+  if(k==="custom") return S.custom;
+  if(k==="settings") return S.settings;
+  return S[k] || {};
+}
+function localKeys(){
+  const ks = new Set([...Object.keys(S.days), ...Object.keys(S.modes)].map(d=>"day:"+d));
+  if(Object.keys(S.custom).length) ks.add("custom");
+  ks.add("settings");
+  for(const m of MAPS) if(Object.keys(S[m]||{}).length) ks.add(m);
+  return ks;
+}
+function applyRemote(k, v){
+  if(k.startsWith("day:")){
+    const d = k.slice(4), e = Array.isArray(v && v.e) ? v.e : [];
+    if(e.length) S.days[d] = e; else delete S.days[d];
+    if(v && v.m) S.modes[d] = v.m; else delete S.modes[d];
+    local.set("cal_day_"+d, e); local.set("cal_modes", S.modes);
+  } else if(k==="custom"){
+    S.custom = {}; for(const n in (v||{})) S.custom[n] = pad5(v[n]); local.set("cal_custom", S.custom);
+  } else if(k==="settings"){
+    Object.assign(S.settings, v||{}); local.set("cal_settings", S.settings); local.set("cal_used", S.settings.used);
+  } else if(MAPS.includes(k)){
+    S[k] = v || {}; local.set("cal_"+k, S[k]);
+  } else return false;
+  return true;
+}
+function syncMsg(t, ok){ const el = $("#syMsg"); el.textContent = t || ""; el.classList.toggle("ok-msg", !!ok); }
+function syncPaint(){
+  const on = !!sync.session;
+  $("#syncOut").hidden = on; $("#syncIn").hidden = !on;
+  $("#syChip").textContent = on ? (sync.err ? "errore" : "collegato") : "non collegato";
+  if(on){ $("#syUser").textContent = sync.session.email || ""; }
+  netStatus();
+}
+function syncLabel(){
+  if(!navigator.onLine) return "Offline · si sincronizza al ritorno della rete";
+  if(sync.busy) return "Sincronizzazione…";
+  if(sync.err) return "Sincronizzazione non riuscita · riprovo a breve";
+  const n = Object.keys(sync.meta.dirty).length;
+  if(sync.meta.last){ const t = new Date(sync.meta.last).toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"}); return n ? `Salvato · da sincronizzare (${n})` : `Sincronizzato alle ${t}`; }
+  return "Collegato · prima sincronizzazione in corso";
+}
+function setSession(j){
+  const prev = sync.session || {};
+  sync.session = {access_token:j.access_token, refresh_token:j.refresh_token || prev.refresh_token,
+    expires_at: j.expires_at || (Math.floor(Date.now()/1000) + (j.expires_in||3600)),
+    email: (j.user && j.user.email) || prev.email || "", uid: (j.user && j.user.id) || prev.uid || ""};
+  local.set("cal_session", sync.session);
+}
+function sbMessage(j, fallback){
+  const m = String((j && (j.msg || j.error_description || j.message)) || "");
+  if(/invalid login/i.test(m)) return "Email o password non corrette.";
+  if(/already registered|already exists/i.test(m)) return "Esiste già un account con questa email: premi Accedi.";
+  if(/at least 6|weak password|should be at least/i.test(m)) return "La password deve avere almeno 6 caratteri.";
+  if(/rate limit|too many/i.test(m)) return "Troppi tentativi: aspetta qualche minuto e riprova.";
+  if(/email not confirmed/i.test(m)) return "Conferma prima l'email con il link che ti abbiamo inviato.";
+  return fallback + (m ? " (" + m + ")" : "");
+}
+async function sbRefresh(){
+  if(!sync.session || !sync.session.refresh_token) throw new Error("auth");
+  let r; try{ r = await fetch(SB_URL+"/auth/v1/token?grant_type=refresh_token", {method:"POST", headers:{apikey:SB_KEY,"Content-Type":"application/json"}, body:JSON.stringify({refresh_token:sync.session.refresh_token})}); }
+  catch(e){ throw new Error("offline"); }
+  if(!r.ok){ if(r.status>=400 && r.status<500){ sync.session = null; local.set("cal_session", null); syncPaint(); throw new Error("auth"); } throw new Error("server"); }
+  setSession(await r.json());
+}
+async function sbFetch(path, opts, retried){
+  opts = opts || {};
+  if(sync.session.expires_at*1000 - Date.now() < 60000) await sbRefresh();
+  const h = Object.assign({apikey:SB_KEY, Authorization:"Bearer "+sync.session.access_token, "Content-Type":"application/json"}, opts.headers||{});
+  let r; try{ r = await fetch(SB_URL+path, Object.assign({}, opts, {headers:h})); } catch(e){ throw new Error("offline"); }
+  if(r.status===401 && !retried){ await sbRefresh(); return sbFetch(path, opts, true); }
+  return r;
+}
+async function syncPull(){
+  const keys = new Set(); let changed = false, maxMs = 0, maxStr = sync.meta.lastPull, off = 0;
+  for(;;){
+    let q = "/rest/v1/app_data?select=k,v,updated_at&order=updated_at.asc,k.asc&limit=500&offset="+off;
+    if(sync.meta.lastPull) q += "&updated_at=gte."+encodeURIComponent(sync.meta.lastPull);
+    const r = await sbFetch(q); if(!r.ok) throw new Error("pull "+r.status);
+    const rows = await r.json();
+    for(const row of rows){
+      keys.add(row.k);
+      const t = Date.parse(row.updated_at), dt = sync.meta.dirty[row.k];
+      if(!(dt && dt >= t)){
+        if(canon(keyValue(row.k)) !== canon(row.v) && applyRemote(row.k, row.v)) changed = true;
+        delete sync.meta.dirty[row.k];
+      }
+      if(t > maxMs){ maxMs = t; maxStr = row.updated_at; }
+    }
+    if(rows.length < 500) break; off += 500;
+  }
+  sync.meta.lastPull = maxStr; syncSaveMeta();
+  if(changed) syncRefreshUI();
+  return keys;
+}
+async function syncPush(){
+  const ks = Object.keys(sync.meta.dirty); if(!ks.length) return;
+  const snap = {}; ks.forEach(k=>snap[k] = sync.meta.dirty[k]);
+  const rows = ks.map(k=>({user_id:sync.session.uid, k, v:keyValue(k)}));
+  for(let i=0; i<rows.length; i+=200){
+    const r = await sbFetch("/rest/v1/app_data?on_conflict=user_id,k", {method:"POST", headers:{Prefer:"resolution=merge-duplicates,return=minimal"}, body:JSON.stringify(rows.slice(i,i+200))});
+    if(!r.ok) throw new Error("push "+r.status+" "+(await r.text()).slice(0,120));
+  }
+  ks.forEach(k=>{ if(sync.meta.dirty[k]===snap[k]) delete sync.meta.dirty[k]; });
+  syncSaveMeta();
+}
+function syncRefreshUI(){
+  render();
+  if(!$("#viewCorpo").hidden) renderCorpo();
+  if(!$("#viewMesi").hidden) renderDash();
+}
+async function syncNow(silent){
+  if(!sync.session || sync.busy) return;
+  if(!navigator.onLine){ netStatus(); return; }
+  sync.busy = true; sync.err = ""; syncPaint();
+  try{
+    const remoteKeys = await syncPull();
+    if(!sync.meta.init){
+      for(const k of localKeys()) if(!remoteKeys.has(k) && !sync.meta.dirty[k]) sync.meta.dirty[k] = Date.now();
+      sync.meta.init = true;
+    }
+    await syncPush();
+    sync.meta.last = Date.now(); syncSaveMeta();
+    if(!silent) syncMsg("Sincronizzato.", true);
+  }catch(e){
+    const m = String(e && e.message);
+    if(m==="auth"){ syncMsg("Sessione scaduta: accedi di nuovo."); }
+    else if(m!=="offline"){ sync.err = m; console.warn(e); if(!silent) syncMsg("Sincronizzazione non riuscita: "+m); }
+  }finally{ sync.busy = false; syncPaint(); }
+}
+async function syncAuth(kind){
+  const email = $("#syEmail").value.trim(), password = $("#syPass").value;
+  if(!email || password.length<6){ syncMsg("Scrivi email e una password di almeno 6 caratteri."); return; }
+  if(!navigator.onLine){ syncMsg("Serve la connessione per accedere."); return; }
+  syncMsg(kind==="up" ? "Creo l'account…" : "Accesso…"); $("#syIn").disabled = $("#syUp").disabled = true;
+  try{
+    const path = kind==="up" ? "/auth/v1/signup" : "/auth/v1/token?grant_type=password";
+    const r = await fetch(SB_URL+path, {method:"POST", headers:{apikey:SB_KEY,"Content-Type":"application/json"}, body:JSON.stringify({email, password})});
+    const j = await r.json().catch(()=>({}));
+    if(!r.ok){ syncMsg(sbMessage(j, kind==="up" ? "Non sono riuscito a creare l'account." : "Accesso non riuscito.")); return; }
+    if(!j.access_token){ syncMsg("Account creato. Controlla l'email e conferma, poi premi Accedi.", true); return; }
+    setSession(j); sync.meta.enabled = true; syncSaveMeta(); $("#syPass").value = "";
+    syncMsg(""); syncPaint(); await syncNow(false);
+  }catch(e){ syncMsg("Non riesco a collegarmi: controlla la connessione."); }
+  finally{ $("#syIn").disabled = $("#syUp").disabled = false; }
+}
+$("#syncForm").addEventListener("submit", ev=>{ ev.preventDefault(); syncAuth("in"); });
+$("#syUp").onclick = ()=>syncAuth("up");
+$("#syNow").onclick = ()=>syncNow(false);
+$("#syOutBtn").onclick = async ()=>{
+  try{ if(sync.session && navigator.onLine) await fetch(SB_URL+"/auth/v1/logout", {method:"POST", headers:{apikey:SB_KEY, Authorization:"Bearer "+sync.session.access_token}}); }catch(e){}
+  sync.session = null; local.set("cal_session", null); sync.err = ""; syncMsg("Disconnesso. I dati restano su questo dispositivo.", true); syncPaint();
+};
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) syncNow(true); });
+window.addEventListener("online", ()=>syncNow(true));
+setInterval(()=>{ if(!document.hidden && sync.session) syncNow(true); }, 60000);
 
 /* ---------- corpo e obiettivo ---------- */
 const GOALS = {
@@ -2117,8 +2305,14 @@ checkBanners();
 if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
 
 // offline: le funzioni AI lo segnalano
-function netStatus(){ $("#sync span").textContent = navigator.onLine ? "Salvato su questo dispositivo · funziona anche offline" : "Offline · i dati vengono salvati comunque su questo dispositivo"; }
+function netStatus(){
+  const on = !!(typeof sync!=="undefined" && sync && sync.session);
+  const t = on ? syncLabel() : (navigator.onLine ? "Salvato su questo dispositivo · funziona anche offline" : "Offline · i dati vengono salvati comunque su questo dispositivo");
+  $("#sync span").textContent = t;
+  if(on && $("#syStatus")) $("#syStatus").textContent = t;
+}
 window.addEventListener("online", netStatus); window.addEventListener("offline", netStatus); netStatus();
+syncPaint(); if(sync.session) syncNow(true);
 
 // service worker: offline e aggiornamenti
 let updating = false;
