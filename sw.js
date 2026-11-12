@@ -1,6 +1,6 @@
 // Service worker del Diario delle calorie: fa funzionare l'app offline.
 // Quando aggiorni i file dell'app, cambia VERSION: l'app mostrerà "È pronta una nuova versione".
-const VERSION = "1.4.0";
+const VERSION = "1.5.0";
 const SHELL_CACHE = "diario-shell-" + VERSION;
 const FONT_CACHE = "diario-fonts";
 const SHELL = [
