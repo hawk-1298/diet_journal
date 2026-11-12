@@ -651,6 +651,30 @@ h3{font-weight:700;font-size:1.02rem}
 .orow .up,.orow .flat{text-align:right;font-size:.85rem}
 .orow .up{color:var(--accent);font-weight:600}.orow .flat{color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.pulse{animation:none}.rtrack i{transition:none}}
+
+/* ---- 1.6.1 ---- */
+input[type="date"]{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;min-height:46px;text-align:left;display:block}
+input[type="date"]::-webkit-date-and-time-value{text-align:left}
+.settings > label,.wkf > label{min-width:0}
+@media (max-width:560px){.wkf > label:first-child{grid-column:1/-1}}
+.wkcard{padding:0;gap:0;align-items:stretch}
+.wkopen{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left;border:0;background:none;padding:12px 2px 12px 14px;border-radius:var(--r)}
+.wkdel{padding:0 14px 0 10px;display:grid;place-items:center;color:color-mix(in srgb,var(--muted) 70%,transparent)}
+.restctl{display:flex;align-items:center;gap:8px}
+.restval{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;font-size:1.1rem;font-variant-numeric:tabular-nums;padding:7px 12px;color:var(--fg);border-color:transparent;box-shadow:var(--shadow)}
+.restpick{align-items:center;gap:14px}
+.wheels{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;height:120px}
+.wband{position:absolute;left:50%;transform:translateX(-50%);width:min(260px,100%);top:40px;height:40px;border-radius:12px;background:var(--accent-soft)}
+.wheel{position:relative;height:120px;width:64px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;text-align:center;overscroll-behavior:contain;
+  -webkit-mask-image:linear-gradient(transparent,#000 38%,#000 62%,transparent);mask-image:linear-gradient(transparent,#000 38%,#000 62%,transparent)}
+.wheel::-webkit-scrollbar{display:none}
+.wi,.wpad{height:40px}
+.wi{line-height:40px;scroll-snap-align:center;font-family:var(--display);font-weight:700;font-size:1.5rem;font-variant-numeric:tabular-nums;cursor:pointer}
+.wl{position:relative;color:var(--muted);font-size:.9rem;margin-right:12px}
+.chk{display:flex;align-items:center;gap:10px;font-size:.9rem}
+.chk input{width:20px;height:20px;flex:none;accent-color:var(--accent)}
+.restbar button{white-space:nowrap}
+.restbar #restMinus,.restbar #restPlus{text-decoration:none;border:1px solid color-mix(in srgb,var(--bg) 35%,transparent);border-radius:99px;padding:3px 9px;font-size:.82rem}
 </style>
 </head>
 <body>
@@ -984,7 +1008,7 @@ h3{font-weight:700;font-size:1.02rem}
       <h2 id="wkTitle">Allenamento</h2><span class="wkclock" id="wkClock"></span>
       <button type="button" class="primary small" id="wkSave">Fine</button>
     </header>
-    <div class="restbar" id="restBar" hidden><span>Recupero</span><b id="restClock"></b><span class="rtrack"><i id="restFill"></i></span><button type="button" id="restSkip">Salta</button></div>
+    <div class="restbar" id="restBar" hidden><span>Recupero</span><b id="restClock"></b><span class="rtrack"><i id="restFill"></i></span><button type="button" id="restMinus" aria-label="Togli 15 secondi">−15</button><button type="button" id="restPlus" aria-label="Aggiungi 15 secondi">+15</button><button type="button" id="restSkip">Salta</button></div>
     <div class="chips sport" id="wkTypes" role="group" aria-label="Tipo di allenamento"></div>
     <section class="card">
       <div class="settings wkf">
@@ -1000,8 +1024,17 @@ h3{font-weight:700;font-size:1.02rem}
       <p class="note" id="wkKcalNote"></p>
     </section>
     <div id="wkGym" style="display:flex;flex-direction:column;gap:12px">
-      <div class="restsel" id="restSel"><span>Recupero tra le serie</span><div class="range" id="restOpts" role="group" aria-label="Recupero tra le serie"><button type="button" data-rs="60">1:00</button><button type="button" data-rs="90">1:30</button><button type="button" data-rs="120">2:00</button><button type="button" data-rs="180">3:00</button><button type="button" data-rs="0">No</button></div></div>
-      <p class="note" id="wkLiveNote">Spunta ogni serie quando l'hai fatta: parte il recupero. Alla fine salvo solo le serie spuntate (tutte, se non ne spunti nessuna). Puoi ridurre questa schermata o uscire dall'app: l'allenamento resta aperto.</p>
+      <div class="restsel" id="restSel"><span>Recupero tra le serie</span><div class="restctl"><button type="button" class="restval" id="restVal" aria-expanded="false" aria-controls="restPick"></button><button type="button" class="primary small" id="restStart">Avvia</button></div></div>
+      <div class="card restpick" id="restPick" hidden>
+        <div class="wheels">
+          <div class="wband" aria-hidden="true"></div>
+          <div class="wheel" id="whMin" tabindex="0" role="listbox" aria-label="Minuti"></div><span class="wl">min</span>
+          <div class="wheel" id="whSec" tabindex="0" role="listbox" aria-label="Secondi"></div><span class="wl">sec</span>
+        </div>
+        <label class="chk"><input type="checkbox" id="restAuto"> Parte da solo quando spunto una serie</label>
+        <button type="button" class="primary" id="restDone">Fatto</button>
+      </div>
+      <p class="note" id="wkLiveNote">Spunta ogni serie quando l'hai fatta: parte il timer del recupero (puoi anche avviarlo a mano). Alla fine salvo solo le serie spuntate (tutte, se non ne spunti nessuna). Puoi ridurre questa schermata o uscire dall'app: l'allenamento resta aperto.</p>
       <div id="wkExList" style="display:flex;flex-direction:column;gap:12px"></div>
       <button type="button" class="addex" id="wkAddEx">＋ Aggiungi esercizio</button>
     </div>
@@ -1092,7 +1125,7 @@ const NOT_SUGGEST = /olio|burro|maionese|zucchero|vino|birra|bibita|marmellata|p
 const FIBRE_CORE = {"Lamponi":125,"Frutti di bosco surgelati":150,"Pera":180,"Mela":150,"Kiwi":150,"Arancia":200,"Lenticchie (cotte)":150,"Ceci (cotti)":150,"Fagioli (cotti)":150,"Piselli":150,"Broccoli":200,"Carote":150,"Carciofi":150,
   "Fagiolini verdi surgelati":200,"Spinaci":200,"Semi di chia":15,"Semi di lino":15,"Fiocchi d'avena":50,"Crusca di avena":20,"Pane integrale":60,"Pane di segale":60,"Wasa":30,"Pasta integrale (cruda)":80,"Mandorle":25,"Avocado":80,"Prugne secche":40};
 const MEAL_IC = {Colazione:"coffee", Pranzo:"utensils", Cena:"moon", Spuntini:"apple"};
-const ICONS = {"coffee": "<path d=\"M5 9h12v4a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z\"/><path d=\"M17 10h1.5a2.5 2.5 0 0 1 0 5H17\"/><path d=\"M8.5 3v2.5M12.5 3v2.5\"/>", "utensils": "<path d=\"M7 3v18M4.5 3v5a2.5 2.5 0 0 0 5 0V3\"/><path d=\"M17 21v-8h-3V8c0-2.8 1.3-4.5 3-5z\"/>", "moon": "<path d=\"M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z\"/>", "apple": "<path d=\"M12 8.5c-3-2-7 0-7 4.8S8.5 21 12 19.5c3.5 1.5 7-1.4 7-6.2S15 6.5 12 8.5z\"/><path d=\"M12 8.5V6c0-1.5 1.2-2.8 3-3\"/>", "dumbbell": "<path d=\"M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11\"/>", "run": "<circle cx=\"14.5\" cy=\"4.5\" r=\"1.8\"/><path d=\"M5 20l4-5 3.5 2.5L13 21M8 10l4-2 3 3 3.5.5M12 8l-1.5 6.5\"/>", "padel": "<ellipse cx=\"14.5\" cy=\"8.5\" rx=\"5\" ry=\"6.2\" transform=\"rotate(35 14.5 8.5)\"/><path d=\"M10.8 13.8 5 20\"/><circle cx=\"18.5\" cy=\"19\" r=\"1.5\"/>", "tennis": "<circle cx=\"12\" cy=\"12\" r=\"8.5\"/><path d=\"M5.8 6.2c3 3 3 8.6 0 11.6M18.2 6.2c-3 3-3 8.6 0 11.6\"/>", "swim": "<path d=\"M3 17c1.5-1.3 3-1.3 4.5 0s3 1.3 4.5 0 3-1.3 4.5 0 3 1.3 4.5 0M3 21c1.5-1.3 3-1.3 4.5 0s3 1.3 4.5 0 3-1.3 4.5 0 3 1.3 4.5 0\"/><circle cx=\"17\" cy=\"7\" r=\"1.8\"/><path d=\"M6 13l5-4.5 3.5 3.5\"/>", "bike": "<circle cx=\"6\" cy=\"16\" r=\"3.5\"/><circle cx=\"18\" cy=\"16\" r=\"3.5\"/><path d=\"M6 16l4-7h5l3 7M10 9l3 7M14 6h2.5\"/>", "walk": "<circle cx=\"12.5\" cy=\"4.5\" r=\"1.8\"/><path d=\"M12.5 8v6l-3 6.5M12.5 14l3 6.5M9 11.5l3.5-3.5 3 3\"/>", "football": "<circle cx=\"12\" cy=\"12\" r=\"8.5\"/><path d=\"m12 8.2 3.6 2.6-1.4 4.2H9.8l-1.4-4.2z\"/>", "ski": "<path d=\"M3 19 9.5 7l4 7 2.5-4 5 9z\"/>", "bolt": "<path d=\"M13 3 5 13.5h6L10 21l8-10.5h-6z\"/>", "trophy": "<path d=\"M8 4h8v5a4 4 0 0 1-8 0z\"/><path d=\"M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6M10 17h4\"/>", "copy": "<rect x=\"9\" y=\"9\" width=\"11\" height=\"11\" rx=\"2\"/><path d=\"M5 15V6a2 2 0 0 1 2-2h9\"/>", "star": "<path d=\"m12 4 2.5 5.1 5.6.8-4.1 4 1 5.6-5-2.7-5 2.7 1-5.6-4.1-4 5.6-.8z\"/>", "pencil": "<path d=\"M4 20h4L19 9l-4-4L4 16z\"/>", "spark": "<path d=\"M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z\"/>", "play": "<path d=\"M8 5.5v13l10.5-6.5z\"/>", "check": "<path d=\"m5 12.5 4.5 4.5L19 7.5\"/>", "down": "<path d=\"m6 9 6 6 6-6\"/>", "grip": "<g fill=\"currentColor\" stroke=\"none\"><circle cx=\"9\" cy=\"6\" r=\"1.6\"/><circle cx=\"15\" cy=\"6\" r=\"1.6\"/><circle cx=\"9\" cy=\"12\" r=\"1.6\"/><circle cx=\"15\" cy=\"12\" r=\"1.6\"/><circle cx=\"9\" cy=\"18\" r=\"1.6\"/><circle cx=\"15\" cy=\"18\" r=\"1.6\"/></g>"};
+const ICONS = {"trash":"<path d=\"M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6\"/>","coffee": "<path d=\"M5 9h12v4a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z\"/><path d=\"M17 10h1.5a2.5 2.5 0 0 1 0 5H17\"/><path d=\"M8.5 3v2.5M12.5 3v2.5\"/>", "utensils": "<path d=\"M7 3v18M4.5 3v5a2.5 2.5 0 0 0 5 0V3\"/><path d=\"M17 21v-8h-3V8c0-2.8 1.3-4.5 3-5z\"/>", "moon": "<path d=\"M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z\"/>", "apple": "<path d=\"M12 8.5c-3-2-7 0-7 4.8S8.5 21 12 19.5c3.5 1.5 7-1.4 7-6.2S15 6.5 12 8.5z\"/><path d=\"M12 8.5V6c0-1.5 1.2-2.8 3-3\"/>", "dumbbell": "<path d=\"M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11\"/>", "run": "<circle cx=\"14.5\" cy=\"4.5\" r=\"1.8\"/><path d=\"M5 20l4-5 3.5 2.5L13 21M8 10l4-2 3 3 3.5.5M12 8l-1.5 6.5\"/>", "padel": "<ellipse cx=\"14.5\" cy=\"8.5\" rx=\"5\" ry=\"6.2\" transform=\"rotate(35 14.5 8.5)\"/><path d=\"M10.8 13.8 5 20\"/><circle cx=\"18.5\" cy=\"19\" r=\"1.5\"/>", "tennis": "<circle cx=\"12\" cy=\"12\" r=\"8.5\"/><path d=\"M5.8 6.2c3 3 3 8.6 0 11.6M18.2 6.2c-3 3-3 8.6 0 11.6\"/>", "swim": "<path d=\"M3 17c1.5-1.3 3-1.3 4.5 0s3 1.3 4.5 0 3-1.3 4.5 0 3 1.3 4.5 0M3 21c1.5-1.3 3-1.3 4.5 0s3 1.3 4.5 0 3-1.3 4.5 0 3 1.3 4.5 0\"/><circle cx=\"17\" cy=\"7\" r=\"1.8\"/><path d=\"M6 13l5-4.5 3.5 3.5\"/>", "bike": "<circle cx=\"6\" cy=\"16\" r=\"3.5\"/><circle cx=\"18\" cy=\"16\" r=\"3.5\"/><path d=\"M6 16l4-7h5l3 7M10 9l3 7M14 6h2.5\"/>", "walk": "<circle cx=\"12.5\" cy=\"4.5\" r=\"1.8\"/><path d=\"M12.5 8v6l-3 6.5M12.5 14l3 6.5M9 11.5l3.5-3.5 3 3\"/>", "football": "<circle cx=\"12\" cy=\"12\" r=\"8.5\"/><path d=\"m12 8.2 3.6 2.6-1.4 4.2H9.8l-1.4-4.2z\"/>", "ski": "<path d=\"M3 19 9.5 7l4 7 2.5-4 5 9z\"/>", "bolt": "<path d=\"M13 3 5 13.5h6L10 21l8-10.5h-6z\"/>", "trophy": "<path d=\"M8 4h8v5a4 4 0 0 1-8 0z\"/><path d=\"M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6M10 17h4\"/>", "copy": "<rect x=\"9\" y=\"9\" width=\"11\" height=\"11\" rx=\"2\"/><path d=\"M5 15V6a2 2 0 0 1 2-2h9\"/>", "star": "<path d=\"m12 4 2.5 5.1 5.6.8-4.1 4 1 5.6-5-2.7-5 2.7 1-5.6-4.1-4 5.6-.8z\"/>", "pencil": "<path d=\"M4 20h4L19 9l-4-4L4 16z\"/>", "spark": "<path d=\"M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z\"/>", "play": "<path d=\"M8 5.5v13l10.5-6.5z\"/>", "check": "<path d=\"m5 12.5 4.5 4.5L19 7.5\"/>", "down": "<path d=\"m6 9 6 6 6-6\"/>", "grip": "<g fill=\"currentColor\" stroke=\"none\"><circle cx=\"9\" cy=\"6\" r=\"1.6\"/><circle cx=\"15\" cy=\"6\" r=\"1.6\"/><circle cx=\"9\" cy=\"12\" r=\"1.6\"/><circle cx=\"15\" cy=\"12\" r=\"1.6\"/><circle cx=\"9\" cy=\"18\" r=\"1.6\"/><circle cx=\"15\" cy=\"18\" r=\"1.6\"/></g>"};
 const ic = (n, z) => `<svg class="ico" width="${z||20}" height="${z||20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||""}</svg>`;
 
 const $ = s => document.querySelector(s);
@@ -2403,7 +2436,7 @@ function renderWkList(all){
     const sp = SPORTS[w.t], nSets = (w.ex||[]).reduce((a,e)=>a+e.sets.length,0);
     const d = new Date(w.d+"T12:00").toLocaleDateString("it-IT",{weekday:"short",day:"numeric",month:"short"});
     const det = [d, `${fmt(w.min)} min`, w.km ? `${g1(w.km)} km` : "", w.t==="gym" && w.ex && w.ex.length ? `${w.ex.length} esercizi, ${nSets} serie` : ""].filter(Boolean).join(" · ");
-    h += `<button type="button" class="wkcard" data-wk="${w.id}"><span class="mic" aria-hidden="true">${ic(sp.ic)}</span><div class="mh"><b>${sp.n}</b><span class="tot">${det}</span>${w.ex&&w.ex.length?`<span class="tot ex">${w.ex.map(e=>esc(e.n)).join(", ")}</span>`:""}${w.note?`<span class="tot">${esc(w.note)}</span>`:""}</div><b class="mk">${fmt(w.kcal)} <small>kcal</small></b></button>`;
+    h += `<div class="wkcard"><button type="button" class="wkopen" data-wk="${w.id}"><span class="mic" aria-hidden="true">${ic(sp.ic)}</span><div class="mh"><b>${sp.n}</b><span class="tot">${det}</span>${w.ex&&w.ex.length?`<span class="tot ex">${w.ex.map(e=>esc(e.n)).join(", ")}</span>`:""}${w.note?`<span class="tot">${esc(w.note)}</span>`:""}</div><b class="mk">${fmt(w.kcal)} <small>kcal</small></b></button><button type="button" class="link wkdel" data-wkdel="${w.id}" aria-label="Elimina: ${sp.n} del ${d}">${ic("trash",18)}</button></div>`;
   }
   if(rev.length>list.length) h += `<button type="button" id="wkMore">Mostra gli allenamenti precedenti</button>`;
   $("#wkList").innerHTML = h;
@@ -2471,6 +2504,7 @@ $("#wkProg").addEventListener("click", ev=>{ const b = ev.target.closest("[data-
 $("#wkMuscles").addEventListener("click", ev=>{ const b = ev.target.closest("[data-mus]"); if(!b) return; wkMuscle = b.dataset.mus; renderWkTab(); });
 $("#wkList").addEventListener("click", ev=>{
   if(ev.target.closest("#wkMore")){ wkShown += 30; renderWkTab(); return; }
+  const del = ev.target.closest("[data-wkdel]"); if(del){ deleteWk(del.dataset.wkdel); return; }
   const b = ev.target.closest("[data-wk]"); if(b) openWk(b.dataset.wk);
 });
 
@@ -2530,7 +2564,36 @@ document.addEventListener("visibilitychange", ()=>{ if(document.hidden){ if(isLi
 window.addEventListener("pagehide", ()=>{ if(isLive()) local.set("cal_wkdraft", wkDraft); });
 $("#liveBar").onclick = ()=>openWk();
 $("#restSkip").onclick = ()=>{ if(wkDraft){ wkDraft.restEnd = 0; wkTick(); } };
-$("#restOpts").addEventListener("click", ev=>{ const b = ev.target.closest("[data-rs]"); if(!b) return; S.settings.restSec = Number(b.dataset.rs); saveSettings(true); renderWk(); });
+/* recupero: durata scelta con le rotelle (minuti e secondi), come nel timer dell'iPhone */
+const WH = 40, restSecs = () => S.settings.restSec==null ? 90 : Math.max(5, S.settings.restSec);
+function buildWheel(el, vals, cur){
+  el.innerHTML = `<div class="wpad"></div>` + vals.map(v=>`<div class="wi" data-v="${v}">${String(v).padStart(2,"0")}</div>`).join("") + `<div class="wpad"></div>`;
+  let i = vals.indexOf(cur); if(i<0) i = vals.reduce((a,v,k)=> Math.abs(v-cur) < Math.abs(vals[a]-cur) ? k : a, 0);
+  el.scrollTop = i*WH;
+}
+function wheelVal(el){ const it = el.querySelectorAll(".wi"); return Number(it[Math.max(0, Math.min(it.length-1, Math.round(el.scrollTop/WH)))].dataset.v); }
+function paintRest(){
+  const rs = restSecs();
+  $("#restVal").innerHTML = `${fmtClock(rs*1000)} ${ic("down",15)}`;
+  $("#restAuto").checked = S.settings.restAuto!==false;
+}
+function startRest(){ const d = wkDraft; if(!d) return; d.restLen = restSecs()*1000; d.restEnd = Date.now() + d.restLen; wkTick(); }
+$("#restVal").onclick = ()=>{
+  const p = $("#restPick"), open = p.hidden; p.hidden = !open; $("#restVal").setAttribute("aria-expanded", String(open));
+  if(open){ const rs = restSecs(); buildWheel($("#whMin"), [...Array(11).keys()], Math.floor(rs/60)); buildWheel($("#whSec"), [...Array(12).keys()].map(x=>x*5), rs%60); }
+};
+let wheelTimer;
+for(const id of ["#whMin","#whSec"]) $(id).addEventListener("scroll", ()=>{
+  clearTimeout(wheelTimer);
+  wheelTimer = setTimeout(()=>{ if($("#restPick").hidden) return; S.settings.restSec = Math.max(5, wheelVal($("#whMin"))*60 + wheelVal($("#whSec"))); saveSettings(); paintRest(); }, 140);
+}, {passive:true});
+for(const id of ["#whMin","#whSec"]) $(id).addEventListener("click", ev=>{ const it = ev.target.closest(".wi"); if(it) $(id).scrollTo({top:[...$(id).querySelectorAll(".wi")].indexOf(it)*WH, behavior:"smooth"}); });
+for(const id of ["#whMin","#whSec"]) $(id).addEventListener("keydown", ev=>{ if(ev.key==="ArrowDown" || ev.key==="ArrowUp"){ ev.preventDefault(); $(id).scrollBy({top:(ev.key==="ArrowDown"?1:-1)*WH, behavior:"smooth"}); } });
+$("#restAuto").addEventListener("change", ()=>{ S.settings.restAuto = $("#restAuto").checked; saveSettings(true); });
+$("#restDone").onclick = ()=>{ $("#restPick").hidden = true; $("#restVal").setAttribute("aria-expanded","false"); saveSettings(true); };
+$("#restStart").onclick = startRest;
+$("#restPlus").onclick = ()=>{ const d = wkDraft; if(d && d.restEnd){ d.restEnd += 15000; d.restLen = Math.max(d.restLen||0, d.restEnd-Date.now()); wkTick(); } };
+$("#restMinus").onclick = ()=>{ const d = wkDraft; if(d && d.restEnd){ d.restEnd -= 15000; wkTick(); } };
 function wkKcalNote(){
   const d = wkDraft; if(!d) return;
   $("#wkKcalNote").innerHTML = d.auto ? `Calorie stimate da tipo, durata, intensità e dal tuo peso. Se hai un valore più preciso (orologio), scrivilo.` : `Valore inserito da te. <button type="button" class="ghost" id="wkAuto" style="padding:0;text-decoration:underline">Usa la stima (${fmt(estKcal(d.t,d.min,d.int))} kcal)</button>`;
@@ -2552,9 +2615,9 @@ function renderWk(){
   $("#wkKmL").hidden = !SPORTS[d.t].km;
   document.querySelectorAll("#wkInt button").forEach(b=>b.setAttribute("aria-pressed", Number(b.dataset.i)===d.int));
   $("#wkGym").hidden = d.t!=="gym";
-  const live = !d.id, rs = S.settings.restSec==null ? 90 : S.settings.restSec;
-  $("#restSel").hidden = !live; $("#wkLiveNote").hidden = !live;
-  document.querySelectorAll("#restOpts button").forEach(b=>b.setAttribute("aria-pressed", Number(b.dataset.rs)===rs));
+  const live = !d.id;
+  $("#restSel").hidden = !live; $("#wkLiveNote").hidden = !live; if(!live) $("#restPick").hidden = true;
+  paintRest();
   const lastGym = wkSorted().filter(w=>w.t==="gym" && w.ex && w.ex.length && w.id!==d.id).pop();
   wkKcalNote();
   $("#wkExList").innerHTML = d.ex.map((e,i)=>{
@@ -2588,8 +2651,7 @@ $("#wkExList").addEventListener("click", ev=>{
     const [i,j] = b.dataset.tick.split(":").map(Number), x = d.ex[i].sets[j];
     if(!x.done && !(Number(x.r)>0)){ flash("Scrivi prima le ripetizioni di questa serie."); return; }
     x.done = !x.done;
-    const rs = S.settings.restSec==null ? 90 : S.settings.restSec;
-    if(x.done && rs>0 && !d.id){ d.restLen = rs*1000; d.restEnd = Date.now() + d.restLen; }
+    if(x.done && !d.id && S.settings.restAuto!==false) startRest();
     renderWk(); wkTick(); return;
   }
   if(ev.target.closest("#wkRepeat")){
@@ -2624,13 +2686,14 @@ $("#wkSave").onclick = ()=>{
   const w = S.workouts[id]; closeWk(false); render(); if(!$("#viewWk").hidden) renderWkTab();
   flash(`${SPORTS[w.t].n} salvato: ${fmt(w.min)} min, ${fmt(w.kcal)} kcal.`, true);
 };
-$("#wkDelete").onclick = ()=>{
-  const d = wkDraft; if(!d || !d.id) return;
-  const gone = S.workouts[d.id], adjOld = S.adj[gone.d]; delete S.workouts[d.id]; saveMap("workouts", true);
+function deleteWk(id){
+  const gone = S.workouts[id]; if(!gone) return;
+  const adjOld = S.adj[gone.d]; delete S.workouts[id]; saveMap("workouts", true);
   if(S.adj[gone.d] && !spikeExtra(gone.d)){ delete S.adj[gone.d]; saveMap("adj", true); }
-  closeWk(false); render(); if(!$("#viewWk").hidden) renderWkTab();
-  toast("Allenamento eliminato.", true, true, ()=>{ S.workouts[gone.id] = gone; saveMap("workouts", true); if(adjOld){ S.adj[gone.d] = adjOld; saveMap("adj", true); } render(); if(!$("#viewWk").hidden) renderWkTab(); toast("Allenamento ripristinato.", true); });
-};
+  render(); if(!$("#viewWk").hidden) renderWkTab();
+  toast(`${SPORTS[gone.t].n} del ${dShort(gone.d)} eliminato.`, true, true, ()=>{ S.workouts[gone.id] = gone; saveMap("workouts", true); if(adjOld){ S.adj[gone.d] = adjOld; saveMap("adj", true); } render(); if(!$("#viewWk").hidden) renderWkTab(); toast("Allenamento ripristinato.", true); });
+}
+$("#wkDelete").onclick = ()=>{ const d = wkDraft; if(!d || !d.id) return; const id = d.id; closeWk(false); deleteWk(id); };
 
 /* ----- scelta dell'esercizio ----- */
 let exMusSel = "";
@@ -3281,7 +3344,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.6";
+$("#verNote").textContent = "Diario delle calorie · versione 1.6.1";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
