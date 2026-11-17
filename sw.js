@@ -1,6 +1,6 @@
 // Service worker del Diario delle calorie: fa funzionare l'app offline.
 // Quando aggiorni i file dell'app, cambia VERSION: l'app mostrerà "È pronta una nuova versione".
-const VERSION = "1.7.0";
+const VERSION = "1.8.0";
 const SHELL_CACHE = "diario-shell-" + VERSION;
 const FONT_CACHE = "diario-fonts";
 const SHELL = [
@@ -28,6 +28,36 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("message", event => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
+});
+
+// notifiche push (promemoria): il server le invia all'ora giusta, anche con l'app chiusa
+self.addEventListener("push", event => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : "" }; }
+  event.waitUntil(self.registration.showNotification(d.title || "Diario", {
+    body: d.body || "",
+    tag: d.tag || undefined,
+    icon: "./icons/icon-192.png",
+    badge: "./icons/icon-192.png",
+    data: { url: d.url || "./" }
+  }));
+});
+
+self.addEventListener("notificationclick", event => {
+  event.notification.close();
+  const url = new URL((event.notification.data && event.notification.data.url) || "./", self.registration.scope);
+  const go = url.searchParams.get("go");
+  event.waitUntil((async () => {
+    const cs = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const c of cs) {
+      if (c.url.startsWith(self.registration.scope)) {
+        await c.focus();
+        if (go) c.postMessage({ type: "go", go });
+        return;
+      }
+    }
+    await self.clients.openWindow(url.href);
+  })());
 });
 
 self.addEventListener("fetch", event => {

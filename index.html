@@ -233,6 +233,30 @@ table.months.body td{cursor:default}
 .glrow .glr{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .glrow .glr span{font-size:.8rem;padding:3px 9px;border-radius:99px;background:var(--bg);border:1px solid var(--line)}
 .glrow .glr span.up{color:var(--accent)} .glrow .glr span.dn{color:var(--warn)}
+.rem{padding:12px 0;border-top:1px solid var(--line)}
+.rem:first-child{border-top:0;padding-top:2px}
+.remh{display:flex;align-items:center;gap:10px}
+.remh b{flex:1;min-width:0}
+.remh input[type=time]{width:auto;flex:none}
+.remh input[type=checkbox]{width:22px;height:22px;flex:none;accent-color:var(--accent)}
+.rem.off .remh b{color:var(--muted)}
+.remb{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center}
+.remb input[type=text]{flex:1 1 150px}
+.remb input[type=date],.remb select{width:auto}
+.dchips{display:flex;gap:5px;margin-top:8px}
+.dchip{flex:1;min-width:0;padding:6px 0;text-align:center;font-size:.78rem;border-radius:8px}
+.dchip[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pstate{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:var(--bg)}
+.pstate p{margin:0 0 8px}.pstate p:last-child{margin:0}
+.prow{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.prow:first-child{border-top:0}
+.prow .pd{width:78px;flex:none}
+.prow .pd small{display:block;color:var(--muted)}
+.prow .pextra{flex:1 1 100%;display:flex;gap:8px;margin-left:86px;order:3}
+.prow .pextra input[type=time]{width:130px;flex:none}.prow .pextra select{flex:1;min-width:0}
+.prow .pbtn{flex:none;padding:7px 12px}
+.prow .pst{margin-left:auto}
+.steps{margin:8px 0 0;padding-left:20px;font-size:.9rem}.steps li{margin:4px 0}
 .pill.warn{background:color-mix(in srgb, var(--warn) 15%, transparent);color:var(--warn)}
 .hrow{display:grid;grid-template-columns:7.5em 1fr 4.5em;gap:10px;align-items:center;font-size:.88rem;font-variant-numeric:tabular-nums}
 .hrow .lab{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -767,6 +791,11 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
   <!-- ALLENAMENTO -->
   <div class="view" id="viewWk" hidden>
     <h2 class="pagetitle">Allenamento</h2>
+    <section class="card" id="planCard">
+      <div class="chead"><h3>Piano della settimana</h3><div class="range" id="planWeek" role="group" aria-label="Settimana"><button type="button" data-o="0" aria-pressed="true">Questa</button><button type="button" data-o="1" aria-pressed="false">Prossima</button></div></div>
+      <p class="sub" id="planSub"></p>
+      <div id="planDays"></div>
+    </section>
     <div class="kpis" id="wkKpis"></div>
     <div class="range wide" id="wkSeg" role="group" aria-label="Vista"><button type="button" data-s="log" aria-pressed="true">Sessioni</button><button type="button" data-s="prog" aria-pressed="false">Progressi</button></div>
     <div id="wkLogView" class="view"><div id="wkList" class="wklist"></div></div>
@@ -781,6 +810,33 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
   <div class="view" id="viewSet" hidden>
     <h2 class="pagetitle">Impostazioni</h2>
     <div class="sync on" id="sync"><i></i><span>Salvato su questo dispositivo · funziona anche offline</span></div>
+    <section class="card" id="remCard">
+      <h3>Promemoria</h3>
+      <p class="sub">Notifiche sul telefono, anche con l'app chiusa. Gli orari seguono il fuso del telefono, aggiornato ogni volta che apri l'app.</p>
+      <div class="pstate" id="pushState"></div>
+      <div id="remList"></div>
+      <div class="ai-row" style="margin-top:6px"><button type="button" id="remAdd">＋ Nuovo promemoria</button></div>
+      <label style="margin-top:12px">Avviso prima dell'allenamento<select id="planLead"><option value="0">All'ora dell'allenamento</option><option value="15">15 minuti prima</option><option value="30">30 minuti prima</option><option value="45">45 minuti prima</option><option value="60">1 ora prima</option></select></label>
+      <p class="note">Gli allenamenti li pianifichi nella scheda Allenamento. I promemoria vengono preparati per i prossimi 14 giorni: apri l'app almeno ogni due settimane.</p>
+    </section>
+    <section class="card" id="iosTimerCard">
+      <h3>Timer sul blocco schermo</h3>
+      <p class="sub">Quando parte il recupero, l'app avvia anche il timer di iPhone: conto alla rovescia sulla schermata bloccata e nella Dynamic Island, e alla fine suona e vibra.</p>
+      <label class="chk"><input type="checkbox" id="iosTimer"> Avvia il timer di iPhone insieme al recupero</label>
+      <label style="margin-top:8px">Nome del comando in Comandi<input id="iosShortcut" spellcheck="false" autocomplete="off" autocapitalize="none"></label>
+      <div class="ai-row" style="margin-top:8px"><button type="button" id="iosTimerTest">Prova con 10 secondi</button></div>
+      <details style="padding:10px 12px;margin-top:8px">
+        <summary class="note">Come creare il comando (2 minuti, una volta sola)</summary>
+        <ol class="steps">
+          <li>Apri l'app <b>Comandi</b> e tocca <b>＋</b>.</li>
+          <li>Aggiungi l'azione <b>Ottieni numeri da</b> e scegli <b>Input del comando rapido</b>.</li>
+          <li>Aggiungi l'azione <b>Avvia timer</b>: come durata scegli il <b>Numero</b> ottenuto e come unità <b>secondi</b>.</li>
+          <li>Rinomina il comando <b>Riposo</b> (esattamente così, o scrivi qui sopra il nome che hai scelto).</li>
+          <li>Torna qui, tocca <b>Prova con 10 secondi</b> e blocca lo schermo: devi vedere il conto alla rovescia.</li>
+        </ol>
+        <p class="note">Quando parte, iPhone apre per un istante Comandi: dopo il timer torna all'app dal selettore delle app o dalla Dynamic Island.</p>
+      </details>
+    </section>
     <details id="customDetails">
       <summary>Aggiungi un alimento a mano</summary>
       <form class="custom" id="customForm" autocomplete="off">
@@ -902,12 +958,6 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
       <div class="planbox" id="planBox" hidden></div>
     </section>
 
-    <section class="card" id="goalLogCard">
-      <h3>Storico obiettivi</h3>
-      <p class="sub">Ogni modifica vale da quel giorno in poi: i giorni passati restano con gli obiettivi di allora. Qui vedi cosa è successo dopo ogni cambio.</p>
-      <div id="goalLogList"></div>
-    </section>
-
     <section class="card" id="bodyCard">
       <div class="chead"><h3>Composizione corporea</h3><span class="chip" id="bodyDate"></span></div>
       <div class="bsum" id="bodySum" hidden></div>
@@ -946,6 +996,11 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
   <!-- DASHBOARD -->
   <div class="view" id="viewMesi" hidden>
     <div class="dashhead"><h2>Dashboard</h2><select id="dashMonth" aria-label="Mese"></select></div>
+    <section class="card" id="goalLogCard">
+      <h3>Storico obiettivi</h3>
+      <p class="sub">Ogni modifica vale da quel giorno in poi: i giorni passati restano con gli obiettivi di allora. Qui vedi cosa è successo dopo ogni cambio.</p>
+      <div id="goalLogList"></div>
+    </section>
     <section class="card ai" id="reportCard" hidden>
       <h3>Report settimanale</h3>
       <p class="sub" id="reportSub">Claude analizza gli ultimi 7 giorni e ti dice cosa cambiare.</p>
@@ -1130,9 +1185,9 @@ const BASE = {
 "Bake rolls":[443,12,63,15,3],"Sugo Cacio e pepe":[218,15,1.2,17,0],"farina 00":[345,11,69.9,1.7,2.2],"Buitoni impasto pizza":[280,8.5,46.1,5.4,2.5],"Pane ai 5 cereali":[277,10,44,4,6],"Pesto tigullio":[477,5.2,10,46,2],"Wasa":[330,9,60,1.5,14],"Dumplings":[600,20,50,20,2],"Aloe Vera":[36,0,9,0,0.2],"Pudding proteico":[76,10,5.5,1.5,0.5],"Tacos":[461,6.5,61,20,5],"Tortellini":[309,12,43,9,2],"Ragu di soja":[255,3.5,7.6,23,2],"patate surgelate":[139,2.6,23.4,3.4,2.5],"Alici":[435,14,0,42,0],"Lamponi":[34,1,6.5,0.6,6.5],"Gin tonic":[135,0,13,0,0],"Trota":[86,14.7,0,3,0],"Ragu di carne":[196,12,1.9,15.4,0.8]
 };
 const MEALS = ["Colazione","Pranzo","Cena","Spuntini"];
-const MAPS = ["weights","water","weeks","templates","reports","body","workouts","adj"];
+const MAPS = ["weights","water","weeks","templates","reports","body","workouts","adj","plan"];
 const DEF_SETTINGS = {train:2900, rest:2550, prot:155, fat:75, fib:30, waterGoal:2500, mode:"train", defMode:"train", used:false,
-  height:185, age:28, sex:"M", act:"sed", trainK:350, goal:1, auto:true};
+  height:185, age:28, sex:"M", act:"sed", trainK:350, goal:1, auto:true, planLead:30, iosTimer:false, iosShortcut:"Riposo"};
 // alimenti usati dal suggeritore, con una porzione tipica in grammi
 const CORE = {"Whey protein dm Sportness":30,"Yogurt greco 0%":170,"Albume d'uovo":150,"Banana":120,"Mela":150,"Riso (crudo)":80,"Pane comune":60,"Crackers di riso":25,"Fiocchi d'avena":50,"Petto di pollo":150,"Tonno al naturale":80,"Carne salata":80,"Bresaola":60,"Latte di soia Alpro senza zuccheri":250,"Patate":250,"Castagne arrosto (sbucciate)":80,"Udon precotti / freschi":200,"Mozzarella light":125,"Uova":120,"Mandorle":20,"Miele":15,"Pasta (cruda)":80,"Kiwi":100,"Arancia":150};
 const NOT_SUGGEST = /olio|burro|maionese|zucchero|vino|birra|bibita|marmellata|passata|cipolla/i;
@@ -1156,7 +1211,7 @@ const weekStart = s => { const [y,m,d]=s.split("-").map(Number); const w=(new Da
 const pad5 = v => { const a=(v||[]).map(Number); while(a.length<5) a.push(0); return a.slice(0,5); };
 
 /* ---------- stato ---------- */
-let S = { days:{}, custom:{}, settings:{...DEF_SETTINGS}, weights:{}, modes:{}, water:{}, weeks:{}, templates:{}, reports:{}, body:{}, workouts:{}, adj:{} };
+let S = { days:{}, custom:{}, settings:{...DEF_SETTINGS}, weights:{}, modes:{}, water:{}, weeks:{}, templates:{}, reports:{}, body:{}, workouts:{}, adj:{}, plan:{} };
 /* ---------- storico degli obiettivi: ogni modifica vale da quel giorno in poi ---------- */
 const GOAL_FIELDS = ["train","rest","prot","fat","fib","goal"], GOAL_BASE = "2000-01-01";
 let goalBoot = true; // durante l'avvio i ricalcoli aggiornano la base, non creano una voce
@@ -1237,6 +1292,7 @@ function saveCustom(){
 }
 const mapTimers = {};
 function saveMap(name, now){
+  if(name==="plan"){ try{ pushSchedule(); }catch(e){} }
   dirty.add(name); clearTimeout(mapTimers[name]);
   const go = () => {
     if(backend==="db"){ const body={w:JSON.parse(JSON.stringify(S[name]))}; queue(name, ()=>dbCol.doc(name).set(body)).finally(()=>dirty.delete(name)); }
@@ -1248,6 +1304,7 @@ let settingsTimer;
 function saveSettings(now){
   clearTimeout(settingsTimer);
   commitGoals();
+  try{ pushSchedule(); }catch(e){}
   const go = () => {
     if(backend==="db"){ const body={...S.settings}; queue("settings", ()=>dbCol.doc("settings").set(body)); }
     else { local.set("cal_settings", S.settings); local.set("cal_used", S.settings.used); syncTouch("settings"); }
@@ -1666,6 +1723,7 @@ function hbar(label, v, max, valText, color){
 }
 
 function renderDash(){
+  renderGoalLog();
   renderReport();
   const ms = monthsWithData(), sel = $("#dashMonth");
   if(!ms.length){
@@ -2042,7 +2100,7 @@ $("#aiFoodSave").onclick=()=>{
 /* ---------- backup ---------- */
 async function exportData(){
   const data = JSON.stringify({app:"diario-calorie", version:2, exportedAt:new Date().toISOString(),
-    data:{days:S.days, custom:S.custom, settings:S.settings, weights:S.weights, modes:S.modes, water:S.water, weeks:S.weeks, templates:S.templates, reports:S.reports, body:S.body, workouts:S.workouts, adj:S.adj}}, null, 1);
+    data:{days:S.days, custom:S.custom, settings:S.settings, weights:S.weights, modes:S.modes, water:S.water, weeks:S.weeks, templates:S.templates, reports:S.reports, body:S.body, workouts:S.workouts, adj:S.adj, plan:S.plan}}, null, 1);
   const name = `diario-calorie-backup-${today()}.json`;
   const file = new File([data], name, {type:"application/json"});
   const done = () => { local.set("cal_lastBackup", Date.now()); $("#bMsg").classList.add("ok-msg"); $("#bMsg").textContent="Backup creato. Conservalo in iCloud, Google Drive o via email."; checkBanners(); };
@@ -2456,6 +2514,7 @@ $("#wkDay").addEventListener("click", ev=>{
 /* ----- scheda Allenamento ----- */
 let wkSegSel = "log", wkMuscle = null, wkShown = 30;
 function renderWkTab(){
+  renderPlan();
   const all = wkSorted(), ws0 = weekStart(today()), m0 = today().slice(0,7);
   const wk = all.filter(w=>w.d>=ws0 && w.d<=shiftDay(ws0,6)), mo = all.filter(w=>w.d.startsWith(m0));
   const mins = wk.reduce((a,w)=>a+w.min,0);
@@ -2621,7 +2680,7 @@ function paintRest(){
   $("#restVal").innerHTML = `${fmtClock(rs*1000)} ${ic("down",15)}`;
   $("#restAuto").checked = S.settings.restAuto!==false;
 }
-function startRest(){ const d = wkDraft; if(!d) return; d.restLen = restSecs()*1000; d.restEnd = Date.now() + d.restLen; wkTick(); }
+function startRest(){ const d = wkDraft; if(!d) return; d.restLen = restSecs()*1000; d.restEnd = Date.now() + d.restLen; wkTick(); if(S.settings.iosTimer) iosTimerStart(restSecs()); }
 $("#restVal").onclick = ()=>{
   const p = $("#restPick"), open = p.hidden; p.hidden = !open; $("#restVal").setAttribute("aria-expanded", String(open));
   if(open){ const rs = restSecs(); buildWheel($("#whMin"), [...Array(11).keys()], Math.floor(rs/60)); buildWheel($("#whSec"), [...Array(12).keys()].map(x=>x*5), rs%60); }
@@ -3148,6 +3207,7 @@ function setTab(t){
   $("#fab").innerHTML = t==="wk" ? '<span aria-hidden="true">＋</span> Allenamento' : '<span aria-hidden="true">＋</span> Aggiungi';
   if(t==="wk") renderWkTab();
   if(t==="mesi") renderDash();
+  if(t==="set") renderRem();
   if(t==="corpo") renderCorpo();
   window.scrollTo(0,0); updateMini();
 }
@@ -3442,7 +3502,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.7.0";
+$("#verNote").textContent = "Diario delle calorie · versione 1.8.0";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -3513,6 +3573,210 @@ if("serviceWorker" in navigator && location.protocol !== "file:"){
   });
   navigator.serviceWorker.addEventListener("controllerchange", ()=>{ if(updating){ updating = false; location.reload(); } });
 }
+
+/* ---------- promemoria, piano settimanale, notifiche push ---------- */
+const VAPID_PUB = "BK4XoWnA-Ug1BoNN07Zy0hnpxhegl0ANUQ3W_VLK4mcwq8j5tIFSO7r6rGEdeDlyPRYWtFKRBKn5se_STL1xPBI";
+const PUSH_DAYS = 14, DOW = ["L","M","M","G","V","S","D"], DOWN = ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
+const ALLDAYS = [0,1,2,3,4,5,6];
+function remDefaults(){ return [
+  {id:"m1", title:"Colazione", body:"Hai già registrato la colazione?", time:"09:30", days:ALLDAYS.slice(), on:true, go:"diario"},
+  {id:"m2", title:"Pranzo", body:"Hai già registrato il pranzo?", time:"14:30", days:ALLDAYS.slice(), on:true, go:"diario"},
+  {id:"m4", title:"Spuntini", body:"Hai mangiato degli spuntini? Aggiungili al diario.", time:"17:30", days:ALLDAYS.slice(), on:true, go:"diario"},
+  {id:"m3", title:"Cena", body:"Hai già registrato la cena?", time:"21:30", days:ALLDAYS.slice(), on:true, go:"diario"},
+  {id:"rp", title:"Report settimanale", body:"Il report della settimana è pronto da generare: aprilo.", time:"22:00", days:[4], on:true, go:"mesi"},
+  {id:"pl", title:"Pianifica la settimana", body:"Scegli giorni e orari degli allenamenti della prossima settimana.", time:"20:00", days:[6], on:true, go:"wk"}
+]; }
+function rems(){ if(!Array.isArray(S.settings.rem)) S.settings.rem = remDefaults(); return S.settings.rem; }
+const atLocal = (d, t) => { const [h,m]=t.split(":").map(Number), [y,mo,dd]=d.split("-").map(Number); return new Date(y,mo-1,dd,h,m,0,0); };
+// elenco delle notifiche da inviare nei prossimi giorni (orari assoluti, dal fuso del telefono)
+function buildJobs(now){
+  now = now || new Date(); const out = [], t0 = iso(now);
+  for(let i=0;i<PUSH_DAYS;i++){
+    const d = shiftDay(t0,i), wd = (new Date(d+"T12:00").getDay()+6)%7;
+    for(const r of rems()){
+      if(!r.on || !/^\d\d:\d\d$/.test(r.time||"")) continue;
+      const hit = r.date ? r.date===d : (r.days||[]).includes(wd);
+      if(!hit) continue;
+      const f = atLocal(d, r.time); if(f<=now) continue;
+      out.push({k:`r:${r.id}:${d}`, f, title:r.title||"Promemoria", body:r.body||"", tag:"rem-"+r.id, url:"?go="+(r.go||"diario")});
+    }
+    const p = S.plan && S.plan[d];
+    if(p && /^\d\d:\d\d$/.test(p.t||"")){
+      const lead = S.settings.planLead==null ? 30 : S.settings.planLead, f = new Date(atLocal(d,p.t).getTime() - lead*60000);
+      if(f>now) out.push({k:`p:${d}`, f, title: lead>0 ? `Allenamento tra ${lead} minuti` : "È ora di allenarti", body:`${p.sp && SPORTS[p.sp] ? SPORTS[p.sp].n : "Allenamento"} alle ${p.t}`, tag:"plan-"+d, url:"?go=wk"});
+    }
+  }
+  return out;
+}
+
+/* --- stato e iscrizione alle notifiche --- */
+const isStandalone = () => navigator.standalone===true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+function pushState(){
+  if(!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return {s: /iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone() ? "install" : "unsupported"};
+  if(/iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone()) return {s:"install"};
+  if(!sync.session) return {s:"login"};
+  if(Notification.permission==="denied") return {s:"denied"};
+  const p = local.get("cal_push", null);
+  return p && p.on && Notification.permission==="granted" ? {s:"on"} : {s:"off"};
+}
+function pMsg(t){ const m = $("#pushMsg"); if(m) m.textContent = t; }
+function renderPush(){
+  const el = $("#pushState"); if(!el) return; const st = pushState(); let h = "";
+  if(st.s==="unsupported") h = `<p>Questo browser non supporta le notifiche.</p>`;
+  else if(st.s==="install") h = `<p><b>Prima aggiungi l'app alla schermata Home.</b> Su iPhone le notifiche funzionano solo dall'app installata (Safari → Condividi → Aggiungi alla schermata Home, iOS 16.4 o successivo). Poi aprila da lì.</p>`;
+  else if(st.s==="login") h = `<p><b>Accedi alla sincronizzazione</b> (più in basso): le notifiche passano dallo stesso account online.</p>`;
+  else if(st.s==="denied") h = `<p>Le notifiche sono bloccate per questa app. Su iPhone: Impostazioni → Notifiche → Diario → Consenti notifiche. Poi riapri l'app.</p>`;
+  else if(st.s==="off") h = `<p>Le notifiche non sono attive su questo dispositivo.</p><div class="ai-row"><button type="button" class="primary" id="pushOn">Attiva le notifiche</button></div>`;
+  else h = `<p><b>Notifiche attive</b> su questo dispositivo.</p><div class="ai-row"><button type="button" id="pushTest">Invia una notifica di prova</button><button type="button" id="pushOff">Disattiva</button></div>`;
+  el.innerHTML = h + `<p class="note" id="pushMsg"></p>`;
+}
+const b64u = x => { const raw = atob((x + "=".repeat((4 - x.length%4)%4)).replace(/-/g,"+").replace(/_/g,"/")); return Uint8Array.from(raw, c=>c.charCodeAt(0)); };
+async function pushEnable(){
+  try{
+    const perm = await Notification.requestPermission();
+    if(perm!=="granted"){ renderPush(); pMsg("Permesso non concesso."); return; }
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub) sub = await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64u(VAPID_PUB)});
+    const j = sub.toJSON();
+    const r = await sbFetch("/rest/v1/push_subs?on_conflict=endpoint", {method:"POST", headers:{Prefer:"resolution=merge-duplicates,return=minimal"},
+      body:JSON.stringify({endpoint:j.endpoint, p256dh:j.keys.p256dh, auth:j.keys.auth, ua:navigator.userAgent.slice(0,200)})});
+    if(!r.ok) throw new Error("registrazione "+r.status);
+    local.set("cal_push", {on:true}); renderPush(); pMsg("Fatto: notifiche attive.");
+    pushSchedule(true);
+  }catch(e){ renderPush(); pMsg("Non riuscito: "+(e && e.message || e)+". Hai completato la configurazione su Supabase?"); }
+}
+async function pushDisable(){
+  try{
+    const reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription();
+    if(sub){ const ep = sub.endpoint; await sub.unsubscribe(); if(sync.session) await sbFetch("/rest/v1/push_subs?endpoint=eq."+encodeURIComponent(ep), {method:"DELETE"}); }
+  }catch(e){}
+  local.set("cal_push", {on:false}); renderPush();
+}
+async function pushTest(){
+  pMsg("Invio…");
+  try{
+    if(sync.session.expires_at*1000 - Date.now() < 60000) await sbRefresh();
+    const r = await fetch(SB_URL+"/functions/v1/send-push", {method:"POST", headers:{"Content-Type":"application/json", apikey:SB_KEY, Authorization:"Bearer "+sync.session.access_token}, body:JSON.stringify({action:"test"})});
+    const j = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(j.error || ("errore "+r.status));
+    pMsg(j.sent ? "Inviata: dovrebbe arrivare tra pochi secondi." : "Nessun dispositivo registrato: disattiva e riattiva le notifiche.");
+  }catch(e){ pMsg("Non riuscito: "+(e && e.message || e)); }
+}
+$("#pushState").addEventListener("click", ev=>{
+  const id = ev.target.id; if(id==="pushOn") pushEnable(); else if(id==="pushOff") pushDisable(); else if(id==="pushTest") pushTest();
+});
+
+/* --- invio dei promemoria al server (la coda la legge una funzione che gira ogni minuto) --- */
+var pushTimer = null, pushBusy = false;
+function pushSchedule(force){ clearTimeout(pushTimer); pushTimer = setTimeout(()=>pushRebuild(force), force ? 0 : 4000); }
+async function pushRebuild(force){
+  if(pushBusy || pushState().s!=="on") return;
+  const jobs = buildJobs(), sig = JSON.stringify(jobs.map(j=>[j.k, +j.f, j.title, j.body]));
+  if(!force && local.get("cal_pushsig","")===sig) return;
+  pushBusy = true;
+  try{
+    let r = await sbFetch("/rest/v1/push_jobs?sent_at=is.null&fire_at=gt."+encodeURIComponent(new Date().toISOString()), {method:"DELETE"});
+    if(!r.ok) throw new Error("del "+r.status);
+    if(jobs.length){
+      r = await sbFetch("/rest/v1/push_jobs?on_conflict=user_id,job_key", {method:"POST", headers:{Prefer:"resolution=merge-duplicates,return=minimal"},
+        body:JSON.stringify(jobs.map(j=>({job_key:j.k, fire_at:j.f.toISOString(), title:j.title, body:j.body, tag:j.tag, url:j.url})))});
+      if(!r.ok) throw new Error("ins "+r.status);
+    }
+    local.set("cal_pushsig", sig);
+  }catch(e){ /* riprova alla prossima occasione */ }
+  finally{ pushBusy = false; }
+}
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) pushSchedule(); });
+setTimeout(()=>pushSchedule(), 6000); setInterval(()=>pushSchedule(), 30*60*1000);
+
+/* --- scheda promemoria in Impostazioni --- */
+function remRow(r){
+  const once = !!(r.custom && r.date);
+  const head = r.custom ? `<input type="text" data-f="title" value="${esc(r.title)}" placeholder="Titolo" style="flex:1" aria-label="Titolo">` : `<b>${esc(r.title)}</b>`;
+  const days = once ? "" : `<div class="dchips">${DOW.map((n,i)=>`<button type="button" class="dchip" data-day="${i}" aria-pressed="${(r.days||[]).includes(i)}" aria-label="${DOWN[i]}">${n}</button>`).join("")}</div>`;
+  const extra = r.custom ? `<div class="remb"><input type="text" data-f="body" value="${esc(r.body||"")}" placeholder="Messaggio (facoltativo)" aria-label="Messaggio"><select data-f="mode" aria-label="Ripetizione"><option value="once"${r.date?" selected":""}>Una volta</option><option value="week"${r.date?"":" selected"}>Ogni settimana</option></select>${r.date?`<input type="date" data-f="date" value="${esc(r.date)}" aria-label="Data">`:""}<button type="button" class="link" data-del="1">Elimina</button></div>` : "";
+  return `<div class="rem${r.on?"":" off"}" data-id="${esc(r.id)}"><div class="remh"><input type="checkbox" data-f="on" ${r.on?"checked":""} aria-label="Attivo">${head}<input type="time" data-f="time" value="${esc(r.time||"09:00")}" aria-label="Ora"></div>${days}${extra}</div>`;
+}
+function renderRem(){
+  const el = $("#remList"); if(!el) return;
+  el.innerHTML = rems().map(remRow).join("");
+  $("#planLead").value = String(S.settings.planLead==null ? 30 : S.settings.planLead);
+  $("#iosTimer").checked = !!S.settings.iosTimer;
+  if(document.activeElement!==$("#iosShortcut")) $("#iosShortcut").value = S.settings.iosShortcut || "Riposo";
+  renderPush();
+}
+$("#remList").addEventListener("change", ev=>{
+  const row = ev.target.closest(".rem"), f = ev.target.dataset.f; if(!row || !f) return;
+  const r = rems().find(x=>x.id===row.dataset.id); if(!r) return;
+  const v = ev.target.value;
+  if(f==="on") r.on = ev.target.checked;
+  else if(f==="time"){ if(!/^\d\d:\d\d$/.test(v)) return; r.time = v; }
+  else if(f==="title") r.title = v.trim() || "Promemoria";
+  else if(f==="body") r.body = v.trim();
+  else if(f==="date") r.date = v || today();
+  else if(f==="mode"){ if(v==="once") r.date = r.date || shiftDay(today(),1); else { r.date = null; if(!(r.days||[]).length) r.days = [(new Date().getDay()+6)%7]; } }
+  saveSettings(true); renderRem();
+});
+$("#remList").addEventListener("click", ev=>{
+  const row = ev.target.closest(".rem"); if(!row) return;
+  const L = rems(), i = L.findIndex(x=>x.id===row.dataset.id); if(i<0) return;
+  const dc = ev.target.closest("[data-day]");
+  if(dc){ const n = Number(dc.dataset.day), a = L[i].days || (L[i].days=[]); const k = a.indexOf(n); if(k>=0) a.splice(k,1); else a.push(n); a.sort(); saveSettings(true); renderRem(); return; }
+  if(ev.target.closest("[data-del]")){ const gone = L.splice(i,1)[0]; saveSettings(true); renderRem(); toast(`Promemoria "${gone.title}" eliminato.`, true, true, ()=>{ rems().splice(i,0,gone); saveSettings(true); renderRem(); }); }
+});
+$("#remAdd").onclick = ()=>{
+  rems().push({id:"c"+Date.now().toString(36), title:"Nuovo promemoria", body:"", time:"09:00", days:[], date:shiftDay(today(),1), on:true, custom:true, go:"diario"});
+  saveSettings(true); renderRem();
+  const t = document.querySelectorAll('#remList [data-f="title"]'); if(t.length){ const x = t[t.length-1]; x.focus(); x.select(); }
+};
+$("#planLead").addEventListener("change", ()=>{ S.settings.planLead = Number($("#planLead").value); saveSettings(true); });
+
+/* --- timer di iPhone tramite Comandi --- */
+function iosTimerURL(secs){ const n = (S.settings.iosShortcut||"Riposo").trim() || "Riposo"; return `shortcuts://run-shortcut?name=${encodeURIComponent(n)}&input=text&text=${Math.max(1,Math.round(secs))}`; }
+function iosTimerGo(u){ location.href = u; }
+function iosTimerStart(secs){ try{ iosTimerGo(iosTimerURL(secs)); }catch(e){} }
+$("#iosTimer").addEventListener("change", ()=>{ S.settings.iosTimer = $("#iosTimer").checked; saveSettings(true); });
+$("#iosShortcut").addEventListener("input", ()=>{ S.settings.iosShortcut = $("#iosShortcut").value; saveSettings(); });
+$("#iosTimerTest").onclick = ()=>iosTimerStart(10);
+
+/* --- piano della settimana (tab Allenamento) --- */
+let planOff = 0;
+function lastPlan(){ const k = Object.keys(S.plan||{}).sort().pop(); return k ? S.plan[k] : null; }
+function renderPlan(){
+  const el = $("#planDays"); if(!el) return;
+  const ws = shiftDay(weekStart(today()), planOff*7), t = today(); let planned = 0, done = 0, h = "";
+  $("#planWeek").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed", String(Number(b.dataset.o)===planOff)));
+  for(let i=0;i<7;i++){
+    const d = shiftDay(ws,i), p = S.plan[d], past = d<t;
+    if(p){ planned++; if(hasWk(d)) done++; }
+    const st = p ? (hasWk(d) ? '<span class="pill">fatto</span>' : past ? '<span class="pill warn">saltato</span>' : "") : "";
+    h += `<div class="prow" data-d="${d}"><span class="pd"><b>${DOWN[i]}</b><small>${dShort(d)}</small></span>
+      <button type="button" class="dchip pbtn" data-ptoggle aria-pressed="${!!p}" ${past&&!p?"disabled":""}>${p?"Mi alleno":"Riposo"}</button>
+      ${p?`<span class="pextra"><input type="time" data-pt value="${esc(p.t)}" aria-label="Orario"><select data-ps aria-label="Sport">${Object.keys(SPORTS).map(k=>`<option value="${k}"${p.sp===k?" selected":""}>${esc(SPORTS[k].n)}</option>`).join("")}</select></span>`:""}
+      <span class="pst">${st}</span></div>`;
+  }
+  el.innerHTML = h;
+  const hint = pushState().s!=="on" ? " Per i promemoria attiva le notifiche in Impostazioni." : ` Ti avviso ${S.settings.planLead>0?S.settings.planLead+" minuti prima":"all'ora"} di ogni allenamento.`;
+  $("#planSub").textContent = planned ? `${planned} ${planned===1?"allenamento pianificato":"allenamenti pianificati"}${done?`, ${done} ${done===1?"fatto":"fatti"}`:""}.${hint}` : "Scegli i giorni e l'orario in cui vuoi allenarti.";
+}
+$("#planWeek").addEventListener("click", ev=>{ const b = ev.target.closest("[data-o]"); if(!b) return; planOff = Number(b.dataset.o); renderPlan(); });
+$("#planDays").addEventListener("click", ev=>{
+  const b = ev.target.closest("[data-ptoggle]"); if(!b) return;
+  const d = b.closest(".prow").dataset.d;
+  if(S.plan[d]) delete S.plan[d]; else { const l = lastPlan(); S.plan[d] = {t: l ? l.t : "18:00", sp: l ? l.sp : "gym"}; }
+  saveMap("plan", true); renderPlan();
+});
+$("#planDays").addEventListener("change", ev=>{
+  const row = ev.target.closest(".prow"); if(!row) return; const p = S.plan[row.dataset.d]; if(!p) return;
+  if(ev.target.matches("[data-pt]")){ if(!/^\d\d:\d\d$/.test(ev.target.value)) return; p.t = ev.target.value; }
+  else if(ev.target.matches("[data-ps]")) p.sp = ev.target.value;
+  saveMap("plan", true); pushSchedule();
+});
+
+/* --- apertura da notifica (?go=...) --- */
+(function(){ const g = new URLSearchParams(location.search).get("go"); if(g && TABS[g]) setTab(g); })();
+if("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", e=>{ if(e.data && e.data.type==="go" && TABS[e.data.go]) setTab(e.data.go); });
 </script>
 </body>
 </html>
