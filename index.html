@@ -3502,7 +3502,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.8.1";
+$("#verNote").textContent = "Diario delle calorie · versione 1.8.2";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -3569,7 +3569,7 @@ if("serviceWorker" in navigator && location.protocol !== "file:"){
       if(reg.waiting) ready(reg.waiting);
       reg.addEventListener("updatefound", ()=>{ const w = reg.installing; w && w.addEventListener("statechange", ()=>{ if(w.state==="installed") ready(w); }); });
       setInterval(()=>reg.update().catch(()=>{}), 60*60*1000);
-    }catch(e){ console.warn(e); }
+    }catch(e){ console.warn(e); window.__swErr = (e && (e.name+": "+e.message)) || String(e); }
   });
   navigator.serviceWorker.addEventListener("controllerchange", ()=>{ if(updating){ updating = false; location.reload(); } });
 }
@@ -3636,7 +3636,7 @@ const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_,rej)=>setTi
 async function pushDiag(){
   const el = $("#pushDiag"); if(!el) return; let sw = "assente";
   try{ const r = await navigator.serviceWorker.getRegistration(); sw = r ? (r.active ? "attivo" : r.installing ? "in installazione" : r.waiting ? "in attesa" : "sconosciuto") + (r.active && r.waiting ? " (nuova versione in attesa: tocca Aggiorna)" : "") : "non registrato"; }catch(e){ sw = "errore"; }
-  el.textContent = `Diagnostica · permesso: ${"Notification" in window ? Notification.permission : "n/d"} · app installata: ${isStandalone()?"sì":"no"} · service worker: ${sw} · accesso: ${sync.session?"sì":"no"}`;
+  el.textContent = `Diagnostica · indirizzo: ${location.host}${location.pathname} · errore registrazione: ${window.__swErr || "nessuno"} · permesso: ${"Notification" in window ? Notification.permission : "n/d"} · app installata: ${isStandalone()?"sì":"no"} · service worker: ${sw} · accesso: ${sync.session?"sì":"no"}`;
 }
 async function pushEnable(){
   const btn = $("#pushOn"); if(btn){ btn.disabled = true; btn.textContent = "Attivazione…"; }
@@ -3645,7 +3645,9 @@ async function pushEnable(){
     const perm = await withTimeout(Notification.requestPermission(), 90000, "Permesso");
     if(perm!=="granted"){ renderPush(); pMsg(perm==="denied" ? "Permesso negato. Su iPhone: Impostazioni → Notifiche → Diario → Consenti notifiche, poi riapri l'app." : "Non hai concesso il permesso: tocca di nuovo Attiva e scegli Consenti."); return; }
     pMsg("2/4 Preparo il servizio di notifica…");
-    const reg = await withTimeout(navigator.serviceWorker.ready, 15000, "Service worker");
+    let reg = await navigator.serviceWorker.getRegistration();
+    if(!reg){ pMsg("2/4 Registro il servizio di notifica (prima mancava)…"); reg = await withTimeout(navigator.serviceWorker.register("sw.js"), 20000, "Registrazione"); window.__swErr = null; }
+    reg = await withTimeout(navigator.serviceWorker.ready, 20000, "Attivazione del service worker");
     pMsg("3/4 Mi iscrivo alle notifiche di Apple…");
     let sub = await withTimeout(reg.pushManager.getSubscription(), 10000, "Iscrizione");
     if(!sub) sub = await withTimeout(reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64u(VAPID_PUB)}), 30000, "Iscrizione");
