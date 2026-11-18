@@ -1,6 +1,6 @@
 // Service worker del Diario delle calorie: fa funzionare l'app offline.
 // Quando aggiorni i file dell'app, cambia VERSION: l'app mostrerà "È pronta una nuova versione".
-const VERSION = "1.8.2";
+const VERSION = "1.8.3";
 const SHELL_CACHE = "diario-shell-" + VERSION;
 const FONT_CACHE = "diario-fonts";
 const SHELL = [
@@ -14,8 +14,13 @@ const SHELL = [
 ];
 
 self.addEventListener("install", event => {
-  // cache: "reload" scarica sempre i file nuovi, anche se il browser ne ha una copia vecchia
-  event.waitUntil(caches.open(SHELL_CACHE).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: "reload" })))));
+  // cache: "reload" scarica sempre i file nuovi, anche se il browser ne ha una copia vecchia.
+  // Ogni file è salvato a parte: se un'icona o il manifest mancano su GitHub l'installazione non fallisce.
+  event.waitUntil((async () => {
+    const c = await caches.open(SHELL_CACHE);
+    const res = await Promise.allSettled(SHELL.map(u => c.add(new Request(u, { cache: "reload" }))));
+    if (res[0].status === "rejected" && res[1].status === "rejected") throw new Error("index.html non raggiungibile");
+  })());
 });
 
 self.addEventListener("activate", event => {

@@ -3502,7 +3502,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.8.2";
+$("#verNote").textContent = "Diario delle calorie · versione 1.8.3";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -3632,6 +3632,18 @@ function renderPush(){
   pushDiag();
 }
 const b64u = x => { const raw = atob((x + "=".repeat((4 - x.length%4)%4)).replace(/-/g,"+").replace(/_/g,"/")); return Uint8Array.from(raw, c=>c.charCodeAt(0)); };
+// aspetta che il service worker sia attivo; se l'installazione fallisce lo dice subito, con il motivo probabile
+function swActive(reg, ms){
+  return new Promise((res, rej)=>{
+    const w = reg.installing || reg.waiting || reg.active; if(!w) return rej(new Error("nessun service worker in installazione"));
+    if(w.state==="activated") return res(reg);
+    const t = setTimeout(()=>rej(new Error("il service worker è rimasto in stato '"+w.state+"' per "+ms/1000+" secondi")), ms);
+    w.addEventListener("statechange", ()=>{
+      if(w.state==="activated"){ clearTimeout(t); res(reg); }
+      else if(w.state==="redundant"){ clearTimeout(t); rej(new Error("installazione del service worker fallita: un file elencato in sw.js non è raggiungibile su GitHub, oppure sw.js non è quello giusto")); }
+    });
+  });
+}
 const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error(what+": nessuna risposta dopo "+Math.round(ms/1000)+" secondi")), ms))]);
 async function pushDiag(){
   const el = $("#pushDiag"); if(!el) return; let sw = "assente";
@@ -3647,7 +3659,8 @@ async function pushEnable(){
     pMsg("2/4 Preparo il servizio di notifica…");
     let reg = await navigator.serviceWorker.getRegistration();
     if(!reg){ pMsg("2/4 Registro il servizio di notifica (prima mancava)…"); reg = await withTimeout(navigator.serviceWorker.register("sw.js"), 20000, "Registrazione"); window.__swErr = null; }
-    reg = await withTimeout(navigator.serviceWorker.ready, 20000, "Attivazione del service worker");
+    if(!reg.active) await swActive(reg, 20000);
+    reg = await withTimeout(navigator.serviceWorker.ready, 10000, "Attivazione del service worker");
     pMsg("3/4 Mi iscrivo alle notifiche di Apple…");
     let sub = await withTimeout(reg.pushManager.getSubscription(), 10000, "Iscrizione");
     if(!sub) sub = await withTimeout(reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64u(VAPID_PUB)}), 30000, "Iscrizione");
