@@ -817,6 +817,10 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
       <div id="remList"></div>
       <div class="ai-row" style="margin-top:6px"><button type="button" id="remAdd">＋ Nuovo promemoria</button></div>
       <label style="margin-top:12px">Avviso prima dell'allenamento<select id="planLead"><option value="0">All'ora dell'allenamento</option><option value="15">15 minuti prima</option><option value="30">30 minuti prima</option><option value="45">45 minuti prima</option><option value="60">1 ora prima</option></select></label>
+      <details style="padding:10px 12px;margin-top:10px"><summary class="note">Avanzate</summary>
+        <label style="margin-top:8px">Nome della funzione su Supabase<input id="pushFn" spellcheck="false" autocomplete="off" autocapitalize="none" placeholder="send-push"></label>
+        <p class="note">Va scritto uguale al nome che vedi in Supabase → Edge Functions (meglio copiarlo e incollarlo).</p>
+      </details>
       <p class="note">Gli allenamenti li pianifichi nella scheda Allenamento. I promemoria vengono preparati per i prossimi 14 giorni: apri l'app almeno ogni due settimane.</p>
     </section>
     <section class="card" id="iosTimerCard">
@@ -3502,7 +3506,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.8.3";
+$("#verNote").textContent = "Diario delle calorie · versione 1.8.4";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -3684,7 +3688,7 @@ async function pushTest(){
   pMsg("Invio…");
   try{
     if(sync.session.expires_at*1000 - Date.now() < 60000) await sbRefresh();
-    const r = await fetch(SB_URL+"/functions/v1/send-push", {method:"POST", headers:{"Content-Type":"application/json", apikey:SB_KEY, Authorization:"Bearer "+sync.session.access_token}, body:JSON.stringify({action:"test"})});
+    const r = await fetch(SB_URL+"/functions/v1/"+encodeURIComponent((S.settings.pushFn||"send-push").trim()), {method:"POST", headers:{"Content-Type":"application/json", apikey:SB_KEY, Authorization:"Bearer "+sync.session.access_token}, body:JSON.stringify({action:"test"})});
     const j = await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(j.error || ("errore "+r.status));
     pMsg(j.sent ? "Inviata: dovrebbe arrivare tra pochi secondi." : "Nessun dispositivo registrato: disattiva e riattiva le notifiche.");
@@ -3731,6 +3735,7 @@ function renderRem(){
   $("#planLead").value = String(S.settings.planLead==null ? 30 : S.settings.planLead);
   $("#iosTimer").checked = !!S.settings.iosTimer;
   if(document.activeElement!==$("#iosShortcut")) $("#iosShortcut").value = S.settings.iosShortcut || "Riposo";
+  if(document.activeElement!==$("#pushFn")) $("#pushFn").value = S.settings.pushFn || "";
   renderPush();
 }
 $("#remList").addEventListener("change", ev=>{
@@ -3766,6 +3771,7 @@ function iosTimerStart(secs){ try{ iosTimerGo(iosTimerURL(secs)); }catch(e){} }
 $("#iosTimer").addEventListener("change", ()=>{ S.settings.iosTimer = $("#iosTimer").checked; saveSettings(true); });
 $("#iosShortcut").addEventListener("input", ()=>{ S.settings.iosShortcut = $("#iosShortcut").value; saveSettings(); });
 $("#iosTimerTest").onclick = ()=>iosTimerStart(10);
+$("#pushFn").addEventListener("input", ()=>{ S.settings.pushFn = $("#pushFn").value.trim(); saveSettings(); });
 
 /* --- piano della settimana (tab Allenamento) --- */
 let planOff = 0;
