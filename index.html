@@ -870,6 +870,22 @@ button:active:not(:disabled){transform:scale(.97)}
 details > summary + *{animation:dopen .28s var(--ease)}
 @keyframes dopen{from{opacity:0;transform:translateY(-6px)}}
 @media (prefers-reduced-motion:reduce){.sheet,.wrap > .view:not([hidden]),details > summary + *{animation:none}.plist .prow,#meals .row,.wkcard,.swipe-act,button{transition:none}}
+
+/* ================= 1.13 ================= */
+details.setgrp > .setin{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+details.setgrp > .setin > .sub{margin:0}
+/* calendario della settimana nel Diario: più compatto */
+.dayhead{margin-bottom:-4px}
+.weeklabel{margin-bottom:2px}
+.wpage{gap:5px;padding:2px 2px 6px}
+.wd{border:0;box-shadow:none;background:var(--surface);border-radius:12px;padding:6px 0 5px;gap:0}
+.wd small{font-size:.66rem;font-weight:600}
+.wd b{font-family:var(--display);font-weight:700;font-size:1.12rem;line-height:1.15}
+.wd span{font-size:.62rem}
+.wd .gym{height:10px}
+.wd[aria-current="date"]{background:var(--accent);color:var(--surface)}
+.wd[aria-current="date"] small,.wd[aria-current="date"] span{color:color-mix(in srgb,var(--surface) 80%,transparent)}
+.weekinfo{font-size:.78rem;margin-top:-4px}
 </style>
 </head>
 <body>
@@ -980,8 +996,9 @@ details > summary + *{animation:dopen .28s var(--ease)}
   <div class="view" id="viewSet" hidden>
     <h2 class="pagetitle">Impostazioni</h2>
     <div class="sync on" id="sync"><i></i><span>Salvato su questo dispositivo · funziona anche offline</span></div>
-    <section class="card" id="remCard">
-      <h3>Promemoria</h3>
+    <details class="setgrp" id="remCard">
+      <summary>Promemoria</summary>
+      <div class="setin">
       <div class="pstate" id="pushState"></div>
       <div id="remList"></div>
       <div class="ai-row" style="margin-top:6px"><button type="button" id="remAdd">＋ Nuovo promemoria</button></div>
@@ -991,9 +1008,11 @@ details > summary + *{animation:dopen .28s var(--ease)}
         <p class="note">Va scritto uguale al nome che vedi in Supabase → Edge Functions (meglio copiarlo e incollarlo).</p>
       </details>
       <p class="note">Gli orari degli allenamenti li scegli in Allenamento. Apri l'app almeno ogni due settimane per tenere attivi i promemoria.</p>
-    </section>
-    <section class="card" id="iosTimerCard">
-      <h3>Timer sul blocco schermo</h3>
+      </div>
+    </details>
+    <details class="setgrp" id="iosTimerCard">
+      <summary>Timer sul blocco schermo</summary>
+      <div class="setin">
       <p class="sub">Con il recupero parte anche il timer di iPhone, visibile sul blocco schermo.</p>
       <label class="chk"><input type="checkbox" id="iosTimer"> Avvia il timer di iPhone insieme al recupero</label>
       <label style="margin-top:8px">Nome del comando in Comandi<input id="iosShortcut" spellcheck="false" autocomplete="off" autocapitalize="none"></label>
@@ -1010,7 +1029,8 @@ details > summary + *{animation:dopen .28s var(--ease)}
         </ol>
         <p class="note">Quando parte, iPhone apre per un istante Comandi: dopo il timer torna all'app dal selettore delle app o dalla Dynamic Island.</p>
       </details>
-    </section>
+      </div>
+    </details>
     <details id="customDetails">
       <summary>Aggiungi un alimento a mano</summary>
       <form class="custom" id="customForm" autocomplete="off">
@@ -1809,7 +1829,9 @@ function openAdd(meal){
   $("#meal").value = meal || (day===today() ? defaultMeal() : $("#meal").value || "Pranzo");
   selFood = null; $("#food").value = ""; $("#grams").value = "";
   renderResults(); updatePreview(); $("#addSheet").scrollTop = 0;
-  $("#food").focus();
+  $("#food").focus({preventScroll:true});
+  requestAnimationFrame(()=>{ $("#addSheet").scrollTop = 0; });
+  setTimeout(()=>{ $("#addSheet").scrollTop = 0; }, 450);
 }
 function closeAdd(){
   $("#addSheet").hidden = true; document.body.classList.remove("sheet-open");
@@ -1912,7 +1934,7 @@ function hbar(label, v, max, valText, color){
 }
 
 function renderDash(){
-  renderGoalLog(); renderWeek();
+  renderGoalLog(); renderDashWeek();
   renderReport();
   const ms = monthsWithData(), sel = $("#dashMonth");
   if(!ms.length){
@@ -2205,7 +2227,13 @@ function reportPrompt(end){
   ds.forEach(d=>normEntries(S.days[d]).forEach(e=>{ foods[e.f]=(foods[e.f]||0)+calc(e)[0]; }));
   const topF = Object.entries(foods).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([n,k])=>`${n} ${fmt(k)} kcal`).join(", ");
   const wts = Object.keys(S.weights).filter(d=>d>=shiftDay(end,-27)).sort().map(d=>`${d}: ${S.weights[d]} kg`).join(", ") || "nessuna pesata";
-  const prompt = `Sei un coach di nutrizione sportiva. Scrivi in italiano un report settimanale breve e concreto.
+  const wks = wkSorted().filter(w=>w.d>=ds[0] && w.d<=end).map(w=>{
+    const ex = (w.ex||[]).map(e=>{ const bw = exIsBW(e.n), b = bestSet(e.sets.filter(x=>Number(x.r)>0), bw), last = lastSession(e.n, shiftDay(w.d,-1), w.id); const lb = last ? bestSet(last.sets, bw) : null;
+      return b ? `${e.n} ${e.sets.length} serie, migliore ${setTxt(b,bw)}${lb ? ` (volta prima ${setTxt(lb,bw)})` : ""}` : e.n; }).join("; ");
+    return `${w.d}: ${SPORTS[w.t].n}, ${fmt(w.min)} min, ${fmt(w.kcal)} kcal${w.km ? `, ${w.km} km` : ""}${ex ? ` – ${ex}` : ""}`;
+  });
+  const planned = ds.filter(d=>S.plan && S.plan[d]), plannedDone = planned.filter(hasWk);
+  const prompt = `Sei un coach di nutrizione e allenamento. Scrivi in italiano un report settimanale molto breve: al massimo 110 parole in tutto.
 ${profileText()}
 
 Ultimi 7 giorni:
@@ -2213,12 +2241,14 @@ ${rows.join("\n")}
 
 Alimenti che hanno pesato di più (kcal totali nella settimana): ${topF||"nessuno"}
 Pesate delle ultime 4 settimane: ${wts}
+Allenamenti della settimana:${wks.length ? "\n"+wks.join("\n") : " nessuno"}
+Pianificati: ${planned.length}, fatti di quelli pianificati: ${plannedDone.length}
 
-Struttura (niente titoli markdown, usa righe in grassetto con **):
-**Com'è andata** – 2-3 righe con le medie della settimana rispetto agli obiettivi e quanti giorni sono stati registrati.
-**Cosa ha funzionato** – 1-3 punti.
-**Cosa cambiare** – massimo 3 azioni concrete per la prossima settimana, con alimenti e grammi dove utile.
-**Peso** – commenta l'andamento (obiettivo +0,5–1 kg al mese) e se serve aggiustare le calorie di ±200 kcal. Se mancano pesate, chiedi di pesarsi 1-2 volte a settimana.`;
+Struttura (niente titoli markdown, righe in grassetto con **, frasi brevi, niente premesse):
+**Alimentazione** – 1-2 righe: medie di calorie e proteine rispetto agli obiettivi, giorni registrati.
+**Allenamento** – 1-2 righe: sessioni fatte (e rispetto al piano), un progresso o un calo concreto negli esercizi.
+**Peso** – 1 riga sull'andamento (obiettivo ${(GOALS[String(S.settings.goal)]||GOALS["1"]).name.toLowerCase()}); se mancano pesate, chiedi di pesarsi 1-2 volte a settimana.
+**Prossima settimana** – massimo 3 azioni concrete, una per riga, con numeri.`;
   return prompt;
 }
 async function makeReport(){
@@ -3012,7 +3042,7 @@ function addExercise(n){
   $("#exSheet").hidden = true; renderWk();
   const el = document.querySelector(`.exb[data-ex="${wkDraft.ex.length-1}"]`); if(el) el.scrollIntoView({block:"start", behavior:"smooth"});
 }
-$("#wkAddEx").onclick = ()=>{ $("#exQ").value = ""; $("#exSheet").hidden = false; $("#exSheet").scrollTop = 0; renderEx(); $("#exQ").focus(); };
+$("#wkAddEx").onclick = ()=>{ $("#exQ").value = ""; $("#exSheet").hidden = false; $("#exSheet").scrollTop = 0; renderEx(); $("#exQ").focus({preventScroll:true}); };
 $("#exClose").onclick = ()=>{ $("#exSheet").hidden = true; };
 $("#exQ").addEventListener("input", renderEx);
 $("#exMus").addEventListener("click", ev=>{ const b = ev.target.closest("[data-m]"); if(!b) return; exMusSel = b.dataset.m; renderEx(); });
@@ -3697,7 +3727,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.12.0";
+$("#verNote").textContent = "Diario delle calorie · versione 1.13.0";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -3806,7 +3836,7 @@ function buildJobs(now){
       if(r.id==="rp" && !r.custom && !r.body){
         // il server chiede a Claude il report (chiave ANTHROPIC_API_KEY su Supabase); se non può, invia il riepilogo "fb"
         let prompt = ""; try{ prompt = reportPrompt(d); }catch(e){}
-        out.push({k:`r:rp:${d}`, f, title:r.title||"Riepilogo della settimana", body:JSON.stringify({fb:weekText(weekStart(d)), prompt, end:d}), tag:"ai-report", url:"?go=mesi"});
+        out.push({k:`r:rp:${d}`, f, title:r.title||"Riepilogo della settimana", body:JSON.stringify({fb:dashWeekText(weekStart(d)), prompt, end:d}), tag:"ai-report", url:"?go=mesi"});
         continue;
       }
       if(r.id==="pr" && !r.custom){ out.push({k:`r:pr:${d}`, f, title:r.title||"Proteine di oggi", body:JSON.stringify({d, goal:goalsAt(d).prot}), tag:"prot-check", url:"?go=diario"}); continue; }
@@ -4023,7 +4053,7 @@ $("#planDays").addEventListener("change", ev=>{
 
 
 /* --- riepilogo della settimana (card in Dashboard + testo della notifica della domenica) --- */
-function weekSummary(ws){
+function dashWeekSummary(ws){
   const t = today(), ds = [...Array(7)].map((_,i)=>shiftDay(ws,i)).filter(d=>d<=t);
   const logged = ds.filter(hasDay), o = {days:ds.length, logged:logged.length};
   if(logged.length){
@@ -4040,8 +4070,8 @@ function weekSummary(ws){
   if(wd.length>=2) o.w0 = all[wd[0]], o.w1 = all[wd[wd.length-1]];
   return o;
 }
-function weekLines(ws){
-  const o = weekSummary(ws), L = [];
+function dashWeekLines(ws){
+  const o = dashWeekSummary(ws), L = [];
   if(!o.logged){ L.push("Nessun pasto registrato."); }
   else {
     L.push(`Calorie: ${fmt(o.kcal)} al giorno su ${fmt(o.goal)} (${o.logged}/${o.days} giorni registrati)`);
@@ -4053,11 +4083,11 @@ function weekLines(ws){
   if(o.w0!=null) L.push(`Peso: ${g1(o.w0)} → ${g1(o.w1)} kg (${signed(o.w1-o.w0," kg")})`);
   return L;
 }
-const weekText = ws => weekLines(ws).join("\n");
-function renderWeek(){
+const dashWeekText = ws => dashWeekLines(ws).join("\n");
+function renderDashWeek(){
   const el = $("#weekBody"); if(!el) return;
   const cur = weekStart(today()), blocks = [[cur,"Questa settimana"],[shiftDay(cur,-7),"Settimana scorsa"]];
-  el.innerHTML = blocks.map(([ws,l])=>`<div class="wkblk"><b>${l}</b> <small>${dShort(ws)} – ${dShort(shiftDay(ws,6))}</small><ul>${weekLines(ws).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("");
+  el.innerHTML = blocks.map(([ws,l])=>`<div class="wkblk"><b>${l}</b> <small>${dShort(ws)} – ${dShort(shiftDay(ws,6))}</small><ul>${dashWeekLines(ws).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("");
 }
 
 /* --- timer di recupero: avviso dal server quando finisce (anche con l'app chiusa) --- */
