@@ -15,7 +15,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: una colonna stretta con due schede (Diario, Dashboard); su telefono le schede stanno in basso come in un'app */
 :root{
@@ -710,6 +710,111 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
 .last.tip2{margin-top:-2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.last.tip2 b{color:var(--accent)}
 .wkblk{margin:8px 0}.wkblk ul{margin:4px 0 0;padding-left:18px}.wkblk li{margin:2px 0;font-size:.9rem}
 .restbar #restMinus,.restbar #restPlus{text-decoration:none;border:1px solid color-mix(in srgb,var(--bg) 35%,transparent);border-radius:99px;padding:3px 9px;font-size:.82rem}
+
+/* ================= 1.11: ridisegno ================= */
+:root{
+  --bg:#edf1ed; --surface:#ffffff; --fg:#16201a; --muted:#5e6b63; --line:#dde4de;
+  --accent:#1f6448; --accent-soft:#deede4; --carb:#b5801a; --fat:#3a6cb0;
+  --display:"Barlow Semi Condensed","Figtree",system-ui,sans-serif;
+  --tabh:58px; --r:22px; --r2:14px;
+  --float:0 10px 30px rgba(18,32,24,.16),0 2px 6px rgba(18,32,24,.08);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1512;--surface:#18211c;--fg:#e8efea;--muted:#97a69c;--line:#27322b;--accent:#82d1a6;--accent-soft:#1d3327;--float:0 10px 30px rgba(0,0,0,.5)}}
+:root[data-theme="dark"]{--bg:#0f1512;--surface:#18211c;--fg:#e8efea;--muted:#97a69c;--line:#27322b;--accent:#82d1a6;--accent-soft:#1d3327;--float:0 10px 30px rgba(0,0,0,.5)}
+body{font-size:15.5px;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display);letter-spacing:0}
+h3{font-size:1.22rem;font-weight:600;line-height:1.2}
+h2{font-weight:700}
+
+/* superfici: niente ombre sulle schede, solo su ciò che galleggia */
+.card{border:0;box-shadow:none;border-radius:var(--r);padding:18px 18px 16px;gap:12px}
+.card .sub{font-size:.86rem;color:var(--muted);margin:-6px 0 0;max-width:62ch}
+.note{max-width:66ch}
+.tgt,.dli,.ttile,.opt,.progex,.kpi{border:0;background:var(--bg);border-radius:var(--r2)}
+.kpi{padding:14px 15px 12px}
+.kpi::before{left:15px;width:22px}
+.banner{border:0;border-radius:var(--r2)}
+
+/* etichette in tondo, non in maiuscolo */
+.wd small,.macro small,.extra small,.split small,.chips-label,.tgt small,.kpi small,.multi .m h4,table.months th,.ddbtn .gtxt small,.ttile small,.sugg h4,.wkweek,.sethead,.tag{text-transform:none;letter-spacing:0;font-size:.8rem;font-weight:500}
+.sugg h4,.wkweek,.multi .m h4{font-weight:600;color:var(--muted)}
+
+/* numeri: il carattere della app */
+.big strong,.macro b,.kpi b,.tgt b,.ttile b,.dcenter b,.restval,.wi,.restbar b,.stat b,.mtot b{font-family:var(--display);font-weight:700;letter-spacing:0}
+.big strong{font-size:3.6rem}
+.macro b{font-size:1.6rem}
+.kpi b{font-size:1.9rem;line-height:1.05}
+
+/* barra in alto: titolo grande, niente menu */
+#navWrap{display:none}
+.appbar{border-bottom:0;background:color-mix(in srgb,var(--bg) 82%,transparent)}
+.appbar h1{font-family:var(--display);font-size:1.75rem;font-weight:700}
+.appbar h1 svg{width:24px;height:24px}
+
+/* barra delle sezioni in basso */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:45;display:grid;grid-template-columns:repeat(5,1fr);
+  padding:4px max(6px,env(safe-area-inset-left,0px)) calc(4px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-right,0px));
+  background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);
+  border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.tabbar button{border:0;background:none;box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 3px;min-height:var(--tabh);
+  font:600 .66rem/1.1 var(--body);color:var(--muted);border-radius:12px;max-width:110px;margin:0 auto;width:100%}
+.tabbar svg{width:25px;height:25px;stroke-width:1.9}
+.tabbar button[aria-current="page"]{color:var(--accent)}
+.tabbar button[aria-current="page"] svg{stroke-width:2.4}
+.tabbar button:active{transform:scale(.94)}
+body.sheet-open .tabbar{display:none}
+@media (min-width:900px){.tabbar{left:50%;right:auto;transform:translateX(-50%);bottom:14px;width:520px;border:1px solid var(--line);border-radius:20px;box-shadow:var(--float)}}
+.wrap{padding-bottom:calc(var(--tabh) + 120px + env(safe-area-inset-bottom,0px))}
+.fab{bottom:calc(var(--tabh) + 22px + env(safe-area-inset-bottom,0px));box-shadow:var(--float);border-radius:99px;padding:15px 20px;font-weight:700}
+.livebar{bottom:calc(var(--tabh) + 22px + env(safe-area-inset-bottom,0px));box-shadow:var(--float)}
+.toast{bottom:calc(var(--tabh) + 92px + env(safe-area-inset-bottom,0px))}
+
+/* pasti: righe più leggere, azioni secondarie meno evidenti */
+.meal.card{padding:16px 16px 8px}
+.meal .acts .ghost{color:var(--muted);font-weight:500}
+
+/* piano della settimana */
+.pstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.pday{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 7px;border:0;border-radius:16px;background:var(--bg);color:var(--fg);box-shadow:none;
+  transition:background-color .18s ease,color .18s ease,transform .12s ease;min-width:0}
+.pday small{font-size:.72rem;font-weight:600;color:var(--muted);transition:color .18s ease}
+.pday b{font-family:var(--display);font-weight:700;font-size:1.45rem;line-height:1;font-variant-numeric:tabular-nums}
+.pday i{font-style:normal;height:14px;font-size:.75rem;line-height:14px;font-weight:700}
+.pday.today{box-shadow:inset 0 0 0 2px var(--accent)}
+.pday[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.pday[aria-pressed="true"] small{color:color-mix(in srgb,var(--surface) 78%,transparent)}
+.pday.miss{background:color-mix(in srgb,var(--warn) 16%,var(--surface));color:var(--warn)}
+.pday.miss small{color:var(--warn)}
+.pday:disabled{opacity:.4}
+.pday:active:not(:disabled){transform:scale(.94)}
+.plist{display:flex;flex-direction:column}
+.plist .prow{display:grid;grid-template-columns:62px minmax(0,1fr) minmax(0,1.25fr) 40px;gap:8px;align-items:center;padding:8px 0;border:0;border-top:1px solid var(--line);margin:0;flex-wrap:nowrap;animation:prow .2s ease-out}
+.plist .prow:first-child{border-top:0}
+.plist .pd{width:auto;font-size:.92rem}
+.plist .pd b{font-weight:700}
+.plist input[type=time],.plist select{min-height:42px;padding:8px 10px;width:100%;min-width:0}
+.plist .pill{justify-self:center;font-size:.72rem}
+.pdel{border:0;background:none;box-shadow:none;color:var(--muted);width:40px;height:40px;padding:0;border-radius:12px}
+.pempty{margin:0;color:var(--muted);font-size:.88rem}
+@keyframes prow{from{opacity:0;transform:translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){.pday,.plist .prow{transition:none;animation:none}}
+
+/* opzioni da aprire (es. allenamento in viaggio) */
+details.card.more{padding:0;gap:0}
+details.card.more > summary{list-style:none;display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer}
+details.card.more > summary::-webkit-details-marker{display:none}
+details.card.more .mt{flex:1;display:flex;flex-direction:column;gap:1px}
+details.card.more .mt b{font-family:var(--display);font-size:1.15rem;font-weight:600}
+details.card.more .mt small{color:var(--muted);font-size:.84rem}
+details.card.more .morein{display:flex;flex-direction:column;gap:12px;padding:0 18px 18px}
+
+.kpis .kpi{background:var(--surface)}
+.wkcard{box-shadow:none}
+.plist .prow{grid-template-columns:48px 116px minmax(0,1fr) 34px;gap:6px}
+.plist select{padding:8px 24px 8px 10px;font-size:.92rem;background-position:right 6px center}
+.pdel{width:34px}
+/* impostazioni: giorni dei promemoria più piccoli */
+.rem .dchip{padding:4px 0;font-size:.74rem}
 </style>
 </head>
 <body>
@@ -793,26 +898,27 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
   <!-- ALLENAMENTO -->
   <div class="view" id="viewWk" hidden>
     <h2 class="pagetitle">Allenamento</h2>
-    <section class="card ai" id="travelCard" hidden>
-      <h3>Allenamento in viaggio</h3>
-      <p class="sub">Dimmi cosa hai a disposizione: Claude prepara una sessione che tiene conto di cosa hai allenato di recente.</p>
-      <label>Attrezzatura e spazio<textarea id="travelEq" rows="2" placeholder="es. camera d'albergo, due manubri da 10 kg, un elastico"></textarea></label>
-      <div class="ai-row" style="margin-top:8px"><select id="travelMin" aria-label="Durata"><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option></select><button type="button" class="primary" id="travelBtn">Crea l'allenamento</button><button type="button" id="travelStop" hidden>Ferma</button><span class="note" id="travelStatus"></span></div>
-      <div class="ai-out" id="travelOut"></div>
-    </section>
     <section class="card" id="planCard">
       <div class="chead"><h3>Piano della settimana</h3><div class="range" id="planWeek" role="group" aria-label="Settimana"><button type="button" data-o="0" aria-pressed="true">Questa</button><button type="button" data-o="1" aria-pressed="false">Prossima</button></div></div>
-      <p class="sub" id="planSub"></p>
       <div id="planDays"></div>
+      <p class="note" id="planSub"></p>
     </section>
     <div class="kpis" id="wkKpis"></div>
     <div class="range wide" id="wkSeg" role="group" aria-label="Vista"><button type="button" data-s="log" aria-pressed="true">Sessioni</button><button type="button" data-s="prog" aria-pressed="false">Progressi</button></div>
     <div id="wkLogView" class="view"><div id="wkList" class="wklist"></div></div>
     <div id="wkProgView" class="view" hidden>
-      <section class="card"><h3>Serie per gruppo muscolare</h3><p class="sub">Questa settimana, rispetto alla media delle 4 precedenti.</p><div id="wkMuscleBars" style="display:flex;flex-direction:column;gap:8px"></div></section>
-      <section class="card"><h3>Progressi per esercizio</h3><p class="sub">Per ogni gruppo muscolare scegli l'esercizio da seguire nel grafico. Il massimale è una stima da peso e ripetizioni.</p><div class="chips" id="wkMuscles"></div><div id="wkProg" style="display:flex;flex-direction:column;gap:12px"></div></section>
+      <section class="card"><h3>Serie per gruppo muscolare</h3><p class="sub">Rispetto alla media delle 4 settimane prima.</p><div id="wkMuscleBars" style="display:flex;flex-direction:column;gap:8px"></div></section>
+      <section class="card"><h3>Progressi per esercizio</h3><p class="sub">Massimale stimato da peso e ripetizioni.</p><div class="chips" id="wkMuscles"></div><div id="wkProg" style="display:flex;flex-direction:column;gap:12px"></div></section>
       <section class="card"><h3>Record personali recenti</h3><div id="wkPRs"></div></section>
     </div>
+    <details class="card more" id="travelCard" hidden>
+      <summary><span class="mt"><b>Allenamento in viaggio</b><small>Una sessione con quello che hai a disposizione</small></span></summary>
+      <div class="morein">
+        <label>Attrezzatura e spazio<textarea id="travelEq" rows="2" placeholder="es. camera d'albergo, due manubri da 10 kg, un elastico"></textarea></label>
+        <div class="ai-row"><select id="travelMin" aria-label="Durata"><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option></select><button type="button" class="primary" id="travelBtn">Crea l'allenamento</button><button type="button" id="travelStop" hidden>Ferma</button><span class="note" id="travelStatus"></span></div>
+        <div class="ai-out" id="travelOut"></div>
+      </div>
+    </details>
   </div>
 
   <!-- IMPOSTAZIONI -->
@@ -821,7 +927,6 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
     <div class="sync on" id="sync"><i></i><span>Salvato su questo dispositivo · funziona anche offline</span></div>
     <section class="card" id="remCard">
       <h3>Promemoria</h3>
-      <p class="sub">Notifiche sul telefono, anche con l'app chiusa. Gli orari seguono il fuso del telefono, aggiornato ogni volta che apri l'app.</p>
       <div class="pstate" id="pushState"></div>
       <div id="remList"></div>
       <div class="ai-row" style="margin-top:6px"><button type="button" id="remAdd">＋ Nuovo promemoria</button></div>
@@ -830,15 +935,15 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
         <label style="margin-top:8px">Nome della funzione su Supabase<input id="pushFn" spellcheck="false" autocomplete="off" autocapitalize="none" placeholder="send-push"></label>
         <p class="note">Va scritto uguale al nome che vedi in Supabase → Edge Functions (meglio copiarlo e incollarlo).</p>
       </details>
-      <p class="note">Gli allenamenti li pianifichi nella scheda Allenamento. I promemoria vengono preparati per i prossimi 14 giorni: apri l'app almeno ogni due settimane.</p>
+      <p class="note">Gli orari degli allenamenti li scegli in Allenamento. Apri l'app almeno ogni due settimane per tenere attivi i promemoria.</p>
     </section>
     <section class="card" id="iosTimerCard">
       <h3>Timer sul blocco schermo</h3>
-      <p class="sub">Quando parte il recupero, l'app avvia anche il timer di iPhone: conto alla rovescia sulla schermata bloccata e nella Dynamic Island, e alla fine suona e vibra.</p>
+      <p class="sub">Con il recupero parte anche il timer di iPhone, visibile sul blocco schermo.</p>
       <label class="chk"><input type="checkbox" id="iosTimer"> Avvia il timer di iPhone insieme al recupero</label>
       <label style="margin-top:8px">Nome del comando in Comandi<input id="iosShortcut" spellcheck="false" autocomplete="off" autocapitalize="none"></label>
       <div class="ai-row" style="margin-top:8px"><button type="button" id="iosTimerTest">Prova con 10 secondi</button></div>
-      <label class="chk" style="margin-top:10px"><input type="checkbox" id="timerPush"> Notifica alla fine del recupero (suona anche se esci dall'app; serve che le notifiche siano attive)</label>
+      <label class="chk" style="margin-top:10px"><input type="checkbox" id="timerPush"> Notifica alla fine del recupero, anche fuori dall'app</label>
       <details style="padding:10px 12px;margin-top:8px">
         <summary class="note">Come creare il comando (2 minuti, una volta sola)</summary>
         <ol class="steps">
@@ -868,7 +973,7 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
 
     <details id="tplDetails">
       <summary>Pasti salvati</summary>
-      <p class="note" style="margin-top:8px">Per salvare un pasto usa "Salva pasto" nel riquadro del pasto, nel Diario. Qui puoi eliminarli.</p>
+      <p class="note" style="margin-top:8px">Salvi un pasto con "Salva pasto" nel Diario.</p>
       <div class="tpl-list" id="tplList"></div>
     </details>
 
@@ -933,15 +1038,8 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
       <p class="sub" id="bodyDueTxt"></p>
       <label class="chk"><input type="checkbox" id="bodyRem"> Avvisami con una notifica 4 settimane dopo ogni misurazione</label>
     </section>
-    <section class="card" id="adaptCard">
-      <h3>Calorie adattive</h3>
-      <p class="sub" id="adaptTxt"></p>
-      <div class="ai-row" id="adaptBtns" hidden><button type="button" class="primary" id="adaptYes"></button><button type="button" id="adaptNo">Non ora</button></div>
-      <p class="note" id="adaptNow"></p>
-    </section>
     <section class="card" id="goalCard">
       <h3>Il mio obiettivo</h3>
-      <p class="sub">Un obiettivo dura almeno 2–3 mesi, quindi si cambia di rado. Calorie e macro si adattano da soli.</p>
       <div class="ddwrap goaldd" id="goalWrap">
         <button type="button" class="ddbtn" id="goalBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="goalPanel">
           <span class="gtxt"><small>Obiettivo attuale</small><b id="goalBtnText"></b></span><span class="pips" id="goalPips" aria-hidden="true"></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
@@ -959,7 +1057,6 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
           <label>Acqua ml al giorno<input id="gWater" type="number" min="0" step="250"></label>
           <label>Giorni non segnati<select id="gDef"><option value="train">Allenamento</option><option value="rest">Riposo</option></select></label>
         </div>
-        <p class="note" style="margin-top:8px">Calorie, proteine e grassi arrivano da qui: il Diario li usa da solo. I carboidrati sono le calorie che restano.</p>
       </details>
       <details style="padding:10px 12px">
         <summary class="note">Come lo calcolo · profilo e attività</summary>
@@ -974,9 +1071,15 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
       </details>
     </section>
 
+    <section class="card" id="adaptCard">
+      <h3>Calorie adattive</h3>
+      <p class="sub" id="adaptTxt"></p>
+      <div class="ai-row" id="adaptBtns" hidden><button type="button" class="primary" id="adaptYes"></button><button type="button" id="adaptNo">Non ora</button></div>
+      <p class="note" id="adaptNow"></p>
+    </section>
     <section class="card ai" id="goalAICard" hidden>
       <h3>Definisci l'obiettivo con Claude</h3>
-      <p class="sub">Qualche domanda veloce sui tuoi obiettivi, poi Claude ti propone obiettivo e calorie. Applichi tu, dopo averli visti.</p>
+      <p class="sub">Poche domande, poi Claude ti propone obiettivo e calorie.</p>
       <div class="chat" id="chat"></div>
       <form class="ai-row" id="chatForm" hidden autocomplete="off"><input id="chatInput" placeholder="Rispondi qui…" style="flex:1"><button type="submit" class="primary">Invia</button></form>
       <div class="ai-row"><button type="button" class="primary" id="chatStart">Inizia</button><button type="button" id="chatReset" hidden>Ricomincia</button><span class="note" id="chatStatus"></span></div>
@@ -1020,31 +1123,31 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
 
   <!-- DASHBOARD -->
   <div class="view" id="viewMesi" hidden>
-    <div class="dashhead"><h2>Dashboard</h2><select id="dashMonth" aria-label="Mese"></select></div>
-    <section class="card" id="goalLogCard">
-      <h3>Storico obiettivi</h3>
-      <p class="sub">Ogni modifica vale da quel giorno in poi: i giorni passati restano con gli obiettivi di allora. Qui vedi cosa è successo dopo ogni cambio.</p>
-      <div id="goalLogList"></div>
-    </section>
+    <div class="dashhead"><select id="dashMonth" aria-label="Mese"></select></div>
+    <div id="dashBody" class="view"></div>
     <section class="card" id="weekCard">
       <h3>Riepilogo settimanale</h3>
-      <p class="sub">Lo stesso riepilogo che ricevi la domenica sera come notifica.</p>
       <div id="weekBody"></div>
     </section>
     <section class="card ai" id="reportCard" hidden>
       <h3>Report settimanale</h3>
-      <p class="sub" id="reportSub">Claude analizza gli ultimi 7 giorni e ti dice cosa cambiare.</p>
+      <p class="sub" id="reportSub">Claude legge gli ultimi 7 giorni e ti dice cosa cambiare.</p>
       <div class="ai-row"><button type="button" class="primary" id="reportBtn">Genera il report</button><button type="button" id="reportStop" hidden>Ferma</button><span class="note" id="reportStatus"></span></div>
       <div class="ai-out" id="reportOut"></div>
     </section>
-    <div id="dashBody" class="view"></div>
-    <p class="note">Le medie contano solo i giorni in cui hai inserito almeno un alimento. Ogni giorno è confrontato con il suo obiettivo (allenamento o riposo).</p>
+    <section class="card" id="goalLogCard">
+      <h3>Storico obiettivi</h3>
+      <p class="sub">Ogni modifica vale da quel giorno in poi.</p>
+      <div id="goalLogList"></div>
+    </section>
+    <p class="note">Le medie contano solo i giorni registrati.</p>
   </div>
 
 
 </div>
 
 
+<nav class="tabbar" id="tabbar" aria-label="Sezioni"><button type="button" data-tab="diario" aria-current="page"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 12h4"/></svg><span>Diario</span></button><button type="button" data-tab="wk"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg><span>Allenamento</span></button><button type="button" data-tab="corpo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="2"/><path d="M12 7.5V14M6.5 9.5 12 11l5.5-1.5M9 21l3-7 3 7"/></svg><span>Corpo</span></button><button type="button" data-tab="mesi"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg><span>Dashboard</span></button><button type="button" data-tab="set"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Impostazioni</span></button></nav>
 <button type="button" class="fab" id="fab"><span aria-hidden="true">＋</span> Aggiungi</button>
 <button type="button" class="livebar" id="liveBar" hidden><i class="pulse"></i><span>In corso</span><span id="liveClock"></span></button>
 <div class="toast" id="toast" hidden><span id="toastText" role="status"></span><button type="button" id="toastUndo" hidden>Annulla</button></div>
@@ -1091,7 +1194,7 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
       <div id="chipsWrap" hidden><div class="chips-label">I più usati</div><div class="chips" id="chips"></div></div>
     <section class="card ai" id="aiLogCard" hidden style="margin-top:16px">
       <h3>Scrivi cosa hai mangiato</h3>
-      <p class="sub">Claude riconosce alimenti e grammi (serve internet). Controlla e poi aggiungi.</p>
+      <p class="sub">Claude trova alimenti e grammi: controlli e aggiungi.</p>
       <textarea id="aiText" placeholder="es. a pranzo piadina con carne salata e rucola, una banana e un caffè"></textarea>
       <div class="ai-row"><button type="button" class="primary" id="aiParse">Riconosci alimenti</button><button type="button" id="aiStop" hidden>Ferma</button><span class="note" id="aiStatus"></span></div>
       <div class="ai-items" id="aiItems"></div>
@@ -1134,7 +1237,7 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
         <label class="chk"><input type="checkbox" id="restAuto"> Parte da solo quando spunto una serie</label>
         <button type="button" class="primary" id="restDone">Fatto</button>
       </div>
-      <p class="note" id="wkLiveNote">Spunta ogni serie quando l'hai fatta: parte il timer del recupero (puoi anche avviarlo a mano). Alla fine salvo solo le serie spuntate (tutte, se non ne spunti nessuna). Puoi ridurre questa schermata o uscire dall'app: l'allenamento resta aperto.</p>
+      <p class="note" id="wkLiveNote">Spunta le serie fatte: parte il recupero. Puoi uscire dall'app, l'allenamento resta aperto.</p>
       <div id="wkExList" style="display:flex;flex-direction:column;gap:12px"></div>
       <button type="button" class="addex" id="wkAddEx">＋ Aggiungi esercizio</button>
     </div>
@@ -1583,16 +1686,16 @@ function renderHelper(entries){
   else if(r.state==="done") sub = "Obiettivi di calorie e proteine raggiunti. Ottimo lavoro!";
   else {
     const parts = [`${fmt(Math.max(0,R[0]))} kcal`, `${fmt(Math.max(0,R[1]))} g di proteine`, `${fmt(Math.max(0,R[2]))} g di carboidrati`];
-    sub = `Mancano ${parts.join(", ")}` + (R[3]<=0 ? "; i grassi sono già al limite, quindi solo cibi magri." : `; restano ${fmt(R[3])} g di grassi.`)
-      + (r.share<1 ? ` Ti mancano ancora dei pasti: ecco idee per il prossimo, da circa ${fmt(R[0]*r.share)} kcal.` : "");
+    sub = `Mancano ${fmt(Math.max(0,R[0]))} kcal e ${fmt(Math.max(0,R[1]))} g di proteine.` + (R[3]<=0 ? " Grassi al limite: scegli cibi magri." : "")
+      + (r.share<1 ? ` Idee per il prossimo pasto, circa ${fmt(R[0]*r.share)} kcal:` : "");
     main = r.out;
     html = main.map((c,i)=>optHTML(c,i)).join("");
   }
   const fb = suggestFibre(entries, new Set(main.flatMap(c=>c.items.map(it=>it.f))));
   if(fb.need >= 3){
-    sub += ` Fibre: ne mancano ${fmt(fb.need)} g su ${fmt(goalsAt(day).fib)}.`;
-    if(fb.out.length) html += `<h4>Per arrivare alle fibre</h4>` + fb.out.map((c,i)=>optHTML(c, main.length+i)).join("");
-  } else if(goalsAt(day).fib>0) sub += " Obiettivo di fibre raggiunto.";
+    sub += "";
+    if(fb.out.length) html += `<h4>Per le fibre (mancano ${fmt(fb.need)} g)</h4>` + fb.out.map((c,i)=>optHTML(c, main.length+i)).join("");
+  }
   lastSugg = [...main, ...fb.out];
   $("#helperSub").textContent = sub;
   $("#sugg").innerHTML = html;
@@ -1817,7 +1920,7 @@ function renderDash(){
     const top = Math.max(goal, ...series.map(a=>a[idx]))*1.15 || 1;
     return `<div class="m"><h4>${title}</h4><div class="plot">${series.map((a,i)=>`<div class="b" style="--c:var(${col});height:${a[idx]/top*100}%;${tm[i]===selMonth?"":"opacity:.55"}" title="${monthName(tm[i])}: ${fmt(a[idx])}"></div>`).join("")}<div class="goal" style="bottom:${goal/top*100}%"></div></div><div class="xaxis">${tm.map(m=>`<span>${monthShort(m)}</span>`).join("")}</div></div>`;
   };
-  h += `<div class="card"><h3>Andamento mensile</h3><p class="sub">Media al giorno per mese. La linea tratteggiata è l'obiettivo medio del mese selezionato.</p>
+  h += `<div class="card"><h3>Andamento mensile</h3><p class="sub">Media al giorno. Tratteggio: obiettivo.</p>
     <div class="multi">${metric("Calorie",0,st.goal,"--accent")}${metric("Proteine (g)",1,st.gp,"--prot")}${metric("Carboidrati (g)",2,st.gc,"--carb")}${metric("Grassi (g)",3,st.gf,"--fat")}</div></div>`;
 
   const goal = st.goal;
@@ -2930,7 +3033,7 @@ function goalPeriod(from, to){
 function renderGoalLog(){
   const L = (S.settings.goalLog||[]).slice(), el = $("#goalLogList"); if(!el) return;
   if(L.length<2){
-    el.innerHTML = `<p class="empty">Nessuna modifica finora. Dalla prossima, qui vedrai da quando vale ogni obiettivo e come sono andati peso, composizione e calorie.</p>`;
+    el.innerHTML = `<p class="empty">Nessuna modifica finora.</p>`;
     return;
   }
   const rows = L.map((e,i)=>({e, prev:L[i-1], to:L[i+1] ? L[i+1].from : "9999-12-31", cur:i===L.length-1})).reverse();
@@ -3090,7 +3193,7 @@ function renderBody(){
       <div class="tgt"><small>Peso</small><b>${g1(w)} kg</b><span>${dShort(b.date)}</span></div>
     </div>
     ${prev?`<p class="note">Rispetto alla misurazione precedente: peso${d(w,prev.w," kg")}, grasso${d(b.fat,prev.fat," punti")}, massa magra${d(lean, prev.fat!=null?prev.w*(1-prev.fat/100):null," kg")}.</p>`:""}
-    <p class="note">Tocca una parte della ciambella per vedere i valori. "Muscoli" sulle bilance a impedenza include l'acqua nei muscoli: per questo è così alto. Usa grasso % e massa magra per seguire i progressi.</p>`;
+    <p class="note">"Muscoli" include l'acqua nei muscoli: per i progressi guarda grasso % e massa magra.</p>`;
   if(donutSegs.length){
     paintDonut();
     if(animate) requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll("#bodyLatest .seg").forEach(c=>{ c.style.strokeDasharray = `${c.dataset.dash} ${DC.toFixed(2)}`; })));
@@ -3125,7 +3228,7 @@ function renderTrend(){
   }).join("");
   document.querySelectorAll("#trendRange button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.r===trendRange));
   const n = trendSeries(trendMetric).length;
-  $("#trendNote").textContent = (n<2 ? "Servono almeno due misurazioni per vedere un andamento. " : "Tocca o trascina sul grafico per leggere i valori. ") + "Il peso usa tutte le pesate; grasso, massa magra e acqua solo le misurazioni di composizione. Le variazioni sono nel periodo scelto.";
+  $("#trendNote").textContent = n<2 ? "Servono almeno due misurazioni per vedere un andamento." : "";
   drawTrend();
 }
 function drawTrend(){
@@ -3237,7 +3340,7 @@ const TABS = {diario:{v:"#viewDiario", n:"Diario"}, corpo:{v:"#viewCorpo", n:"Co
 function setTab(t){
   for(const k in TABS) $(TABS[k].v).hidden = k!==t;
   $("#barTitle").textContent = TABS[t].n;
-  document.querySelectorAll("#menuPanel [data-tab]").forEach(b=>{ if(b.dataset.tab===t) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+  document.querySelectorAll("#menuPanel [data-tab], #tabbar [data-tab]").forEach(b=>{ if(b.dataset.tab===t) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   closeDD();
   $("#fab").hidden = (t!=="diario" && t!=="wk") || !$("#addSheet").hidden || !$("#wkSheet").hidden; paintUndo();
   $("#fab").innerHTML = t==="wk" ? '<span aria-hidden="true">＋</span> Allenamento' : '<span aria-hidden="true">＋</span> Aggiungi';
@@ -3273,6 +3376,7 @@ document.querySelectorAll(".ddwrap").forEach(w=>{
 });
 document.addEventListener("click", ev=>{ if(!ev.target.closest(".ddwrap")) closeDD(); });
 $("#menuPanel").addEventListener("click", ev=>{ const b = ev.target.closest("[data-tab]"); if(b) setTab(b.dataset.tab); });
+$("#tabbar").addEventListener("click", ev=>{ const b = ev.target.closest("[data-tab]"); if(!b) return; if(b.getAttribute("aria-current")==="page") window.scrollTo({top:0, behavior:"smooth"}); else setTab(b.dataset.tab); });
 $("#goalPanel").addEventListener("click", ev=>{
   const b = ev.target.closest("[data-goal]"); if(!b) return;
   const n = Number(b.dataset.goal); closeDD(); $("#goalBtn").focus();
@@ -3538,7 +3642,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.10.0";
+$("#verNote").textContent = "Diario delle calorie · versione 1.11.0";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -3673,7 +3777,7 @@ function pushState(){
   const p = local.get("cal_push", null);
   return p && p.on && Notification.permission==="granted" ? {s:"on"} : {s:"off"};
 }
-function pMsg(t){ const m = $("#pushMsg"); if(m) m.textContent = t; }
+function pMsg(t){ const m = $("#pushMsg"); if(m) m.textContent = t; const d = $("#pushDiag"); if(d) d.hidden = !/^Non riuscito|negato/.test(t||""); }
 function renderPush(){
   const el = $("#pushState"); if(!el) return; const st = pushState(); let h = "";
   if(st.s==="unsupported") h = `<p>Questo browser non supporta le notifiche.</p>`;
@@ -3682,7 +3786,7 @@ function renderPush(){
   else if(st.s==="denied") h = `<p>Le notifiche sono bloccate per questa app. Su iPhone: Impostazioni → Notifiche → Diario → Consenti notifiche. Poi riapri l'app.</p>`;
   else if(st.s==="off") h = `<p>Le notifiche non sono attive su questo dispositivo.</p><div class="ai-row"><button type="button" class="primary" id="pushOn">Attiva le notifiche</button></div>`;
   else h = `<p><b>Notifiche attive</b> su questo dispositivo.</p><div class="ai-row"><button type="button" id="pushTest">Invia una notifica di prova</button><button type="button" id="pushOff">Disattiva</button></div>`;
-  el.innerHTML = h + `<p class="note" id="pushMsg"></p><p class="note" id="pushDiag"></p>`;
+  el.innerHTML = h + `<p class="note" id="pushMsg"></p><p class="note" id="pushDiag" hidden></p>`;
   pushDiag();
 }
 const b64u = x => { const raw = atob((x + "=".repeat((4 - x.length%4)%4)).replace(/-/g,"+").replace(/_/g,"/")); return Uint8Array.from(raw, c=>c.charCodeAt(0)); };
@@ -3830,23 +3934,27 @@ function renderPlan(){
   const el = $("#planDays"); if(!el) return;
   const ws = shiftDay(weekStart(today()), planOff*7), t = today(); let planned = 0, done = 0, h = "";
   $("#planWeek").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed", String(Number(b.dataset.o)===planOff)));
+  let strip = "", list = "";
   for(let i=0;i<7;i++){
-    const d = shiftDay(ws,i), p = S.plan[d], past = d<t;
-    if(p){ planned++; if(hasWk(d)) done++; }
-    const st = p ? (hasWk(d) ? '<span class="pill">fatto</span>' : past ? '<span class="pill warn">saltato</span>' : "") : "";
-    h += `<div class="prow" data-d="${d}"><span class="pd"><b>${DOWN[i]}</b><small>${dShort(d)}</small></span>
-      <button type="button" class="dchip pbtn" data-ptoggle aria-pressed="${!!p}" ${past&&!p?"disabled":""}>${p?"Mi alleno":"Riposo"}</button>
-      ${p?`<span class="pextra"><input type="time" data-pt value="${esc(p.t)}" aria-label="Orario"><select data-ps aria-label="Sport">${Object.keys(SPORTS).map(k=>`<option value="${k}"${p.sp===k?" selected":""}>${esc(SPORTS[k].n)}</option>`).join("")}</select></span>`:""}
-      <span class="pst">${st}</span></div>`;
+    const d = shiftDay(ws,i), p = S.plan[d], past = d<t, did = hasWk(d);
+    if(p){ planned++; if(did) done++; }
+    const cls = ["pday", d===t?"today":"", p&&did?"done":"", p&&past&&!did?"miss":""].filter(Boolean).join(" ");
+    strip += `<button type="button" class="${cls}" data-d="${d}" data-ptoggle aria-pressed="${!!p}" ${past&&!p?"disabled":""} aria-label="${DOWN[i]} ${dShort(d)}: ${p?"allenamento":"riposo"}"><small>${DOWN[i]}</small><b>${Number(d.slice(8))}</b><i aria-hidden="true">${p&&did?"✓":""}</i></button>`;
+    if(p) list += `<div class="prow" data-d="${d}"><span class="pd"><b>${DOWN[i]}</b> ${Number(d.slice(8))}</span>
+      <input type="time" data-pt value="${esc(p.t)}" aria-label="Orario di ${DOWN[i]}">
+      <select data-ps aria-label="Sport di ${DOWN[i]}">${Object.keys(SPORTS).map(k=>`<option value="${k}"${p.sp===k?" selected":""}>${esc(SPORTS[k].n)}</option>`).join("")}</select>
+      ${did ? '<span class="pill">fatto</span>' : past ? '<span class="pill warn">saltato</span>' : `<button type="button" class="pdel" data-ptoggle aria-label="Togli ${DOWN[i]}">✕</button>`}</div>`;
   }
+  h = `<div class="pstrip">${strip}</div>` + (list ? `<div class="plist">${list}</div>` : `<p class="pempty">Tocca i giorni in cui vuoi allenarti.</p>`);
   el.innerHTML = h;
-  const hint = pushState().s!=="on" ? " Per i promemoria attiva le notifiche in Impostazioni." : ` Ti avviso ${S.settings.planLead>0?S.settings.planLead+" minuti prima":"all'ora"} di ogni allenamento.`;
-  $("#planSub").textContent = planned ? `${planned} ${planned===1?"allenamento pianificato":"allenamenti pianificati"}${done?`, ${done} ${done===1?"fatto":"fatti"}`:""}.${hint}` : "Scegli i giorni e l'orario in cui vuoi allenarti.";
+  const hint = pushState().s!=="on" ? "" : ` Avviso ${S.settings.planLead>0?S.settings.planLead+" minuti prima":"all'ora"}.`;
+  $("#planSub").textContent = planned ? `${planned} ${planned===1?"allenamento":"allenamenti"}${done?`, ${done} ${done===1?"fatto":"fatti"}`:""}.${hint}` : "";
+  $("#planSub").hidden = !planned;
 }
 $("#planWeek").addEventListener("click", ev=>{ const b = ev.target.closest("[data-o]"); if(!b) return; planOff = Number(b.dataset.o); renderPlan(); });
 $("#planDays").addEventListener("click", ev=>{
   const b = ev.target.closest("[data-ptoggle]"); if(!b) return;
-  const d = b.closest(".prow").dataset.d;
+  const d = b.closest("[data-d]").dataset.d;
   if(S.plan[d]) delete S.plan[d]; else { const l = lastPlan(); S.plan[d] = {t: l ? l.t : "18:00", sp: l ? l.sp : "gym"}; }
   saveMap("plan", true); renderPlan();
 });
