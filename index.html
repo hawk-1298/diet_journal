@@ -815,6 +815,61 @@ details.card.more .morein{display:flex;flex-direction:column;gap:12px;padding:0 
 .pdel{width:34px}
 /* impostazioni: giorni dei promemoria più piccoli */
 .rem .dchip{padding:4px 0;font-size:.74rem}
+
+/* ================= 1.12: più iOS ================= */
+:root{--ease:cubic-bezier(.32,.72,0,1)}
+/* piano: giorno · ora · sport, su una riga che non si rompe */
+.plist .prow{display:flex;align-items:center;gap:8px;padding:8px 0;grid-template-columns:none;background:var(--surface);position:relative;touch-action:pan-y;transition:transform .26s var(--ease)}
+.plist .pd{flex:1 1 auto;min-width:0;white-space:nowrap}
+.plist .pd small{display:none}
+.plist input[type=time],.plist select{-webkit-appearance:none;appearance:none;flex:none;width:auto;min-height:36px;border:0;border-radius:10px;background:var(--bg);color:var(--fg);
+  font:600 1rem/1 var(--display);padding:8px 12px;text-align:center;box-shadow:none}
+.plist input[type=time]{min-width:86px}
+.plist input[type=time]::-webkit-calendar-picker-indicator{display:none}
+.plist input[type=time]::-webkit-date-and-time-value{text-align:center}
+.plist select{max-width:46%;padding-right:28px;font-family:var(--body);font-size:.92rem;font-weight:600;text-align:left;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23778' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:12px}
+.plist .pill{flex:none}
+.swipehint{margin:-2px 0 0;font-size:.78rem;color:var(--muted)}
+@media (hover:hover){.swipehint{display:none}}
+
+/* scorri per eliminare */
+#meals .row,.wkcard,.plist .prow{-webkit-user-select:none;user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none}
+#meals .row,.wkcard{touch-action:pan-y;position:relative;transition:transform .26s var(--ease);background:var(--surface)}
+.swiping{z-index:3;will-change:transform}
+.meal.card{overflow:hidden}
+.swipe-act{position:fixed;z-index:2;display:flex;align-items:center;justify-content:flex-end;gap:6px;overflow:hidden;white-space:nowrap;padding:0;border:0;border-radius:0 14px 14px 0;
+  background:var(--danger);color:#fff;font:600 .9rem var(--body);box-shadow:none;transition:left .26s var(--ease),width .26s var(--ease)}
+.swipe-act svg,.swipe-act span{flex:none}
+.swipe-act span{margin-right:16px}
+.swipe-act svg{margin-left:auto}
+.swipe-act.wide{justify-content:flex-start}
+.swipe-act.wide svg{margin-left:20px}
+/* su telefono la ✕ non serve: si scorre */
+@media (hover:none){#meals .row [data-del]{display:none}#meals .row{grid-template-columns:auto 1fr auto}.wkdel{display:none}}
+
+/* interruttori al posto delle caselle */
+.chk input[type=checkbox],.remh input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;width:51px;height:31px;border-radius:99px;border:0;margin:0;padding:0;
+  background:color-mix(in srgb,var(--muted) 30%,var(--bg));position:relative;cursor:pointer;transition:background-color .25s var(--ease)}
+.chk input[type=checkbox]::after,.remh input[type=checkbox]::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;
+  box-shadow:0 3px 8px rgba(0,0,0,.15),0 1px 1px rgba(0,0,0,.16);transition:transform .25s var(--ease)}
+.chk input[type=checkbox]:checked,.remh input[type=checkbox]:checked{background:#34c759}
+.chk input[type=checkbox]:checked::after,.remh input[type=checkbox]:checked::after{transform:translateX(20px)}
+.chk{justify-content:space-between;flex-direction:row-reverse;gap:14px}
+.chk input:focus-visible,.remh input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* tocchi e transizioni */
+button{transition:transform .12s ease,background-color .2s ease,color .2s ease,opacity .2s ease}
+button:active:not(:disabled){transform:scale(.97)}
+.tabbar button:active{transform:scale(.92)}
+.wrap > .view:not([hidden]){animation:vin .32s var(--ease)}
+@keyframes vin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.sheet{animation:sheetup .42s var(--ease)}
+@keyframes sheetup{from{transform:translateY(100%)}to{transform:none}}
+.range button{transition:background-color .25s var(--ease),color .25s var(--ease),box-shadow .25s var(--ease)}
+details > summary + *{animation:dopen .28s var(--ease)}
+@keyframes dopen{from{opacity:0;transform:translateY(-6px)}}
+@media (prefers-reduced-motion:reduce){.sheet,.wrap > .view:not([hidden]),details > summary + *{animation:none}.plist .prow,#meals .row,.wkcard,.swipe-act,button{transition:none}}
 </style>
 </head>
 <body>
@@ -3642,7 +3697,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.11.0";
+$("#verNote").textContent = "Diario delle calorie · versione 1.12.0";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -3940,12 +3995,13 @@ function renderPlan(){
     if(p){ planned++; if(did) done++; }
     const cls = ["pday", d===t?"today":"", p&&did?"done":"", p&&past&&!did?"miss":""].filter(Boolean).join(" ");
     strip += `<button type="button" class="${cls}" data-d="${d}" data-ptoggle aria-pressed="${!!p}" ${past&&!p?"disabled":""} aria-label="${DOWN[i]} ${dShort(d)}: ${p?"allenamento":"riposo"}"><small>${DOWN[i]}</small><b>${Number(d.slice(8))}</b><i aria-hidden="true">${p&&did?"✓":""}</i></button>`;
-    if(p) list += `<div class="prow" data-d="${d}"><span class="pd"><b>${DOWN[i]}</b> ${Number(d.slice(8))}</span>
+    if(p) list += `<div class="prow" data-d="${d}"><span class="pd"><b>${DOWN[i]}</b> ${Number(d.slice(8))}<small>${p.sp && SPORTS[p.sp] ? "" : ""}</small></span>
       <input type="time" data-pt value="${esc(p.t)}" aria-label="Orario di ${DOWN[i]}">
       <select data-ps aria-label="Sport di ${DOWN[i]}">${Object.keys(SPORTS).map(k=>`<option value="${k}"${p.sp===k?" selected":""}>${esc(SPORTS[k].n)}</option>`).join("")}</select>
-      ${did ? '<span class="pill">fatto</span>' : past ? '<span class="pill warn">saltato</span>' : `<button type="button" class="pdel" data-ptoggle aria-label="Togli ${DOWN[i]}">✕</button>`}</div>`;
+      ${did ? '<span class="pill">fatto</span>' : past ? '<span class="pill warn">saltato</span>' : ""}</div>`;
   }
   h = `<div class="pstrip">${strip}</div>` + (list ? `<div class="plist">${list}</div>` : `<p class="pempty">Tocca i giorni in cui vuoi allenarti.</p>`);
+  if(list) h += `<p class="swipehint">Scorri una riga verso sinistra per toglierla.</p>`;
   el.innerHTML = h;
   const hint = pushState().s!=="on" ? "" : ` Avviso ${S.settings.planLead>0?S.settings.planLead+" minuti prima":"all'ora"}.`;
   $("#planSub").textContent = planned ? `${planned} ${planned===1?"allenamento":"allenamenti"}${done?`, ${done} ${done===1?"fatto":"fatti"}`:""}.${hint}` : "";
@@ -4149,6 +4205,76 @@ Formato (niente titoli markdown, righe in grassetto con **):
   finally{ $("#travelBtn").disabled = false; $("#travelStop").hidden = true; }
 };
 $("#travelStop").onclick = ()=>{ if(travelCtl) travelCtl.abort(); };
+
+
+/* ================= 1.12: scorri per eliminare (stile iOS) ================= */
+const SWIPE = [
+  {sel:"#meals .row", del:el=>{ const b = el.querySelector("[data-del]"); if(b) b.click(); }},
+  {sel:".wkcard", del:el=>{ const b = el.querySelector("[data-wkdel]"); if(b) b.click(); }},
+  {sel:".plist .prow", del:el=>{ const d = el.dataset.d; if(S.plan[d]){ const old = S.plan[d]; delete S.plan[d]; saveMap("plan", true); renderPlan(); toast(`${DOWN[(new Date(d+"T12:00").getDay()+6)%7]} tolto dal piano.`, true, true, ()=>{ S.plan[d] = old; saveMap("plan", true); renderPlan(); }); } }}
+];
+let sw = null, swOpen = null, swEat = false;
+const SW_OPEN = 88;
+function swAct(el){
+  const a = document.createElement("button"); a.type = "button"; a.className = "swipe-act"; a.setAttribute("aria-label","Elimina");
+  a.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg><span>Elimina</span>';
+  document.body.appendChild(a); return a;
+}
+// R0 e W: bordo destro e larghezza della riga a riposo (senza spostamento)
+function swGeom(o){ const r = o.el.getBoundingClientRect(), cur = new DOMMatrix(getComputedStyle(o.el).transform).m41 || 0; o.R0 = r.right - cur; o.W = r.width; o.T = r.top; o.H = r.height; }
+function swPlace(o, x){
+  const w = Math.max(0, -x);
+  o.act.style.top = o.T+"px"; o.act.style.height = o.H+"px"; o.act.style.left = (o.R0 - w)+"px"; o.act.style.width = w+"px";
+  o.act.classList.toggle("wide", w > o.W*0.55);
+}
+function swClose(o, now){
+  if(!o) return; o.el.style.transition = now ? "none" : ""; o.el.style.transform = ""; o.act.style.transition = now ? "none" : "";
+  o.act.style.left = o.R0+"px"; o.act.style.width = "0px";
+  setTimeout(()=>{ o.act.remove(); o.el.classList.remove("swiping"); }, now ? 0 : 260);
+  if(swOpen===o) swOpen = null;
+}
+function swDelete(o){
+  const el = o.el;
+  el.style.transition = "transform .22s cubic-bezier(.32,.72,0,1)"; el.style.transform = `translateX(${-o.W}px)`;
+  o.act.style.transition = "left .22s cubic-bezier(.32,.72,0,1), width .22s cubic-bezier(.32,.72,0,1)"; o.act.style.left = (o.R0 - o.W)+"px"; o.act.style.width = o.W+"px"; o.act.classList.add("wide");
+  if(swOpen===o) swOpen = null;
+  setTimeout(()=>{ o.kind.del(el); o.act.remove(); }, 200);
+}
+document.addEventListener("pointerdown", ev=>{
+  if(swOpen && !ev.target.closest(".swipe-act") && !swOpen.el.contains(ev.target)){ swClose(swOpen); swEat = true; setTimeout(()=>{ swEat = false; }, 350); return; }
+  if(ev.pointerType==="mouse" && ev.button!==0) return;
+  if(ev.target.closest("input,select,textarea,.grip,[data-grip]")) return;
+  for(const k of SWIPE){
+    const el = ev.target.closest(k.sel); if(!el) continue;
+    if(isExample && k.sel.startsWith("#meals")) return;
+    if(swOpen && swOpen.el!==el) swClose(swOpen);
+    sw = {el, kind:k, x0:ev.clientX, y0:ev.clientY, base: swOpen && swOpen.el===el ? -SW_OPEN : 0, dir:null, act: swOpen && swOpen.el===el ? swOpen.act : null, pid:ev.pointerId, x:0};
+    swGeom(sw);
+    return;
+  }
+}, true);
+document.addEventListener("pointermove", ev=>{
+  if(!sw || ev.pointerId!==sw.pid) return;
+  const dx = ev.clientX - sw.x0, dy = ev.clientY - sw.y0;
+  if(!sw.dir){ if(Math.abs(dx)<8 && Math.abs(dy)<8) return; sw.dir = Math.abs(dx) > Math.abs(dy)*1.2 && (dx<0 || sw.base<0) ? "x" : "y"; if(sw.dir==="y"){ sw = null; return; }
+    if(!sw.act) sw.act = swAct(sw.el); sw.el.classList.add("swiping"); sw.el.style.transition = "none"; sw.act.style.transition = "none"; }
+  let x = Math.min(0, sw.base + dx); const w = sw.W;
+  if(x < -w) x = -w;
+  sw.x = x; sw.el.style.transform = `translateX(${x}px)`; swPlace(sw, x);
+  ev.preventDefault();
+}, {passive:false});
+function swEnd(){
+  if(!sw) return; const o = sw; sw = null; if(!o.dir) return;
+  swEat = true; setTimeout(()=>{ swEat = false; }, 350);
+  const w = o.W;
+  if(-o.x > w*0.55){ swDelete(o); return; }
+  o.el.style.transition = ""; o.act.style.transition = "";
+  if(-o.x > 56){ o.el.style.transform = `translateX(${-SW_OPEN}px)`; swPlace(o, -SW_OPEN); swOpen = o; o.act.onclick = ()=>swDelete(o); }
+  else swClose(o);
+}
+document.addEventListener("pointerup", swEnd); document.addEventListener("pointercancel", ()=>{ if(sw){ const o = sw; sw = null; if(o.dir) swClose(o); } });
+document.addEventListener("click", ev=>{ if(swEat && ev.isTrusted && !ev.target.closest(".swipe-act")){ ev.preventDefault(); ev.stopPropagation(); } }, true);
+window.addEventListener("scroll", ()=>{ if(swOpen) swClose(swOpen, true); }, {passive:true});
 
 /* --- apertura da notifica (?go=...) --- */
 (function(){ const g = new URLSearchParams(location.search).get("go"); if(g && TABS[g]) setTab(g); })();
