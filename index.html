@@ -707,6 +707,7 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
 .chk{display:flex;align-items:center;gap:10px;font-size:.9rem}
 .chk input{width:20px;height:20px;flex:none;accent-color:var(--accent)}
 .restbar button{white-space:nowrap}
+.last.tip2{margin-top:-2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.last.tip2 b{color:var(--accent)}
 .wkblk{margin:8px 0}.wkblk ul{margin:4px 0 0;padding-left:18px}.wkblk li{margin:2px 0;font-size:.9rem}
 .restbar #restMinus,.restbar #restPlus{text-decoration:none;border:1px solid color-mix(in srgb,var(--bg) 35%,transparent);border-radius:99px;padding:3px 9px;font-size:.82rem}
 </style>
@@ -792,6 +793,13 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
   <!-- ALLENAMENTO -->
   <div class="view" id="viewWk" hidden>
     <h2 class="pagetitle">Allenamento</h2>
+    <section class="card ai" id="travelCard" hidden>
+      <h3>Allenamento in viaggio</h3>
+      <p class="sub">Dimmi cosa hai a disposizione: Claude prepara una sessione che tiene conto di cosa hai allenato di recente.</p>
+      <label>Attrezzatura e spazio<textarea id="travelEq" rows="2" placeholder="es. camera d'albergo, due manubri da 10 kg, un elastico"></textarea></label>
+      <div class="ai-row" style="margin-top:8px"><select id="travelMin" aria-label="Durata"><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option></select><button type="button" class="primary" id="travelBtn">Crea l'allenamento</button><button type="button" id="travelStop" hidden>Ferma</button><span class="note" id="travelStatus"></span></div>
+      <div class="ai-out" id="travelOut"></div>
+    </section>
     <section class="card" id="planCard">
       <div class="chead"><h3>Piano della settimana</h3><div class="range" id="planWeek" role="group" aria-label="Settimana"><button type="button" data-o="0" aria-pressed="true">Questa</button><button type="button" data-o="1" aria-pressed="false">Prossima</button></div></div>
       <p class="sub" id="planSub"></p>
@@ -920,6 +928,17 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
 
   <!-- CORPO -->
   <div class="view" id="viewCorpo" hidden>
+    <section class="card" id="bodyDueCard" hidden>
+      <h3>È ora di rimisurarti</h3>
+      <p class="sub" id="bodyDueTxt"></p>
+      <label class="chk"><input type="checkbox" id="bodyRem"> Avvisami con una notifica 4 settimane dopo ogni misurazione</label>
+    </section>
+    <section class="card" id="adaptCard">
+      <h3>Calorie adattive</h3>
+      <p class="sub" id="adaptTxt"></p>
+      <div class="ai-row" id="adaptBtns" hidden><button type="button" class="primary" id="adaptYes"></button><button type="button" id="adaptNo">Non ora</button></div>
+      <p class="note" id="adaptNow"></p>
+    </section>
     <section class="card" id="goalCard">
       <h3>Il mio obiettivo</h3>
       <p class="sub">Un obiettivo dura almeno 2–3 mesi, quindi si cambia di rado. Calorie e macro si adattano da soli.</p>
@@ -1196,7 +1215,7 @@ const BASE = {
 "Bake rolls":[443,12,63,15,3],"Sugo Cacio e pepe":[218,15,1.2,17,0],"farina 00":[345,11,69.9,1.7,2.2],"Buitoni impasto pizza":[280,8.5,46.1,5.4,2.5],"Pane ai 5 cereali":[277,10,44,4,6],"Pesto tigullio":[477,5.2,10,46,2],"Wasa":[330,9,60,1.5,14],"Dumplings":[600,20,50,20,2],"Aloe Vera":[36,0,9,0,0.2],"Pudding proteico":[76,10,5.5,1.5,0.5],"Tacos":[461,6.5,61,20,5],"Tortellini":[309,12,43,9,2],"Ragu di soja":[255,3.5,7.6,23,2],"patate surgelate":[139,2.6,23.4,3.4,2.5],"Alici":[435,14,0,42,0],"Lamponi":[34,1,6.5,0.6,6.5],"Gin tonic":[135,0,13,0,0],"Trota":[86,14.7,0,3,0],"Ragu di carne":[196,12,1.9,15.4,0.8]
 };
 const MEALS = ["Colazione","Pranzo","Cena","Spuntini"];
-const MAPS = ["weights","water","weeks","templates","reports","body","workouts","adj","plan"];
+const MAPS = ["weights","water","weeks","templates","reports","body","workouts","adj","plan","tot"];
 const DEF_SETTINGS = {train:2900, rest:2550, prot:155, fat:75, fib:30, waterGoal:2500, mode:"train", defMode:"train", used:false,
   height:185, age:28, sex:"M", act:"sed", trainK:350, goal:1, auto:true, planLead:30, iosTimer:false, iosShortcut:"Riposo", timerPush:true};
 // alimenti usati dal suggeritore, con una porzione tipica in grammi
@@ -1288,7 +1307,7 @@ function queue(key, fn){
   return chains[key];
 }
 function saveDay(d){
-  try{ pushSchedule(); }catch(e){}
+  try{ pushSchedule(); totSync(d); }catch(e){}
   const list = S.days[d] || [];
   if(list.length) S.modes[d] = dayMode(d);
   if(backend==="db"){
@@ -1901,8 +1920,8 @@ function makeSample(){
 function setAIVisible(){
   sampleFn = aiCfg().key ? makeSample() : null;
   const on = !!sampleFn;
-  $("#aiLogCard").hidden = !on; $("#coachWrap").hidden = !on; $("#reportCard").hidden = !on; $("#goalAICard").hidden = !on;
-  if(on) renderReport();
+  $("#aiLogCard").hidden = !on; $("#coachWrap").hidden = !on; $("#goalAICard").hidden = !on; $("#travelCard").hidden = !on;
+  renderReport();
   updatePreview();
 }
 const fmtAI = t => esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^#+\s*(.+)$/gm,"<b>$1</b>");
@@ -2006,8 +2025,8 @@ Niente titoli markdown, usa elenchi brevi.`;
 // 15. report settimanale
 let reportCtl=null;
 function renderReport(){
-  if(!sampleFn) return;
   const keys = Object.keys(S.reports).sort();
+  $("#reportCard").hidden = !sampleFn && !keys.length; $("#reportBtn").hidden = !sampleFn;
   if(!$("#reportOut").dataset.live){
     const last = keys[keys.length-1];
     if(last){
@@ -2017,8 +2036,8 @@ function renderReport(){
     }
   }
 }
-async function makeReport(){
-  const end = today(), ds=[...Array(7)].map((_,i)=>shiftDay(end,i-6));
+function reportPrompt(end){
+  const ds=[...Array(7)].map((_,i)=>shiftDay(end,i-6));
   const rows = ds.map(d=>{
     const list=normEntries(S.days[d]); if(!list.length) return `${d}: non registrato`;
     const t=sum(list), g=goalFor(d);
@@ -2042,6 +2061,10 @@ Struttura (niente titoli markdown, usa righe in grassetto con **):
 **Cosa ha funzionato** – 1-3 punti.
 **Cosa cambiare** – massimo 3 azioni concrete per la prossima settimana, con alimenti e grammi dove utile.
 **Peso** – commenta l'andamento (obiettivo +0,5–1 kg al mese) e se serve aggiustare le calorie di ±200 kcal. Se mancano pesate, chiedi di pesarsi 1-2 volte a settimana.`;
+  return prompt;
+}
+async function makeReport(){
+  const end = today(), prompt = reportPrompt(end);
   reportCtl = new AbortController();
   $("#reportOut").dataset.live="1";
   $("#reportBtn").disabled=true; $("#reportStop").hidden=false; $("#reportStatus").textContent="Sto analizzando la settimana…"; $("#reportOut").innerHTML="";
@@ -2720,8 +2743,8 @@ function exMeta(i){
   if(!h.length) return {cls:"", t: "Prima volta: i valori di oggi diventano il tuo riferimento."};
   const prevBest = Math.max(...h.map(x=>e1rm(bestSet(x.sets,bw),bw)));
   if(sets.length){ const v = e1rm(bestSet(sets,bw),bw); if(v > prevBest*1.001) return {cls:"pr", t:`Nuovo record: massimale stimato ${g1(v)} kg (prima ${g1(prevBest)}).`}; }
-  const last = h[h.length-1].sets, minR = Math.min(...last.map(x=>x.r));
-  return {cls:"", t: minR>=10 ? (bw ? "L'ultima volta hai chiuso tutte le serie: prova una ripetizione in più o aggiungi peso." : "L'ultima volta hai chiuso tutte le serie da 10 o più: prova ad aumentare di 2,5 kg.") : "Obiettivo di oggi: una ripetizione in più su almeno una serie."};
+  const tip = nextTip(h[h.length-1].sets, bw);
+  return {cls:"", t: tip ? "Obiettivo di oggi: "+tip.t : "Obiettivo di oggi: ripeti i valori dell'ultima volta."};
 }
 function renderWk(){
   const d = wkDraft; if(!d) return;
@@ -2739,7 +2762,7 @@ function renderWk(){
     const [mus, eq, cue] = exInfo(e.n), bw = exIsBW(e.n), last = lastSession(e.n, d.d, d.id), meta = exMeta(i);
     return `<section class="card exb" data-ex="${i}"><header><div class="mh"><h3>${esc(e.n)}</h3><span class="tot">${[mus,eq].filter(Boolean).join(" · ")}</span></div><button type="button" class="link" data-exdel="${i}" aria-label="Togli ${esc(e.n)}">✕</button></header>
       ${last ? `<p class="last">Ultima volta (${dShort(last.d)}): <b>${setsTxt(last.sets,bw)}</b></p>` : ""}
-      <p class="meta ${meta.cls}" data-meta="${i}">${meta.t}</p>
+      <p class="meta ${meta.cls}" data-meta="${i}">${meta.t}</p>${last ? nextTipHTML(last.sets, bw, i) : ""}
       <div class="sets"><div class="sethead"><span>#</span><span>${bw?"kg in più":"kg"}</span><span>ripetizioni</span><span>fatta</span><span></span></div>
       ${e.sets.map((x,j)=>`<div class="setrow${x.done?" done":""}"><span class="sn">${j+1}</span><input type="number" min="0" step="0.5" inputmode="decimal" value="${x.w===""||x.w==null?"":x.w}" placeholder="${bw?"0":"kg"}" data-sw="${i}:${j}" aria-label="Peso della serie ${j+1}"><input type="number" min="0" step="1" inputmode="numeric" value="${x.r===""||x.r==null?"":x.r}" placeholder="rip." data-sr="${i}:${j}" aria-label="Ripetizioni della serie ${j+1}"><button type="button" class="tick" data-tick="${i}:${j}" aria-pressed="${!!x.done}" aria-label="Serie ${j+1} fatta">${ic("check",20)}</button><button type="button" class="link" data-setdel="${i}:${j}" aria-label="Togli la serie ${j+1}">✕</button></div>`).join("")}</div>
       <div class="acts"><button type="button" class="addm" data-setadd="${i}">＋ Serie</button><button type="button" class="ghost" data-how="${i}">Come si fa</button></div>
@@ -2868,7 +2891,7 @@ function calcTargets(over){
   const lean = b && b.fat ? w*(1-b.fat/100) : null;
   const bmr = lean ? 370 + 21.6*lean : (10*w + 6.25*(st.height||180) - 5*(st.age||30) + (st.sex==="F"?-161:5));
   const rest0 = bmr*(ACT[st.act]||ACT.sed).f;
-  const rest = round10(rest0 + g.delta), train = round10(rest0 + (st.trainK||0) + g.delta);
+  const ak = st.adaptK||0, rest = round10(rest0 + g.delta + ak), train = round10(rest0 + (st.trainK||0) + g.delta + ak);
   const prot = round5(w*g.prot), fat = round5(w*g.fat);
   return {w, lean, bmr, rest0, rest, train, prot, fat, g, kgMonth: g.delta*30/7700, method: lean ? "Katch-McArdle (dalla massa magra)" : "Mifflin-St Jeor (da peso, altezza ed età)"};
 }
@@ -2933,6 +2956,7 @@ function renderGoalLog(){
   }).join("");
 }
 function renderCorpo(){
+  try{ renderBodyDue(); renderAdapt(); }catch(e){}
   const st = S.settings, t = calcTargets();
   renderGoalDD();
   $("#goalDesc").textContent = `${t.g.name}: ${t.g.desc}`;
@@ -3252,7 +3276,7 @@ $("#menuPanel").addEventListener("click", ev=>{ const b = ev.target.closest("[da
 $("#goalPanel").addEventListener("click", ev=>{
   const b = ev.target.closest("[data-goal]"); if(!b) return;
   const n = Number(b.dataset.goal); closeDD(); $("#goalBtn").focus();
-  if(n!==Number(S.settings.goal)){ S.settings.goal = n; S.settings.goalSince = today(); saveSettings(true); applyTargets(); render(); }
+  if(n!==Number(S.settings.goal)){ S.settings.goal = n; S.settings.goalSince = today(); S.settings.adaptK = 0; S.settings.adaptAt = today(); saveSettings(true); applyTargets(); render(); }
   renderCorpo();
 });
 /* ciambella e andamento */
@@ -3514,7 +3538,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.9.0";
+$("#verNote").textContent = "Diario delle calorie · versione 1.10.0";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -3596,6 +3620,7 @@ function remDefaults(){ return [
   {id:"m4", title:"Spuntini", body:"Hai mangiato degli spuntini? Aggiungili al diario.", time:"17:30", days:ALLDAYS.slice(), on:true, go:"diario"},
   {id:"m3", title:"Cena", body:"Hai già registrato la cena?", time:"21:30", days:ALLDAYS.slice(), on:true, go:"diario"},
   {id:"rp", title:"Riepilogo della settimana", body:"", time:"20:00", days:[6], on:true, go:"mesi"},
+  {id:"pr", title:"Proteine di oggi", body:"Ti avviso solo se ne mancano parecchie.", time:"20:30", days:ALLDAYS.slice(), on:true, go:"diario"},
   {id:"pl", title:"Pianifica la settimana", body:"Scegli giorni e orari degli allenamenti della prossima settimana.", time:"20:30", days:[6], on:true, go:"wk"}
 ]; }
 function rems(){
@@ -3604,6 +3629,8 @@ function rems(){
   const a = S.settings.rem.find(r=>r.id==="rp");
   if(a && !a.custom && a.time==="22:00" && (a.days||[]).join()==="4" && /^Il report della settimana/.test(a.body||"")){ a.title="Riepilogo della settimana"; a.body=""; a.time="20:00"; a.days=[6];
     const p = S.settings.rem.find(r=>r.id==="pl"); if(p && p.time==="20:00" && (p.days||[]).join()==="6") p.time="20:30"; }
+  // 1.10.0: controllo delle proteine la sera (aggiunto una volta, poi lo gestisci tu)
+  if(!S.settings.remPr){ S.settings.remPr = true; if(!S.settings.rem.some(r=>r.id==="pr")) S.settings.rem.splice(Math.max(0, S.settings.rem.findIndex(r=>r.id==="rp")), 0, remDefaults().find(r=>r.id==="pr")); }
   return S.settings.rem;
 }
 const atLocal = (d, t) => { const [h,m]=t.split(":").map(Number), [y,mo,dd]=d.split("-").map(Number); return new Date(y,mo-1,dd,h,m,0,0); };
@@ -3617,9 +3644,16 @@ function buildJobs(now){
       const hit = r.date ? r.date===d : (r.days||[]).includes(wd);
       if(!hit) continue;
       const f = atLocal(d, r.time); if(f<=now) continue;
-      const wsum = r.id==="rp" && !r.custom && !r.body ? weekText(weekStart(d)) : null;
-      out.push({k:`r:${r.id}:${d}`, f, title:r.title||"Promemoria", body:wsum || r.body || "", tag:"rem-"+r.id, url:"?go="+(r.go||"diario")});
+      if(r.id==="rp" && !r.custom && !r.body){
+        // il server chiede a Claude il report (chiave ANTHROPIC_API_KEY su Supabase); se non può, invia il riepilogo "fb"
+        let prompt = ""; try{ prompt = reportPrompt(d); }catch(e){}
+        out.push({k:`r:rp:${d}`, f, title:r.title||"Riepilogo della settimana", body:JSON.stringify({fb:weekText(weekStart(d)), prompt, end:d}), tag:"ai-report", url:"?go=mesi"});
+        continue;
+      }
+      if(r.id==="pr" && !r.custom){ out.push({k:`r:pr:${d}`, f, title:r.title||"Proteine di oggi", body:JSON.stringify({d, goal:goalsAt(d).prot}), tag:"prot-check", url:"?go=diario"}); continue; }
+      out.push({k:`r:${r.id}:${d}`, f, title:r.title||"Promemoria", body:r.body || "", tag:"rem-"+r.id, url:"?go="+(r.go||"diario")});
     }
+    if(i===0){ const bm = bodyDueJob(now); if(bm) out.push(bm); }
     const p = S.plan && S.plan[d];
     if(p && /^\d\d:\d\d$/.test(p.t||"")){
       const lead = S.settings.planLead==null ? 30 : S.settings.planLead, f = new Date(atLocal(d,p.t).getTime() - lead*60000);
@@ -3883,6 +3917,130 @@ async function closeRestNotes(){
 }
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && !(wkDraft && wkDraft.restEnd)) closeRestNotes(); });
 $("#timerPush").addEventListener("change", ()=>{ S.settings.timerPush = $("#timerPush").checked; saveSettings(true); if(!S.settings.timerPush){ timerSig="x"; pushFnCall({action:"cancel"}).catch(()=>{}); } else timerSig=""; });
+
+
+/* ================= versione 1.10: calorie adattive, rimisurazione, proteine la sera, prossimo passo, allenamento in viaggio ================= */
+// totali del giorno (kcal, proteine) per gli ultimi 40 giorni: li legge il server per il controllo delle proteine
+function totSync(only){
+  if(!S.tot) S.tot = {};
+  const t = today(), from = shiftDay(t,-40); let ch = false;
+  const ds = only ? [only] : [...Array(15)].map((_,i)=>shiftDay(t,-i));
+  for(const d of ds){
+    if(d<from) continue;
+    const v = hasDay(d) ? (x=>({k:Math.round(x[0]), p:Math.round(x[1])}))(sum(normEntries(S.days[d]))) : null;
+    const o = S.tot[d];
+    if(v ? (!o || o.k!==v.k || o.p!==v.p) : !!o){ if(v) S.tot[d] = v; else delete S.tot[d]; ch = true; }
+  }
+  for(const d of Object.keys(S.tot)) if(d<from){ delete S.tot[d]; ch = true; }
+  if(ch) saveMap("tot");
+}
+setTimeout(()=>{ try{ totSync(); }catch(e){} }, 3000);
+
+// rimisurazione ogni 4 settimane
+function lastBodyDate(){ const ks = Object.keys(S.body||{}).filter(d=>S.body[d]).sort(); return ks.length ? ks[ks.length-1] : null; }
+function bodyDueJob(now){
+  if(S.settings.bodyRem===false) return null;
+  const lb = lastBodyDate(); if(!lb) return null;
+  let d = shiftDay(lb,28); const t0 = iso(now);
+  let f = atLocal(d < t0 ? t0 : d, "09:00"); if(f<=now) f = atLocal(shiftDay(t0,1), "09:00");
+  if(f - now > PUSH_DAYS*864e5) return null;
+  return {k:`bm:${lb}`, f, title:"Misurazione del corpo", body:`Sono passate 4 settimane dall'ultima misurazione (${dShort(lb)}): rifalla e aggiorna la scheda Corpo.`, tag:"body-due", url:"?go=corpo"};
+}
+function renderBodyDue(){
+  const lb = lastBodyDate(), c = $("#bodyDueCard"); if(!c) return;
+  const days = lb ? Math.round((new Date(today()+"T12:00") - new Date(lb+"T12:00"))/864e5) : 0;
+  c.hidden = !lb || days < 28;
+  if(!c.hidden) $("#bodyDueTxt").textContent = `L'ultima misurazione è del ${dShort(lb)}, ${days} giorni fa. Rifalla nelle stesse condizioni (al mattino, a digiuno) e inseriscila qui sotto.`;
+  $("#bodyRem").checked = S.settings.bodyRem!==false;
+}
+$("#bodyRem").addEventListener("change", ()=>{ S.settings.bodyRem = $("#bodyRem").checked; saveSettings(true); try{ pushSchedule(); }catch(e){} });
+
+// calorie adattive: confronta l'andamento del peso delle ultime 3 settimane con quello previsto dall'obiettivo
+function adaptCheck(){
+  const t = today(), from = shiftDay(t,-21), all = {...S.weights};
+  for(const d in S.body) if(S.body[d] && S.body[d].w) all[d] = S.body[d].w;
+  const pts = Object.keys(all).filter(d=>d>=from && d<=t && all[d]>0).sort().map(d=>({x:(new Date(d+"T12:00")-new Date(from+"T12:00"))/864e5, y:all[d], d}));
+  const logged = [...Array(21)].map((_,i)=>shiftDay(t,-i)).filter(hasDay).length;
+  const g = GOALS[String(S.settings.goal)] || GOALS["1"], exp = g.delta*7/7700;
+  const o = {n:pts.length, logged, exp, ak:S.settings.adaptK||0};
+  if(pts.length<4 || pts[pts.length-1].x - pts[0].x < 14 || logged < 10){ o.state = "data"; return o; }
+  const mx = pts.reduce((a,p)=>a+p.x,0)/pts.length, my = pts.reduce((a,p)=>a+p.y,0)/pts.length;
+  const slope = pts.reduce((a,p)=>a+(p.x-mx)*(p.y-my),0) / pts.reduce((a,p)=>a+(p.x-mx)**2,0) * 7;
+  o.slope = slope; const diff = slope - exp;
+  if(Math.abs(diff) < 0.15){ o.state = "ok"; return o; }
+  o.step = diff > 0 ? -150 : 150;
+  if(Math.abs(o.ak + o.step) > 450){ o.state = "cap"; return o; }
+  const wait = S.settings.adaptAt && t < shiftDay(S.settings.adaptAt,14);
+  o.state = wait ? "wait" : "suggest"; return o;
+}
+function renderAdapt(){
+  const el = $("#adaptTxt"); if(!el) return;
+  const o = adaptCheck(), kg = v => signed(v," kg");
+  $("#adaptBtns").hidden = o.state!=="suggest";
+  const trend = o.slope!=null ? `Ultime 3 settimane: ${kg(o.slope)} a settimana; con il tuo obiettivo ci si aspetta ${kg(o.exp)}.` : "";
+  const msg = {
+    data:()=>`Ogni 2–3 settimane confronto l'andamento del peso con l'obiettivo e ti propongo un aggiustamento di circa 150 kcal. Servono almeno 4 pesate su 2 settimane e 10 giorni registrati (ora: ${o.n} pesate, ${o.logged} giorni).`,
+    ok:()=>`${trend} Sei in linea: nessuna modifica.`,
+    cap:()=>`${trend} Hai già spostato le calorie di ${signed(o.ak," kcal",0)}: oltre non vado da solo, valuta di cambiare obiettivo.`,
+    wait:()=>`${trend} Hai appena cambiato le calorie: ricontrollo dal ${dShort(shiftDay(S.settings.adaptAt,14))}.`,
+    suggest:()=>`${trend} Ti propongo ${o.step>0?"+":"−"}150 kcal al giorno, sia nei giorni di allenamento sia di riposo.`
+  }[o.state]; el.textContent = msg();
+  if(o.state==="suggest") $("#adaptYes").textContent = `Applica ${o.step>0?"+":"−"}150 kcal`;
+  $("#adaptNow").textContent = o.ak ? `Aggiustamento attivo: ${o.ak>0?"+":"−"}${fmt(Math.abs(o.ak))} kcal rispetto all'obiettivo.` : "";
+}
+$("#adaptYes").onclick = ()=>{
+  const o = adaptCheck(); if(o.state!=="suggest") return;
+  S.settings.adaptAt = today();
+  if(S.settings.auto){ S.settings.adaptK = o.ak + o.step; saveSettings(true); applyTargets(); }
+  else { S.settings.train += o.step; S.settings.rest += o.step; saveSettings(true); }
+  render(); renderCorpo(); toast(`Calorie ${o.step>0?"aumentate":"ridotte"} di 150 kcal al giorno.`, true);
+};
+$("#adaptNo").onclick = ()=>{ S.settings.adaptAt = today(); saveSettings(true); renderAdapt(); };
+
+// prossimo passo per un esercizio, dall'ultima volta
+function nextTip(sets, bw){
+  const ok = sets.filter(x=>Number(x.r)>0); if(!ok.length) return null;
+  const top = Math.max(...ok.map(x=>Number(x.w)||0)), at = ok.filter(x=>(Number(x.w)||0)===top), minR = Math.min(...at.map(x=>Number(x.r)));
+  if(bw && !top) return {t:`prova ${minR+1} ripetizioni in ogni serie.`};
+  if(minR >= 10){ const nw = top + 2.5; return {t:`l'ultima volta ${at.length}×${minR} con ${kgTxt(top)} kg${bw?" in più":""}, prova ${kgTxt(nw)} kg.`, w:nw}; }
+  return {t:`resta a ${kgTxt(top)} kg${bw?" in più":""} e punta a ${minR+1} ripetizioni in ogni serie.`};
+}
+function nextTipHTML(sets, bw, i){
+  const tip = nextTip(sets, bw); if(!tip) return "";
+  return tip.w!=null ? `<p class="last tip2"><button type="button" class="small" data-sugw="${i}:${tip.w}">Usa ${kgTxt(tip.w)} kg in tutte le serie</button></p>` : "";
+}
+$("#wkExList").addEventListener("click", ev=>{
+  const b = ev.target.closest("[data-sugw]"); if(!b || !wkDraft) return;
+  const [i,w] = b.dataset.sugw.split(":"); const e = wkDraft.ex[Number(i)]; if(!e) return;
+  e.sets.forEach(x=>{ if(!x.done) x.w = Number(w); }); renderWk();
+});
+
+// allenamento in viaggio (AI)
+let travelCtl = null;
+$("#travelBtn").onclick = async ()=>{
+  if(!sampleFn) return;
+  const eq = $("#travelEq").value.trim() || "nessun attrezzo, solo il corpo, poco spazio", min = $("#travelMin").value;
+  const since = shiftDay(today(),-10), recent = {};
+  for(const w of wkSorted()) if(w.d>=since){ for(const e of (w.ex||[])) recent[exInfo(e.n)[0]] = w.d; if(!w.ex || !w.ex.length) recent[SPORTS[w.t].n] = w.d; }
+  const rec = Object.entries(recent).map(([m,d])=>`${m} (${dShort(d)})`).join(", ") || "nessun allenamento negli ultimi 10 giorni";
+  const prompt = `Sei un personal trainer. Scrivi in italiano un allenamento di ${min} minuti da fare in viaggio.
+${profileText()}
+Attrezzatura e spazio: ${eq}
+Allenato negli ultimi 10 giorni (gruppo muscolare o sport, ultima data): ${rec}
+
+Regole: privilegia i gruppi muscolari allenati meno di recente; niente salti rumorosi se è una camera d'albergo; esercizi con nomi italiani comuni.
+Formato (niente titoli markdown, righe in grassetto con **):
+**Riscaldamento** – 2-3 righe.
+**Circuito** – 4-6 esercizi, uno per riga: nome – serie × ripetizioni (o secondi) – recupero – una nota di esecuzione.
+**Defaticamento** – 1-2 righe.
+**Calorie** – stima delle kcal bruciate da registrare nel diario.`;
+  travelCtl = new AbortController();
+  $("#travelBtn").disabled = true; $("#travelStop").hidden = false; $("#travelStatus").textContent = "Sto preparando l'allenamento…"; $("#travelOut").innerHTML = "";
+  try{ await sampleFn(prompt, {signal:travelCtl.signal, cache:false, onText:({text})=>{ $("#travelStatus").textContent=""; $("#travelOut").innerHTML = fmtAI(text); }}); $("#travelStatus").textContent = ""; }
+  catch(e){ if(e && e.text) $("#travelOut").innerHTML = fmtAI(e.text); aiFail(e, $("#travelStatus")); }
+  finally{ $("#travelBtn").disabled = false; $("#travelStop").hidden = true; }
+};
+$("#travelStop").onclick = ()=>{ if(travelCtl) travelCtl.abort(); };
 
 /* --- apertura da notifica (?go=...) --- */
 (function(){ const g = new URLSearchParams(location.search).get("go"); if(g && TABS[g]) setTab(g); })();
