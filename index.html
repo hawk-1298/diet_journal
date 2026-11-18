@@ -707,6 +707,7 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
 .chk{display:flex;align-items:center;gap:10px;font-size:.9rem}
 .chk input{width:20px;height:20px;flex:none;accent-color:var(--accent)}
 .restbar button{white-space:nowrap}
+.wkblk{margin:8px 0}.wkblk ul{margin:4px 0 0;padding-left:18px}.wkblk li{margin:2px 0;font-size:.9rem}
 .restbar #restMinus,.restbar #restPlus{text-decoration:none;border:1px solid color-mix(in srgb,var(--bg) 35%,transparent);border-radius:99px;padding:3px 9px;font-size:.82rem}
 </style>
 </head>
@@ -829,6 +830,7 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
       <label class="chk"><input type="checkbox" id="iosTimer"> Avvia il timer di iPhone insieme al recupero</label>
       <label style="margin-top:8px">Nome del comando in Comandi<input id="iosShortcut" spellcheck="false" autocomplete="off" autocapitalize="none"></label>
       <div class="ai-row" style="margin-top:8px"><button type="button" id="iosTimerTest">Prova con 10 secondi</button></div>
+      <label class="chk" style="margin-top:10px"><input type="checkbox" id="timerPush"> Notifica alla fine del recupero (suona anche se esci dall'app; serve che le notifiche siano attive)</label>
       <details style="padding:10px 12px;margin-top:8px">
         <summary class="note">Come creare il comando (2 minuti, una volta sola)</summary>
         <ol class="steps">
@@ -1004,6 +1006,11 @@ input[type="date"]::-webkit-date-and-time-value{text-align:left}
       <h3>Storico obiettivi</h3>
       <p class="sub">Ogni modifica vale da quel giorno in poi: i giorni passati restano con gli obiettivi di allora. Qui vedi cosa è successo dopo ogni cambio.</p>
       <div id="goalLogList"></div>
+    </section>
+    <section class="card" id="weekCard">
+      <h3>Riepilogo settimanale</h3>
+      <p class="sub">Lo stesso riepilogo che ricevi la domenica sera come notifica.</p>
+      <div id="weekBody"></div>
     </section>
     <section class="card ai" id="reportCard" hidden>
       <h3>Report settimanale</h3>
@@ -1191,7 +1198,7 @@ const BASE = {
 const MEALS = ["Colazione","Pranzo","Cena","Spuntini"];
 const MAPS = ["weights","water","weeks","templates","reports","body","workouts","adj","plan"];
 const DEF_SETTINGS = {train:2900, rest:2550, prot:155, fat:75, fib:30, waterGoal:2500, mode:"train", defMode:"train", used:false,
-  height:185, age:28, sex:"M", act:"sed", trainK:350, goal:1, auto:true, planLead:30, iosTimer:false, iosShortcut:"Riposo"};
+  height:185, age:28, sex:"M", act:"sed", trainK:350, goal:1, auto:true, planLead:30, iosTimer:false, iosShortcut:"Riposo", timerPush:true};
 // alimenti usati dal suggeritore, con una porzione tipica in grammi
 const CORE = {"Whey protein dm Sportness":30,"Yogurt greco 0%":170,"Albume d'uovo":150,"Banana":120,"Mela":150,"Riso (crudo)":80,"Pane comune":60,"Crackers di riso":25,"Fiocchi d'avena":50,"Petto di pollo":150,"Tonno al naturale":80,"Carne salata":80,"Bresaola":60,"Latte di soia Alpro senza zuccheri":250,"Patate":250,"Castagne arrosto (sbucciate)":80,"Udon precotti / freschi":200,"Mozzarella light":125,"Uova":120,"Mandorle":20,"Miele":15,"Pasta (cruda)":80,"Kiwi":100,"Arancia":150};
 const NOT_SUGGEST = /olio|burro|maionese|zucchero|vino|birra|bibita|marmellata|passata|cipolla/i;
@@ -1281,6 +1288,7 @@ function queue(key, fn){
   return chains[key];
 }
 function saveDay(d){
+  try{ pushSchedule(); }catch(e){}
   const list = S.days[d] || [];
   if(list.length) S.modes[d] = dayMode(d);
   if(backend==="db"){
@@ -1296,7 +1304,7 @@ function saveCustom(){
 }
 const mapTimers = {};
 function saveMap(name, now){
-  if(name==="plan"){ try{ pushSchedule(); }catch(e){} }
+  if(name==="plan"||name==="weights"||name==="body"||name==="workouts"){ try{ pushSchedule(); }catch(e){} }
   dirty.add(name); clearTimeout(mapTimers[name]);
   const go = () => {
     if(backend==="db"){ const body={w:JSON.parse(JSON.stringify(S[name]))}; queue(name, ()=>dbCol.doc(name).set(body)).finally(()=>dirty.delete(name)); }
@@ -1727,7 +1735,7 @@ function hbar(label, v, max, valText, color){
 }
 
 function renderDash(){
-  renderGoalLog();
+  renderGoalLog(); renderWeek();
   renderReport();
   const ms = monthsWithData(), sel = $("#dashMonth");
   if(!ms.length){
@@ -2647,7 +2655,7 @@ function showWk(){
 // keep = riduce la schermata senza buttare via l'allenamento in corso
 function closeWk(keep){
   $("#wkSheet").hidden = true; $("#exSheet").hidden = true; document.body.classList.remove("sheet-open"); wakeOff();
-  if(keep && isLive()) local.set("cal_wkdraft", wkDraft); else { wkDraft = null; wkPersisted = ""; local.set("cal_wkdraft", null); }
+  if(keep && isLive()) local.set("cal_wkdraft", wkDraft); else { wkDraft = null; wkPersisted = ""; local.set("cal_wkdraft", null); pushTimerSync(); }
   $("#fab").hidden = $("#viewDiario").hidden && $("#viewWk").hidden;
   wkTick();
 }
@@ -2670,7 +2678,7 @@ setInterval(wkTick, 1000);
 document.addEventListener("visibilitychange", ()=>{ if(document.hidden){ if(isLive()) local.set("cal_wkdraft", wkDraft); } else { wkTick(); if(isLive() && !$("#wkSheet").hidden) wakeOn(); } });
 window.addEventListener("pagehide", ()=>{ if(isLive()) local.set("cal_wkdraft", wkDraft); });
 $("#liveBar").onclick = ()=>openWk();
-$("#restSkip").onclick = ()=>{ if(wkDraft){ wkDraft.restEnd = 0; wkTick(); } };
+$("#restSkip").onclick = ()=>{ if(wkDraft){ wkDraft.restEnd = 0; wkTick(); pushTimerSync(); } };
 /* recupero: durata scelta con le rotelle (minuti e secondi), come nel timer dell'iPhone */
 const WH = 40, restSecs = () => S.settings.restSec==null ? 90 : Math.max(5, S.settings.restSec);
 function buildWheel(el, vals, cur){
@@ -2684,7 +2692,7 @@ function paintRest(){
   $("#restVal").innerHTML = `${fmtClock(rs*1000)} ${ic("down",15)}`;
   $("#restAuto").checked = S.settings.restAuto!==false;
 }
-function startRest(){ const d = wkDraft; if(!d) return; d.restLen = restSecs()*1000; d.restEnd = Date.now() + d.restLen; wkTick(); if(S.settings.iosTimer) iosTimerStart(restSecs()); }
+function startRest(){ const d = wkDraft; if(!d) return; d.restLen = restSecs()*1000; d.restEnd = Date.now() + d.restLen; wkTick(); pushTimerSync(); if(S.settings.iosTimer) iosTimerStart(restSecs()); }
 $("#restVal").onclick = ()=>{
   const p = $("#restPick"), open = p.hidden; p.hidden = !open; $("#restVal").setAttribute("aria-expanded", String(open));
   if(open){ const rs = restSecs(); buildWheel($("#whMin"), [...Array(11).keys()], Math.floor(rs/60)); buildWheel($("#whSec"), [...Array(12).keys()].map(x=>x*5), rs%60); }
@@ -2699,8 +2707,8 @@ for(const id of ["#whMin","#whSec"]) $(id).addEventListener("keydown", ev=>{ if(
 $("#restAuto").addEventListener("change", ()=>{ S.settings.restAuto = $("#restAuto").checked; saveSettings(true); });
 $("#restDone").onclick = ()=>{ $("#restPick").hidden = true; $("#restVal").setAttribute("aria-expanded","false"); saveSettings(true); };
 $("#restStart").onclick = startRest;
-$("#restPlus").onclick = ()=>{ const d = wkDraft; if(d && d.restEnd){ d.restEnd += 15000; d.restLen = Math.max(d.restLen||0, d.restEnd-Date.now()); wkTick(); } };
-$("#restMinus").onclick = ()=>{ const d = wkDraft; if(d && d.restEnd){ d.restEnd -= 15000; wkTick(); } };
+$("#restPlus").onclick = ()=>{ const d = wkDraft; if(d && d.restEnd){ d.restEnd += 15000; d.restLen = Math.max(d.restLen||0, d.restEnd-Date.now()); wkTick(); pushTimerSync(); } };
+$("#restMinus").onclick = ()=>{ const d = wkDraft; if(d && d.restEnd){ d.restEnd -= 15000; wkTick(); pushTimerSync(); } };
 function wkKcalNote(){
   const d = wkDraft; if(!d) return;
   $("#wkKcalNote").innerHTML = d.auto ? `Calorie stimate da tipo, durata, intensità e dal tuo peso. Se hai un valore più preciso (orologio), scrivilo.` : `Valore inserito da te. <button type="button" class="ghost" id="wkAuto" style="padding:0;text-decoration:underline">Usa la stima (${fmt(estKcal(d.t,d.min,d.int))} kcal)</button>`;
@@ -3506,7 +3514,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.8.4";
+$("#verNote").textContent = "Diario delle calorie · versione 1.9.0";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -3587,10 +3595,17 @@ function remDefaults(){ return [
   {id:"m2", title:"Pranzo", body:"Hai già registrato il pranzo?", time:"14:30", days:ALLDAYS.slice(), on:true, go:"diario"},
   {id:"m4", title:"Spuntini", body:"Hai mangiato degli spuntini? Aggiungili al diario.", time:"17:30", days:ALLDAYS.slice(), on:true, go:"diario"},
   {id:"m3", title:"Cena", body:"Hai già registrato la cena?", time:"21:30", days:ALLDAYS.slice(), on:true, go:"diario"},
-  {id:"rp", title:"Report settimanale", body:"Il report della settimana è pronto da generare: aprilo.", time:"22:00", days:[4], on:true, go:"mesi"},
-  {id:"pl", title:"Pianifica la settimana", body:"Scegli giorni e orari degli allenamenti della prossima settimana.", time:"20:00", days:[6], on:true, go:"wk"}
+  {id:"rp", title:"Riepilogo della settimana", body:"", time:"20:00", days:[6], on:true, go:"mesi"},
+  {id:"pl", title:"Pianifica la settimana", body:"Scegli giorni e orari degli allenamenti della prossima settimana.", time:"20:30", days:[6], on:true, go:"wk"}
 ]; }
-function rems(){ if(!Array.isArray(S.settings.rem)) S.settings.rem = remDefaults(); return S.settings.rem; }
+function rems(){
+  if(!Array.isArray(S.settings.rem)) S.settings.rem = remDefaults();
+  // 1.9.0: il report del venerdì sera (se non l'hai toccato) diventa il riepilogo della domenica
+  const a = S.settings.rem.find(r=>r.id==="rp");
+  if(a && !a.custom && a.time==="22:00" && (a.days||[]).join()==="4" && /^Il report della settimana/.test(a.body||"")){ a.title="Riepilogo della settimana"; a.body=""; a.time="20:00"; a.days=[6];
+    const p = S.settings.rem.find(r=>r.id==="pl"); if(p && p.time==="20:00" && (p.days||[]).join()==="6") p.time="20:30"; }
+  return S.settings.rem;
+}
 const atLocal = (d, t) => { const [h,m]=t.split(":").map(Number), [y,mo,dd]=d.split("-").map(Number); return new Date(y,mo-1,dd,h,m,0,0); };
 // elenco delle notifiche da inviare nei prossimi giorni (orari assoluti, dal fuso del telefono)
 function buildJobs(now){
@@ -3602,7 +3617,8 @@ function buildJobs(now){
       const hit = r.date ? r.date===d : (r.days||[]).includes(wd);
       if(!hit) continue;
       const f = atLocal(d, r.time); if(f<=now) continue;
-      out.push({k:`r:${r.id}:${d}`, f, title:r.title||"Promemoria", body:r.body||"", tag:"rem-"+r.id, url:"?go="+(r.go||"diario")});
+      const wsum = r.id==="rp" && !r.custom && !r.body ? weekText(weekStart(d)) : null;
+      out.push({k:`r:${r.id}:${d}`, f, title:r.title||"Promemoria", body:wsum || r.body || "", tag:"rem-"+r.id, url:"?go="+(r.go||"diario")});
     }
     const p = S.plan && S.plan[d];
     if(p && /^\d\d:\d\d$/.test(p.t||"")){
@@ -3707,7 +3723,7 @@ async function pushRebuild(force){
   if(!force && local.get("cal_pushsig","")===sig) return;
   pushBusy = true;
   try{
-    let r = await sbFetch("/rest/v1/push_jobs?sent_at=is.null&fire_at=gt."+encodeURIComponent(new Date().toISOString()), {method:"DELETE"});
+    let r = await sbFetch("/rest/v1/push_jobs?sent_at=is.null&job_key=neq.timer&fire_at=gt."+encodeURIComponent(new Date().toISOString()), {method:"DELETE"});
     if(!r.ok) throw new Error("del "+r.status);
     if(jobs.length){
       r = await sbFetch("/rest/v1/push_jobs?on_conflict=user_id,job_key", {method:"POST", headers:{Prefer:"resolution=merge-duplicates,return=minimal"},
@@ -3733,7 +3749,7 @@ function renderRem(){
   const el = $("#remList"); if(!el) return;
   el.innerHTML = rems().map(remRow).join("");
   $("#planLead").value = String(S.settings.planLead==null ? 30 : S.settings.planLead);
-  $("#iosTimer").checked = !!S.settings.iosTimer;
+  $("#iosTimer").checked = !!S.settings.iosTimer; $("#timerPush").checked = S.settings.timerPush!==false;
   if(document.activeElement!==$("#iosShortcut")) $("#iosShortcut").value = S.settings.iosShortcut || "Riposo";
   if(document.activeElement!==$("#pushFn")) $("#pushFn").value = S.settings.pushFn || "";
   renderPush();
@@ -3806,6 +3822,67 @@ $("#planDays").addEventListener("change", ev=>{
   else if(ev.target.matches("[data-ps]")) p.sp = ev.target.value;
   saveMap("plan", true); pushSchedule();
 });
+
+
+/* --- riepilogo della settimana (card in Dashboard + testo della notifica della domenica) --- */
+function weekSummary(ws){
+  const t = today(), ds = [...Array(7)].map((_,i)=>shiftDay(ws,i)).filter(d=>d<=t);
+  const logged = ds.filter(hasDay), o = {days:ds.length, logged:logged.length};
+  if(logged.length){
+    let k=0, p=0, gk=0, gp=0, ok=0;
+    for(const d of logged){ const tt = sum(normEntries(S.days[d])), g = goalFor(d); k+=tt[0]; p+=tt[1]; gk+=g; gp+=goalsAt(d).prot; if(Math.abs(tt[0]-g) <= g*0.1) ok++; }
+    o.kcal = k/logged.length; o.goal = gk/logged.length; o.prot = p/logged.length; o.protGoal = gp/logged.length; o.ok = ok;
+    const w = logged.map(d=>(S.water[d]||0)).filter(v=>v>0); if(w.length) o.water = w.reduce((a,b)=>a+b,0)/w.length/1000;
+  }
+  const wk = Object.values(S.workouts).filter(x=>ds.includes(x.d));
+  o.wk = wk.length; o.wkMin = wk.reduce((a,x)=>a+(x.min||0),0);
+  o.planned = ds.filter(d=>S.plan && S.plan[d]).length; o.plannedDone = ds.filter(d=>S.plan && S.plan[d] && hasWk(d)).length;
+  const all = {...S.weights}; for(const d in S.body) if(S.body[d] && S.body[d].w) all[d] = S.body[d].w;
+  const wd = Object.keys(all).filter(d=>d>=ws && d<=ds[ds.length-1]).sort();
+  if(wd.length>=2) o.w0 = all[wd[0]], o.w1 = all[wd[wd.length-1]];
+  return o;
+}
+function weekLines(ws){
+  const o = weekSummary(ws), L = [];
+  if(!o.logged){ L.push("Nessun pasto registrato."); }
+  else {
+    L.push(`Calorie: ${fmt(o.kcal)} al giorno su ${fmt(o.goal)} (${o.logged}/${o.days} giorni registrati)`);
+    L.push(`Giorni nell'obiettivo (±10%): ${o.ok}/${o.logged}`);
+    L.push(`Proteine: ${fmt(o.prot)} g su ${fmt(o.protGoal)} g`);
+    if(o.water!=null) L.push(`Acqua: ${g1(o.water)} L al giorno`);
+  }
+  if(o.wk || o.planned) L.push(`Allenamenti: ${o.wk}${o.planned?` (${o.plannedDone} di ${o.planned} pianificati)`:""}${o.wkMin?` · ${o.wkMin} min`:""}`);
+  if(o.w0!=null) L.push(`Peso: ${g1(o.w0)} → ${g1(o.w1)} kg (${signed(o.w1-o.w0," kg")})`);
+  return L;
+}
+const weekText = ws => weekLines(ws).join("\n");
+function renderWeek(){
+  const el = $("#weekBody"); if(!el) return;
+  const cur = weekStart(today()), blocks = [[cur,"Questa settimana"],[shiftDay(cur,-7),"Settimana scorsa"]];
+  el.innerHTML = blocks.map(([ws,l])=>`<div class="wkblk"><b>${l}</b> <small>${dShort(ws)} – ${dShort(shiftDay(ws,6))}</small><ul>${weekLines(ws).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("");
+}
+
+/* --- timer di recupero: avviso dal server quando finisce (anche con l'app chiusa) --- */
+async function pushFnCall(body, keepalive){
+  if(sync.session.expires_at*1000 - Date.now() < 60000) await sbRefresh();
+  return fetch(SB_URL+"/functions/v1/"+encodeURIComponent((S.settings.pushFn||"send-push").trim()), {method:"POST", keepalive:!!keepalive,
+    headers:{"Content-Type":"application/json", apikey:SB_KEY, Authorization:"Bearer "+sync.session.access_token}, body:JSON.stringify(body)});
+}
+var timerSig = "";
+async function pushTimerSync(){
+  try{
+    if(S.settings.timerPush===false || pushState().s!=="on") return;
+    const d = wkDraft, left = d && d.restEnd ? Math.round((d.restEnd - Date.now())/1000) : 0;
+    const sig = left>0 ? String(Math.round(d.restEnd/1000)) : "";
+    if(sig===timerSig) return; timerSig = sig;
+    await pushFnCall(left>0 ? {action:"timer", seconds:left} : {action:"cancel"}, true);
+  }catch(e){ timerSig = ""; }
+}
+async function closeRestNotes(){
+  try{ const reg = await navigator.serviceWorker.getRegistration(); if(!reg) return; (await reg.getNotifications()).forEach(n=>{ if((n.tag||"").startsWith("rest-")) n.close(); }); }catch(e){}
+}
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && !(wkDraft && wkDraft.restEnd)) closeRestNotes(); });
+$("#timerPush").addEventListener("change", ()=>{ S.settings.timerPush = $("#timerPush").checked; saveSettings(true); if(!S.settings.timerPush){ timerSig="x"; pushFnCall({action:"cancel"}).catch(()=>{}); } else timerSig=""; });
 
 /* --- apertura da notifica (?go=...) --- */
 (function(){ const g = new URLSearchParams(location.search).get("go"); if(g && TABS[g]) setTab(g); })();
