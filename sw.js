@@ -1,6 +1,6 @@
 // Service worker di Lumen (ex Diario delle calorie): fa funzionare l'app offline.
 // Quando aggiorni i file dell'app, cambia VERSION: l'app mostrerà "È pronta una nuova versione".
-const VERSION = "1.15.0";
+const VERSION = "1.16.0";
 const SHELL_CACHE = "diario-shell-" + VERSION;
 const FONT_CACHE = "diario-fonts";
 const SHELL = [

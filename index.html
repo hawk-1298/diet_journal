@@ -1009,6 +1009,23 @@ details.setgrp > .setin > .sub{margin:0}
 .rvsrc{font-size:.74rem;color:var(--muted)}
 #revProps{display:flex;flex-direction:column;gap:8px}
 #revProps:empty{display:none}
+
+/* 1.16: schede della Dashboard che si aprono e si chiudono */
+#dashTop:empty{display:none}
+.fold > h3,.fold > header,.fold > .rvhead h3{cursor:pointer;display:flex;align-items:center;gap:8px;-webkit-tap-highlight-color:transparent}
+.fold > .rvhead{flex-direction:column;align-items:stretch;gap:10px}
+.fold > .rvhead h3{min-width:0}
+.fold > .rvhead .rvnav{justify-content:space-between;background:var(--bg);border-radius:99px;padding:3px}
+.fold > .rvhead .rvnav button{background:var(--surface)}
+.fold .foldsum{margin-left:auto;font:500 .78rem/1.2 var(--body);color:var(--muted);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.fold .foldchev{flex:none;color:var(--muted);transition:transform .2s var(--ease,ease)}
+.fold:not(.shut) .foldchev{transform:rotate(180deg)}
+.fold:not(.shut) .foldsum{display:none}
+.fold:not(.shut) .foldchev{margin-left:auto}
+.fold.shut > :not(h3):not(header):not(.rvhead){display:none!important}
+.fold.shut > .rvhead .rvnav{display:none}
+.fold.shut{padding-bottom:16px}
+@media (prefers-reduced-motion: reduce){.fold .foldchev{transition:none}}
 </style>
 </head>
 <body>
@@ -1326,6 +1343,7 @@ details.setgrp > .setin > .sub{margin:0}
   <!-- DASHBOARD -->
   <div class="view" id="viewMesi" hidden>
     <div class="dashhead"><select id="dashMonth" aria-label="Mese"></select></div>
+    <div id="dashTop"></div>
     <section class="card ai" id="reviewCard">
       <div class="rvhead"><h3>La tua settimana</h3><div class="rvnav"><button type="button" id="revPrev" aria-label="Settimana precedente">‹</button><span id="revRange"></span><button type="button" id="revNext" aria-label="Settimana successiva">›</button></div></div>
       <div class="rvdays" id="revDays" aria-label="Calorie di ogni giorno rispetto all'obiettivo"></div>
@@ -3881,7 +3899,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Lumen · versione 1.15.0";
+$("#verNote").textContent = "Lumen · versione 1.16.0";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -5115,6 +5133,51 @@ renderReport = function(){ $("#reportCard").hidden = true; try{ renderReview(); 
   };
 }
 try{ renderReview(); }catch(e){}
+
+/* ================= 1.16: Dashboard più pulita, ogni scheda si apre e si chiude ================= */
+const foldState = local.get("cal_fold", {});
+const FOLD_OPEN = {reviewCard:true};   // aperte la prima volta
+function foldKey(card){ return card.id || ("t:" + ((card.querySelector(":scope > h3, :scope > header") || {}).textContent || "").trim().slice(0,30)); }
+function foldSummary(card){
+  if(card.id==="reviewCard"){ try{ const st = weekStats(revWeek), rep = S.reports[st.we], g = rep && String(rep.text).match(/voto[:\s]*([\d.,]+)\s*\/\s*10/i);
+    return [g ? `Voto ${g[1]}/10` : null, st.n ? `${fmt(st.avgK)} kcal` : null, `${st.wk} allenamenti`].filter(Boolean).join(" · "); }catch(e){ return ""; } }
+  if(card.id==="agentCard"){ const n = Object.keys(S.coach).filter(k=>k.startsWith("pp:") && S.coach[k].state==="open" && !S.coach[k].wk).length; return n ? `${n} proposte da decidere` : "Fai una domanda"; }
+  if(card.id==="dailyCard"){ const m = Object.keys(S.coach).filter(k=>k.startsWith("in:")).map(k=>S.coach[k]).sort((a,b)=>b.at-a.at)[0];
+    return S.settings.dailyAgent===false ? "Spento" : m ? `Ultimo: ${new Date(m.at).toLocaleDateString("it-IT",{weekday:"short", day:"numeric"})}` : `Ogni giorno alle ${S.settings.dailyTime||"08:00"}`; }
+  if(card.id==="goalLogCard"){ const L = S.settings.goalLog||[]; const e = L[L.length-1]; return e && e.from!==GOAL_BASE ? `Ultima modifica: ${dShort(e.from)}` : ""; }
+  return "";
+}
+function foldCard(card){
+  const head = card.querySelector(":scope > .rvhead h3, :scope > h3, :scope > header");
+  if(!head) return;
+  const key = foldKey(card), open = key in foldState ? foldState[key] : !!FOLD_OPEN[key];
+  card.classList.add("fold"); card.classList.toggle("shut", !open);
+  if(!head.querySelector(".foldchev")){
+    head.insertAdjacentHTML("beforeend", `<small class="foldsum"></small><svg class="foldchev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`);
+    head.setAttribute("role","button"); head.tabIndex = 0;
+    const toggle = ()=>{ const now = card.classList.toggle("shut"); foldState[key] = !now; local.set("cal_fold", foldState); head.setAttribute("aria-expanded", String(!now)); if(!now && card.id==="agentCard") try{ renderCoach(); }catch(e){} };
+    head.addEventListener("click", toggle);
+    head.addEventListener("keydown", ev=>{ if(ev.key==="Enter" || ev.key===" "){ ev.preventDefault(); toggle(); } });
+  }
+  head.setAttribute("aria-expanded", String(open));
+  const sm = head.querySelector(".foldsum"); if(sm) sm.textContent = foldSummary(card);
+}
+function dashTidy(){
+  const v = $("#viewMesi"); if(!v) return;
+  // i numeri del mese in alto, sotto la scelta del mese
+  const top = $("#dashTop"), k = $("#dashBody > .kpis");
+  if(top && k){ top.innerHTML = ""; top.appendChild(k); }
+  $("#weekCard").hidden = true;   // ora c'è "La tua settimana"
+  const cards = [$("#reviewCard"), $("#agentCard"), $("#dailyCard"), ...document.querySelectorAll("#dashBody .card, #dashBody > .chart"), $("#goalLogCard")];
+  for(const c of cards) if(c && !c.hidden) foldCard(c);
+}
+{ const _rd3 = renderDash; renderDash = function(){ _rd3.apply(this, arguments); try{ dashTidy(); }catch(e){ console.warn(e); } }; }
+{ const _rr = renderReview; renderReview = function(){ _rr.apply(this, arguments); try{ foldCard($("#reviewCard")); }catch(e){} }; }
+{ const _rc = renderCoach; renderCoach = function(){ _rc.apply(this, arguments); try{ for(const id of ["#agentCard","#dailyCard"]) if(!$(id).hidden) foldCard($(id)); }catch(e){} }; }
+// una revisione o una domanda al coach riaprono la loro scheda
+$("#revBtn").addEventListener("click", ()=>{ const c = $("#reviewCard"); if(c.classList.contains("shut")) c.querySelector(".rvhead h3").click(); }, true);
+$("#askCoach").addEventListener("click", ()=>{ const c = $("#agentCard"); if(c.classList.contains("shut")) c.querySelector(":scope > h3").click(); }, true);
+try{ dashTidy(); }catch(e){}
 </script>
 </body>
 </html>
