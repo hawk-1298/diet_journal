@@ -1087,7 +1087,7 @@ details.setgrp > .setin > .sub{margin:0}
       <label class="chk" style="margin-top:10px"><input type="checkbox" id="funPush"> Notifiche vivaci: testi che cambiano ogni giorno, serie a rischio, missioni quasi completate</label>
       <label style="margin-top:12px">Avviso prima dell'allenamento<select id="planLead"><option value="0">All'ora dell'allenamento</option><option value="15">15 minuti prima</option><option value="30">30 minuti prima</option><option value="45">45 minuti prima</option><option value="60">1 ora prima</option></select></label>
       <details style="padding:10px 12px;margin-top:10px"><summary class="note">Avanzate</summary>
-        <label style="margin-top:8px">Nome della funzione su Supabase<input id="pushFn" spellcheck="false" autocomplete="off" autocapitalize="none" placeholder="send-push"></label>
+        <label style="margin-top:8px">Nome della funzione su Supabase<input id="pushFn" spellcheck="false" autocomplete="off" autocapitalize="none" placeholder="dynamic-api"></label>
         <p class="note">Va scritto uguale al nome che vedi in Supabase → Edge Functions (meglio copiarlo e incollarlo).</p>
       </details>
       <p class="note">Gli orari degli allenamenti li scegli in Allenamento. Apri l'app almeno ogni due settimane per tenere attivi i promemoria.</p>
@@ -4026,7 +4026,7 @@ async function pushTest(){
   pMsg("Invio…");
   try{
     if(sync.session.expires_at*1000 - Date.now() < 60000) await sbRefresh();
-    const r = await fetch(SB_URL+"/functions/v1/"+encodeURIComponent((S.settings.pushFn||"send-push").trim()), {method:"POST", headers:{"Content-Type":"application/json", apikey:SB_KEY, Authorization:"Bearer "+sync.session.access_token}, body:JSON.stringify({action:"test"})});
+    const r = await fetch(SB_URL+"/functions/v1/"+encodeURIComponent((S.settings.pushFn||"dynamic-api").trim()), {method:"POST", headers:{"Content-Type":"application/json", apikey:SB_KEY, Authorization:"Bearer "+sync.session.access_token}, body:JSON.stringify({action:"test"})});
     const j = await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(j.error || ("errore "+r.status));
     pMsg(j.sent ? "Inviata: dovrebbe arrivare tra pochi secondi." : "Nessun dispositivo registrato: disattiva e riattiva le notifiche.");
@@ -4192,7 +4192,7 @@ function renderDashWeek(){
 /* --- timer di recupero: avviso dal server quando finisce (anche con l'app chiusa) --- */
 async function pushFnCall(body, keepalive){
   if(sync.session.expires_at*1000 - Date.now() < 60000) await sbRefresh();
-  return fetch(SB_URL+"/functions/v1/"+encodeURIComponent((S.settings.pushFn||"send-push").trim()), {method:"POST", keepalive:!!keepalive,
+  return fetch(SB_URL+"/functions/v1/"+encodeURIComponent((S.settings.pushFn||"dynamic-api").trim()), {method:"POST", keepalive:!!keepalive,
     headers:{"Content-Type":"application/json", apikey:SB_KEY, Authorization:"Bearer "+sync.session.access_token}, body:JSON.stringify(body)});
 }
 var timerSig = "";
