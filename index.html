@@ -3826,7 +3826,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.14.0";
+$("#verNote").textContent = "Diario delle calorie · versione 1.14.1";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -4692,7 +4692,7 @@ function dailyAgentJob(now){
   const tm = S.settings.dailyTime || "08:00"; let d = iso(now), f = atLocal(d, tm);
   if(f<=now){ d = shiftDay(d,1); f = atLocal(d, tm); }
   let prompt = ""; try{ prompt = dailyPrompt(d); }catch(e){}
-  return {k:`ai:dl:${d}`, f, title:"☀️ Il coach del mattino", body:JSON.stringify({fb:dailyFallback(d), prompt}), tag:"ai-report", url:"?go=mesi"};
+  return {k:`ai:dl:${d}`, f, title:"☀️ Il coach del mattino", body:JSON.stringify({kind:"daily", fb:dailyFallback(d), prompt}), tag:"ai-report", url:"?go=mesi"};
 }
 
 /* ---------- messaggi ricevuti: il service worker li conserva, l'app li mostra nel Coach ---------- */

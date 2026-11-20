@@ -54,5 +54,9 @@ When you get new files, upload them to the same place, replacing the old ones. T
 
 - **Progressi** (top of the Diario): XP, level, streaks, jolly that save a missed day, and 3 weekly missions. Everything is calculated from your diary, so it syncs by itself.
 - **Coach** (Dashboard): ask a question; Claude reads your diary, workouts, weight and goals and proposes changes as cards. Nothing changes until you tap **Accetta**, and every accepted change can be undone. Needs the API key in **Funzioni AI**.
-- **Coach del mattino**: every morning (08:00 by default) one push with a tip about yesterday. It uses the same Supabase function as the Sunday report, so it needs notifications on and the `ANTHROPIC_API_KEY` secret on Supabase. Messages also appear in the Dashboard.
+- **Coach del mattino**: every morning (08:00 by default) one push with a tip about yesterday. It uses the same Supabase function as the Sunday report (`dynamic-api`, code in `supabase/functions/dynamic-api/index.ts`), so it needs notifications on and the `ANTHROPIC_API_KEY` secret on Supabase. Messages also appear in the Dashboard.
 - **Notifiche vivaci**: reminder texts change every day, plus "serie a rischio" in the evening and "missione quasi completa" on Sunday. Turn them off in Impostazioni → Promemoria.
+
+## Server function (Supabase)
+
+The code of the notification function is in `supabase/functions/dynamic-api/index.ts`. To update it: Supabase → **Edge Functions** → **dynamic-api** → **Code**, replace everything with the file's content, then **Deploy**. The keys stay in **Secrets**; never write them in the file.
