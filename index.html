@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Diario delle calorie</title>
-<meta name="description" content="Diario di calorie e macronutrienti per la fase di massa. Funziona anche offline.">
+<title>Lumen</title>
+<meta name="description" content="Lumen: diario di calorie, allenamenti e benessere, con coach AI. Funziona anche offline.">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2f6b4f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Diario">
+<meta name="apple-mobile-web-app-title" content="Lumen">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2427,7 +2427,7 @@ async function exportData(){
   const file = new File([data], name, {type:"application/json"});
   const done = () => { local.set("cal_lastBackup", Date.now()); $("#bMsg").classList.add("ok-msg"); $("#bMsg").textContent="Backup creato. Conservalo in iCloud, Google Drive o via email."; checkBanners(); };
   try{
-    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:"Backup diario delle calorie"}); done(); return; }
+    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:"Backup Lumen"}); done(); return; }
   }catch(e){ if(e && e.name==="AbortError") return; }
   try{
     const url = URL.createObjectURL(file), a = document.createElement("a");
@@ -3826,7 +3826,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.14.1";
+$("#verNote").textContent = "Lumen · versione 1.14.2";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 

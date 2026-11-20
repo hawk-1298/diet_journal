@@ -1,7 +1,7 @@
 {
-  "name": "Diario delle calorie",
-  "short_name": "Diario",
-  "description": "Diario di calorie e macronutrienti per la fase di massa. Funziona anche offline.",
+  "name": "Lumen",
+  "short_name": "Lumen",
+  "description": "Lumen: diario di calorie, allenamenti e benessere, con coach AI. Funziona anche offline.",
   "lang": "it",
   "start_url": "./",
   "scope": "./",

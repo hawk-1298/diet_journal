@@ -1,4 +1,4 @@
-# Diario delle calorie: offline app
+# Lumen (ex Diario delle calorie): offline app
 
 The folder contains the whole app:
 

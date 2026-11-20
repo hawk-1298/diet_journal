@@ -1,6 +1,6 @@
-// Service worker del Diario delle calorie: fa funzionare l'app offline.
+// Service worker di Lumen (ex Diario delle calorie): fa funzionare l'app offline.
 // Quando aggiorni i file dell'app, cambia VERSION: l'app mostrerà "È pronta una nuova versione".
-const VERSION = "1.14.1";
+const VERSION = "1.14.2";
 const SHELL_CACHE = "diario-shell-" + VERSION;
 const FONT_CACHE = "diario-fonts";
 const SHELL = [
@@ -41,7 +41,7 @@ self.addEventListener("push", event => {
   let d = {};
   try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : "" }; }
   event.waitUntil(Promise.all([
-    self.registration.showNotification(d.title || "Diario", {
+    self.registration.showNotification(d.title || "Lumen", {
       body: d.body || "",
       tag: d.tag || undefined,
       icon: "./icons/icon-192.png",
