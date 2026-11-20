@@ -966,6 +966,49 @@ details.setgrp > .setin > .sub{margin:0}
 .daily li.empty{color:var(--muted);font-size:.86rem}
 .dailyset{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .dailyset input[type=time]{width:auto}
+
+/* 1.15: la tua settimana */
+.rvhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rvnav{display:flex;align-items:center;gap:4px}
+.rvnav button{border:0;background:var(--bg);width:32px;height:32px;padding:0;border-radius:99px;font-size:1.1rem;line-height:1}
+.rvnav span{font-size:.8rem;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rvhead h3{white-space:nowrap}
+.rvhead{flex-wrap:wrap}
+.rvdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;padding:6px 0 0;position:relative}
+.rvday{display:flex;flex-direction:column;align-items:center;gap:4px}
+.rvday.fut{opacity:.4}
+.rvbar{height:84px;width:100%;max-width:30px;border-radius:9px;background:var(--bg);position:relative;overflow:hidden;
+  background-image:linear-gradient(to top,transparent calc(74% - 1px),color-mix(in srgb,var(--fg) 30%,transparent) calc(74% - 1px),color-mix(in srgb,var(--fg) 30%,transparent) 74%,transparent 74%)}
+.rvbar i{position:absolute;left:0;right:0;bottom:0;border-radius:9px 9px 0 0}
+.rvbar i.hit{background:var(--prot)} .rvbar i.low{background:color-mix(in srgb,var(--carb) 75%,var(--surface))} .rvbar i.high{background:var(--ember)} .rvbar i.none{display:none}
+.rvp{width:7px;height:7px;border-radius:50%;border:1.5px solid var(--line)} .rvp.on{background:var(--indigo);border-color:var(--indigo)}
+.rvw{height:12px;color:var(--indigo);display:grid;place-items:center}
+.rvday small{font-size:.72rem;color:var(--muted);font-weight:600}
+.rvlegend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.74rem;color:var(--muted)}
+.rvlegend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.rvkpis{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.rvkpis div{background:var(--bg);border-radius:var(--r2,14px);padding:10px 12px;display:flex;flex-direction:column;min-width:0}
+.rvkpis b{font:700 1.45rem/1.1 var(--display);font-variant-numeric:tabular-nums}
+.rvkpis span{font-size:.8rem;font-weight:500}
+.rvkpis small{font-size:.72rem;color:var(--muted)}
+.rvbadges{display:flex;flex-wrap:wrap;gap:6px}
+.rvbadges span{font-size:.78rem;padding:4px 10px;border-radius:99px;background:var(--bg);display:inline-flex;align-items:center;gap:4px}
+.rvbadges .xp{background:linear-gradient(90deg,color-mix(in srgb,var(--ember) 18%,var(--bg)),color-mix(in srgb,var(--gold) 22%,var(--bg)));font-weight:600}
+.rvbadges .pr{color:var(--indigo)}
+.rvtext{display:flex;flex-direction:column;gap:10px}
+.rvtext:empty{display:none}
+.rvgrade{display:grid;grid-template-columns:auto auto 1fr;align-items:baseline;gap:2px 6px;padding:12px 14px;border-radius:16px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--indigo) 14%,var(--bg)),color-mix(in srgb,var(--ember) 10%,var(--bg)))}
+.rvgrade b{font:700 2.4rem/1 var(--display);color:var(--indigo)}
+.rvgrade span{font:600 1rem var(--display);color:var(--muted)}
+.rvgrade p{margin:0;font-size:.9rem;grid-column:3;align-self:center}
+.rvsec h4{margin:0 0 4px;font-size:.9rem}
+.rvsec p{margin:0 0 4px;font-size:.88rem}
+.rvsec ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:.9rem}
+.rvsec.good h4{color:var(--prot)} .rvsec.fix h4{color:var(--ember)} .rvsec.next h4{color:var(--indigo)}
+.rvsrc{font-size:.74rem;color:var(--muted)}
+#revProps{display:flex;flex-direction:column;gap:8px}
+#revProps:empty{display:none}
 </style>
 </head>
 <body>
@@ -1283,6 +1326,17 @@ details.setgrp > .setin > .sub{margin:0}
   <!-- DASHBOARD -->
   <div class="view" id="viewMesi" hidden>
     <div class="dashhead"><select id="dashMonth" aria-label="Mese"></select></div>
+    <section class="card ai" id="reviewCard">
+      <div class="rvhead"><h3>La tua settimana</h3><div class="rvnav"><button type="button" id="revPrev" aria-label="Settimana precedente">‹</button><span id="revRange"></span><button type="button" id="revNext" aria-label="Settimana successiva">›</button></div></div>
+      <div class="rvdays" id="revDays" aria-label="Calorie di ogni giorno rispetto all'obiettivo"></div>
+      <div class="rvlegend"><span><i style="background:var(--prot)"></i>nel range</span><span><i style="background:color-mix(in srgb,var(--carb) 75%,var(--surface))"></i>sotto</span><span><i style="background:var(--ember)"></i>sopra</span><span><i style="background:var(--indigo);border-radius:50%"></i>proteine ok</span><span>linea = obiettivo</span></div>
+      <div class="rvkpis" id="revKpis"></div>
+      <div class="rvbadges" id="revBadges"></div>
+      <div class="rvtext" id="revText"></div>
+      <div id="revProps"></div>
+      <div class="ai-row"><button type="button" class="primary" id="revBtn">Fai la revisione con il coach</button><button type="button" id="revStop" hidden>Ferma</button><span class="note" id="revStatus"></span></div>
+      <p class="rvsrc" id="revSrc"></p>
+    </section>
     <section class="card ai" id="agentCard" hidden>
       <h3>Coach</h3>
       <p class="sub">Legge diario, allenamenti, peso e obiettivi, poi ti propone modifiche. Non cambia niente finché non tocchi Accetta.</p>
@@ -3827,7 +3881,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Lumen · versione 1.14.3";
+$("#verNote").textContent = "Lumen · versione 1.15.0";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -4823,6 +4877,29 @@ ${profileText()}
 Hai degli strumenti: prima di rispondere leggi i dati che servono (non inventare numeri). Quando una modifica aiuterebbe davvero, usa uno strumento proponi_*: l'utente vede una scheda e decide lui; tu non cambi niente direttamente. Al massimo 2 proposte per risposta. Nelle proposte di pasti usa solo alimenti trovati con cerca_alimenti, con grammi realistici, e fai tornare i totali vicino all'obiettivo. Non cambiare gli obiettivi più di 150 kcal alla volta salvo richiesta esplicita.
 Risposta finale: al massimo 120 parole, frasi brevi, elenchi corti, **grassetto** solo per i numeri chiave, niente titoli.`;
 }
+const AGENT_LABEL = {leggi_diario:"Leggo il diario…", leggi_allenamenti:"Guardo gli allenamenti…", leggi_corpo:"Controllo peso e misure…", leggi_obiettivi:"Controllo gli obiettivi…", leggi_progressi:"Guardo serie e missioni…", cerca_alimenti:"Cerco gli alimenti…", proponi_obiettivi:"Preparo una proposta…", proponi_pasti:"Preparo un piano pasti…", proponi_allenamenti:"Preparo il piano di allenamento…"};
+// il ciclo dell'agente: Claude chiede strumenti, l'app li esegue, finché non scrive la risposta finale
+async function runAgent(msgs, {signal, status, tag}={}){
+  for(let turn=0; turn<8; turn++){
+    const j = await callClaudeRaw({system:coachSystem(), tools:COACH_TOOLS, messages:msgs}, signal);
+    msgs.push({role:"assistant", content:j.content});
+    const uses = (j.content||[]).filter(c=>c.type==="tool_use");
+    if(!uses.length || j.stop_reason!=="tool_use") return (j.content||[]).filter(c=>c.type==="text").map(c=>c.text).join("").trim();
+    const results = [];
+    for(const u of uses){
+      status && status(AGENT_LABEL[u.name] || "Lavoro…");
+      let r;
+      if(u.name.startsWith("proponi_")){
+        const p = proposalFrom(u.name, u.input);
+        if(p.err) r = {errore:p.err};
+        else { p.at = Date.now(); p.state = "open"; if(tag) p.wk = tag; S.coach["pp:"+p.id] = p; r = {ok:"proposta mostrata all'utente: deciderà lui se accettarla"}; renderCoach(); try{ renderReview(); }catch(e){} }
+      } else r = toolRun(u.name, u.input);
+      results.push({type:"tool_result", tool_use_id:u.id, content:JSON.stringify(r==null ? {errore:"sconosciuto"} : r).slice(0,24000)});
+    }
+    msgs.push({role:"user", content:results});
+  }
+  return "";
+}
 async function coachAsk(text){
   if(coachBusy || !text.trim()) return;
   if(!sampleFn){ $("#agentStatus").textContent = aiCopy("no_key"); return; }
@@ -4832,33 +4909,11 @@ async function coachAsk(text){
   renderCoach(); $("#agentIn").value = "";
   coachBusy = new AbortController(); $("#agentSend").disabled = true; $("#agentStop").hidden = false;
   const status = t => { $("#agentStatus").textContent = t; };
-  const LABEL = {leggi_diario:"Leggo il diario…", leggi_allenamenti:"Guardo gli allenamenti…", leggi_corpo:"Controllo peso e misure…", leggi_obiettivi:"Controllo gli obiettivi…", leggi_progressi:"Guardo serie e missioni…", cerca_alimenti:"Cerco gli alimenti…", proponi_obiettivi:"Preparo una proposta…", proponi_pasti:"Preparo un piano pasti…", proponi_allenamenti:"Preparo il piano di allenamento…"};
   status("Il coach sta pensando…");
   try{
-    const msgs = coachMsgs.map(m=>({role:m.role, content:m.content}));
-    for(let turn=0; turn<8; turn++){
-      const j = await callClaudeRaw({system:coachSystem(), tools:COACH_TOOLS, messages:msgs}, coachBusy.signal);
-      msgs.push({role:"assistant", content:j.content});
-      const uses = (j.content||[]).filter(c=>c.type==="tool_use");
-      if(!uses.length || j.stop_reason!=="tool_use"){
-        const txt = (j.content||[]).filter(c=>c.type==="text").map(c=>c.text).join("").trim();
-        const k = "ch:"+Date.now(); S.coach[k] = {kind:"ai", text:txt || "Fatto.", at:Date.now()};
-        coachMsgs.push({role:"assistant", content:txt || "Fatto."});
-        break;
-      }
-      const results = [];
-      for(const u of uses){
-        status(LABEL[u.name] || "Lavoro…");
-        let r;
-        if(u.name.startsWith("proponi_")){
-          const p = proposalFrom(u.name, u.input);
-          if(p.err) r = {errore:p.err};
-          else { p.at = Date.now(); p.state = "open"; S.coach["pp:"+p.id] = p; r = {ok:"proposta mostrata all'utente: deciderà lui se accettarla"}; renderCoach(); }
-        } else r = toolRun(u.name, u.input);
-        results.push({type:"tool_result", tool_use_id:u.id, content:JSON.stringify(r==null ? {errore:"sconosciuto"} : r).slice(0,24000)});
-      }
-      msgs.push({role:"user", content:results});
-    }
+    const txt = await runAgent(coachMsgs.map(m=>({role:m.role, content:m.content})), {signal:coachBusy.signal, status}) || "Fatto.";
+    S.coach["ch:"+Date.now()] = {kind:"ai", text:txt, at:Date.now()};
+    coachMsgs.push({role:"assistant", content:txt});
     status("");
   }catch(e){ aiFail(e, $("#agentStatus")); }
   finally{ coachBusy = null; $("#agentSend").disabled = false; $("#agentStop").hidden = true; coachTrim(); saveMap("coach"); renderCoach(); }
@@ -4907,7 +4962,7 @@ function renderCoach(){
   const el = $("#agentLog"); if(!el) return;
   const card = $("#agentCard"); card.hidden = false;
   $("#agentNoKey").hidden = !!sampleFn; $("#agentForm").hidden = !sampleFn;
-  const items = Object.keys(S.coach).filter(k=>/^(ch|pp):/.test(k)).map(k=>S.coach[k]).sort((a,b)=>a.at-b.at).slice(-14);
+  const items = Object.keys(S.coach).filter(k=>/^(ch|pp):/.test(k)).map(k=>S.coach[k]).filter(m=>!m.wk).sort((a,b)=>a.at-b.at).slice(-14);
   el.innerHTML = items.map(m=> m.kind==="me" ? `<div class="bubble me">${esc(m.text)}</div>` : m.kind==="ai" ? `<div class="bubble ai">${fmtAI(m.text)}</div>` : propHTML(m)).join("");
   $("#agentChips").hidden = items.length>0;
   const inbox = Object.keys(S.coach).filter(k=>k.startsWith("in:")).map(k=>S.coach[k]).sort((a,b)=>b.at-a.at).slice(0,5);
@@ -4933,6 +4988,133 @@ $("#askCoach").addEventListener("click", ()=>{ setTab("mesi"); setTimeout(()=>{ 
 { const _sa = setAIVisible; setAIVisible = function(){ _sa.apply(this, arguments); try{ renderCoach(); }catch(e){} }; }
 { const _rd = renderDash; renderDash = function(){ _rd.apply(this, arguments); try{ renderCoach(); }catch(e){} }; }
 try{ renderCoach(); }catch(e){}
+
+/* ================= 1.15: la tua settimana (riepilogo visivo + revisione del coach con strumenti) ================= */
+const DOW1 = ["L","M","M","G","V","S","D"];
+// settimana mostrata: lunedì e martedì quella appena finita, poi quella in corso
+let revWeek = (()=>{ const t = today(), wd = (new Date(t+"T12:00").getDay()+6)%7; return wd<=1 ? shiftDay(weekStart(t),-7) : weekStart(t); })();
+let revBusy = null;
+function weekStats(ws){
+  const we = shiftDay(ws,6), t = today(), days = [];
+  let kSum = 0, kGoal = 0, n = 0, pHit = 0, kHit = 0;
+  for(let i=0;i<7;i++){
+    const d = shiftDay(ws,i), f = dayFacts(d), g = goalFor(d), future = d > t;
+    days.push({d, f, g, future, wk:f.wk});
+    if(f.logged){ n++; kSum += f.k; kGoal += g; if(f.prot) pHit++; if(f.kcal) kHit++; }
+  }
+  const wks = wkSorted().filter(w=>w.d>=ws && w.d<=we), planned = [...Array(7)].map((_,i)=>shiftDay(ws,i)).filter(d=>S.plan && S.plan[d]).length;
+  const avgW = (a,b) => { const v = Object.keys(S.weights).filter(d=>d>=a && d<=b).map(d=>S.weights[d]); return v.length ? v.reduce((x,y)=>x+y,0)/v.length : null; };
+  const wNow = avgW(ws, we), wPrev = avgW(shiftDay(ws,-7), shiftDay(ws,-1));
+  // XP della settimana e record negli esercizi
+  let xp = 0; for(const x of days) if(!x.future) xp += dayXP(x.f);
+  const qs = weekQuests(ws), qDone = qs.filter(q=>q.done).length; xp += qDone*XP_RULES.quest;
+  const prs = [];
+  for(const w of wks) for(const e of (w.ex||[])){
+    const bw = exIsBW(e.n), b = bestSet((e.sets||[]).filter(x=>Number(x.r)>0), bw), last = lastSession(e.n, shiftDay(w.d,-1), w.id), lb = last ? bestSet(last.sets, bw) : null;
+    if(b && lb && (bw ? Number(b.r) > Number(lb.r) : Number(b.w)*(1+Number(b.r)/30) > Number(lb.w)*(1+Number(lb.r)/30))) prs.push(`${e.n}: ${setTxt(b,bw)}`);
+  }
+  return {ws, we, days, n, avgK: n ? kSum/n : 0, avgGoal: n ? kGoal/n : 0, pHit, kHit, wk:wks.length, planned, wNow, wPrev, xp, qs, qDone, prs:[...new Set(prs)].slice(0,3), done: we < t};
+}
+function reviewPrompt(st){
+  return `Fai la revisione della settimana dal ${st.ws} al ${st.we}${st.done ? "" : " (ancora in corso: oggi è "+today()+")"}.
+Prima leggi i dati con gli strumenti: leggi_diario (senza dettaglio), leggi_allenamenti, leggi_corpo, leggi_obiettivi e leggi_progressi. Confronta con la settimana prima quando aiuta.
+Poi scrivi la revisione esattamente in questo formato, al massimo 150 parole, numeri concreti, niente premesse:
+**Voto: X/10** – una frase che riassume la settimana.
+**Cosa è andato bene** – 2 punti brevi, ognuno su una riga che inizia con "• ".
+**Da migliorare** – 1 o 2 punti, ognuno su una riga che inizia con "• ".
+**Prossima settimana** – 3 azioni precise con numeri, ognuna su una riga che inizia con "• ".
+Se serve davvero, proponi al massimo 2 modifiche per la prossima settimana con proponi_obiettivi o proponi_allenamenti (giorni della settimana dopo il ${st.we}).`;
+}
+async function runReview(){
+  if(revBusy) return;
+  if(!sampleFn){ $("#revStatus").textContent = aiCopy("no_key"); return; }
+  const st = weekStats(revWeek), key = st.we;
+  revBusy = new AbortController(); renderReview();
+  const status = t => { $("#revStatus").textContent = t; };
+  status("Il coach sta leggendo la settimana…");
+  try{
+    const txt = await runAgent([{role:"user", content:reviewPrompt(st)}], {signal:revBusy.signal, status, tag:key});
+    if(txt){ S.reports[key] = {text:txt, at:Date.now(), agent:true}; const ks = Object.keys(S.reports).sort(); while(ks.length>12) delete S.reports[ks.shift()]; saveMap("reports", true); }
+    status("");
+  }catch(e){ aiFail(e, $("#revStatus")); }
+  finally{ revBusy = null; saveMap("coach"); renderReview(); }
+}
+// la revisione del coach diventa blocchi: voto in evidenza, poi le sezioni con i loro punti
+function reviewHTML(text){
+  const lines = String(text||"").split("\n").map(x=>x.trim()).filter(Boolean);
+  let h = "", grade = null, open = false;
+  for(const l of lines){
+    const m = l.match(/^\*\*(.+?)\*\*\s*[–-]?\s*(.*)$/);
+    if(m){
+      const head = m[1].trim(), rest = m[2].trim(), g = head.match(/voto[:\s]*([\d.,]+)\s*\/\s*10/i);
+      if(open){ h += "</ul></div>"; open = false; }
+      if(g){ grade = g[1].replace(",","."); h += `<div class="rvgrade"><b>${esc(grade)}</b><span>/10</span><p>${fmtAI(rest)}</p></div>`; continue; }
+      const cls = /bene/i.test(head) ? "good" : /migliorare/i.test(head) ? "fix" : /prossima/i.test(head) ? "next" : "";
+      h += `<div class="rvsec ${cls}"><h4>${esc(head)}</h4>${rest ? `<p>${fmtAI(rest)}</p>` : ""}<ul>`; open = true; continue;
+    }
+    const item = l.replace(/^[•\-*]\s*/,"");
+    if(open) h += `<li>${fmtAI(item)}</li>`; else h += `<p>${fmtAI(l)}</p>`;
+  }
+  if(open) h += "</ul></div>";
+  return h;
+}
+function renderReview(){
+  const el = $("#reviewCard"); if(!el) return;
+  const st = weekStats(revWeek), rep = S.reports[st.we];
+  const cur = weekStart(today());
+  $("#revRange").textContent = `${dShort(st.ws)} – ${dShort(st.we)}${st.done ? "" : " · in corso"}`;
+  $("#revPrev").disabled = false; $("#revNext").disabled = st.ws >= cur;
+  // giorni: barra = calorie rispetto all'obiettivo (la linea è il 100%)
+  $("#revDays").innerHTML = st.days.map((x,i)=>{
+    const r = x.f.logged ? Math.min(1.35, x.f.k / x.g) : 0, cls = !x.f.logged ? "none" : x.f.kcal ? "hit" : x.f.k < x.g ? "low" : "high";
+    const tip = x.f.logged ? `${fmt(x.f.k)} su ${fmt(x.g)} kcal, ${fmt(x.f.p)} g di proteine` : (x.future ? "da venire" : "non registrato");
+    return `<div class="rvday${x.future?" fut":""}" title="${esc(dShort(x.d)+": "+tip)}"><div class="rvbar"><i class="${cls}" style="height:${Math.round(r/1.35*100)}%"></i></div><span class="rvp${x.f.prot?" on":""}" aria-hidden="true"></span><span class="rvw">${x.wk ? gic("bolt",12) : ""}</span><small>${DOW1[i]}</small></div>`;
+  }).join("");
+  const dw = st.wNow!=null && st.wPrev!=null ? st.wNow - st.wPrev : null;
+  $("#revKpis").innerHTML = `
+    <div><b>${st.n ? fmt(st.avgK) : "–"}</b><span>kcal al giorno</span><small>${st.n ? `obiettivo ${fmt(st.avgGoal)} · ${st.kHit}/${st.n} nel range` : "nessun giorno registrato"}</small></div>
+    <div><b>${st.pHit}/${st.n||0}</b><span>giorni proteine ok</span><small>${st.n}/7 giorni registrati</small></div>
+    <div><b>${st.wk}</b><span>allenamenti</span><small>${st.planned ? `${st.planned} in piano` : "nessuno in piano"}</small></div>
+    <div><b>${dw==null ? (st.wNow!=null ? g1(st.wNow) : "–") : (dw>0?"+":"")+g1(dw)}</b><span>${dw==null ? "kg (media)" : "kg sulla settimana prima"}</span><small>${st.wNow!=null ? `media ${g1(st.wNow)} kg` : "nessuna pesata"}</small></div>`;
+  $("#revBadges").innerHTML = [`<span class="xp">+${fmt(st.xp)} XP</span>`, `<span>${st.qDone}/3 missioni</span>`, ...st.prs.map(p=>`<span class="pr">${gic("spark",12)} ${esc(p)}</span>`)].join("");
+  // revisione del coach (dal server la domenica sera, o fatta qui con gli strumenti)
+  const props = Object.keys(S.coach).filter(k=>k.startsWith("pp:") && S.coach[k].wk===st.we).map(k=>S.coach[k]).sort((a,b)=>a.at-b.at);
+  $("#revText").innerHTML = rep ? reviewHTML(rep.text) : `<p class="note">${st.done || st.days.some(x=>x.f.logged) ? "Nessuna revisione per questa settimana. Tocca il pulsante: il coach legge i tuoi dati, dà un voto e prepara la settimana dopo." : "Ancora nessun dato in questa settimana."}</p>`;
+  $("#revProps").innerHTML = props.map(propHTML).join("");
+  $("#revSrc").textContent = rep ? (rep.agent ? `Revisione del coach, ${new Date(rep.at).toLocaleDateString("it-IT",{day:"numeric",month:"short"})}` : "Report della domenica dal server") : "";
+  $("#revBtn").hidden = !sampleFn; $("#revBtn").disabled = !!revBusy;
+  $("#revBtn").textContent = rep ? (rep.agent ? "Rifai la revisione" : "Approfondisci con il coach") : "Fai la revisione con il coach";
+  $("#revStop").hidden = !revBusy;
+}
+$("#revPrev").addEventListener("click", ()=>{ revWeek = shiftDay(revWeek,-7); renderReview(); });
+$("#revNext").addEventListener("click", ()=>{ if(revWeek < weekStart(today())){ revWeek = shiftDay(revWeek,7); renderReview(); } });
+$("#revBtn").addEventListener("click", runReview);
+$("#revStop").addEventListener("click", ()=>{ if(revBusy) revBusy.abort(); });
+$("#revProps").addEventListener("click", ev=>{
+  const a = ev.target.closest("[data-pa]"), r = ev.target.closest("[data-pr]"), u = ev.target.closest("[data-pu]");
+  if(a) propAccept(a.dataset.pa);
+  else if(r){ const p = S.coach["pp:"+r.dataset.pr]; if(p){ p.state = "no"; saveMap("coach", true); renderReview(); } }
+  else if(u) propUndo(u.dataset.pu);
+});
+// il vecchio report diventa questa scheda
+renderReport = function(){ $("#reportCard").hidden = true; try{ renderReview(); }catch(e){ console.warn(e); } };
+{ const _pa = propAccept, _pu = propUndo;
+  propAccept = function(){ _pa.apply(this, arguments); try{ renderReview(); }catch(e){} };
+  propUndo = function(){ _pu.apply(this, arguments); try{ renderReview(); }catch(e){} }; }
+{ const _rd2 = renderDash; renderDash = function(){ _rd2.apply(this, arguments); try{ renderReview(); }catch(e){} }; }
+// il report della domenica dal server usa lo stesso formato della revisione
+{ const _rp = reportPrompt;
+  reportPrompt = function(end){
+    const base = _rp(end), cut = base.indexOf("Struttura (");
+    return (cut>0 ? base.slice(0,cut) : base).replace("Scrivi in italiano un report settimanale molto breve: al massimo 110 parole in tutto.", "Scrivi in italiano la revisione della settimana, al massimo 150 parole.") +
+`Formato esatto (righe in grassetto con **, frasi brevi, niente premesse):
+**Voto: X/10** – una frase che riassume la settimana.
+**Cosa è andato bene** – 2 punti, ognuno su una riga che inizia con "• ", con numeri.
+**Da migliorare** – 1 o 2 punti, ognuno su una riga che inizia con "• ".
+**Prossima settimana** – 3 azioni precise con numeri, ognuna su una riga che inizia con "• ".`;
+  };
+}
+try{ renderReview(); }catch(e){}
 </script>
 </body>
 </html>

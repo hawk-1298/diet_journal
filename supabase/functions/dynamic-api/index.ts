@@ -103,7 +103,9 @@ async function aiReport(j: Job) {
   }
   let body = o.fb || "";
   if (text) {
-    body = plain(text).split("\n").slice(0, 2).join("\n").slice(0, 260);
+    // dalla 1.15 il report inizia con "Voto: X/10 – …": in notifica va quella riga, il resto si legge nella Dashboard
+    const lines = plain(text).split("\n").map((l) => l.trim()).filter(Boolean);
+    body = /^voto/i.test(lines[0] || "") ? `${lines[0].slice(0, 200)}\nTocca per la revisione completa.` : lines.slice(0, 2).join("\n").slice(0, 260);
     // salva il report tra i dati dell'app, così lo ritrovi nella Dashboard
     try {
       const g = await rest(`app_data?user_id=eq.${enc(j.user_id)}&k=eq.reports&select=v`);
