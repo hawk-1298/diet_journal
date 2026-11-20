@@ -13,6 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap">
@@ -886,6 +887,84 @@ details.setgrp > .setin > .sub{margin:0}
 .wd[aria-current="date"]{background:var(--accent);color:var(--surface)}
 .wd[aria-current="date"] small,.wd[aria-current="date"] span{color:color-mix(in srgb,var(--surface) 80%,transparent)}
 .weekinfo{font-size:.78rem;margin-top:-4px}
+
+/* ================= 1.14: progressi e coach ================= */
+:root{--ember:#f0542a;--gold:#ffb21e;--indigo:#4f46e5;--ice:#1f9fd6;--xp-track:color-mix(in srgb,var(--fg) 8%,transparent)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ember:#ff7a4d;--gold:#ffc54d;--indigo:#8b84ff;--ice:#5cc5f2}}
+:root[data-theme="dark"]{--ember:#ff7a4d;--gold:#ffc54d;--indigo:#8b84ff;--ice:#5cc5f2}
+.gi{flex:none}
+
+/* la scheda dei progressi nel Diario */
+.game{background:var(--surface);border-radius:var(--r);padding:16px 16px 6px;display:flex;flex-direction:column;gap:14px}
+.gtop{display:flex;gap:14px;align-items:center}
+.lvl{flex:none;width:58px;height:58px;border-radius:19px;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(145deg,var(--indigo) 0%,#8a3ffc 48%,var(--ember) 100%);box-shadow:0 6px 16px color-mix(in srgb,var(--indigo) 35%,transparent)}
+.lvl b{font:700 2rem/1 var(--display);letter-spacing:-.01em;transform:translateY(1px)}
+.gxp{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.gname{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.gname b{font:700 1.3rem/1.1 var(--display)}
+.gname span{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.xpbar{height:10px;border-radius:99px;background:var(--xp-track);overflow:hidden}
+.xpbar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--ember),var(--gold));min-width:10px;transition:width .6s var(--ease,ease)}
+.gtoday{font-size:.8rem;color:var(--muted)}
+.streaks{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.stk{background:var(--bg);border-radius:var(--r2,14px);padding:10px 8px 9px;display:flex;flex-direction:column;gap:1px;min-width:0}
+.stk .gi{margin-bottom:4px}
+.stk b{font:700 1.45rem/1 var(--display);font-variant-numeric:tabular-nums}
+.stk span{font-size:.72rem;line-height:1.2;color:var(--fg);font-weight:500}
+.stk small{font-size:.68rem;color:var(--muted);line-height:1.2}
+.stk.fire .gi{color:var(--ember)} .stk.prot .gi{color:var(--prot)} .stk.train .gi{color:var(--indigo)} .stk.ice .gi{color:var(--ice)}
+.stk.fire b{color:var(--ember)}
+.stk.atrisk{background:color-mix(in srgb,var(--ember) 12%,var(--bg))}
+.stk small.risk{color:var(--ember);font-weight:600}
+.quests{border:0;padding:0;background:none;margin:0 -4px}
+.quests summary{display:flex;justify-content:space-between;gap:8px;align-items:baseline;padding:8px 4px;cursor:pointer;list-style:none;font-weight:600;font-size:.92rem}
+.quests summary::-webkit-details-marker{display:none}
+.quests summary .qsum{font-weight:500;font-size:.78rem;color:var(--muted)}
+.quests ul{list-style:none;margin:0;padding:0 4px 10px;display:flex;flex-direction:column;gap:10px}
+.quests li{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:2px 8px;font-size:.88rem}
+.quests .qi{color:var(--indigo);display:grid;place-items:center}
+.quests .qv{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.8rem}
+.quests li i{grid-column:2 / 4;height:4px;border-radius:99px;background:var(--xp-track);position:relative;overflow:hidden}
+.quests li i::after{content:"";position:absolute;inset:0;width:var(--p);border-radius:inherit;background:var(--indigo)}
+.quests li.done .qi{color:var(--prot)} .quests li.done .qt{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 50%,transparent)}
+.quests li.done i::after{background:var(--prot)}
+
+/* livello nuovo */
+.lvlup{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:24px;background:color-mix(in srgb,#000 45%,transparent);opacity:0;transition:opacity .25s}
+.lvlup.in{opacity:1}
+.lvlup .lu{background:var(--surface);border-radius:28px;padding:28px 24px 20px;max-width:320px;width:100%;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;transform:scale(.9);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.lvlup.in .lu{transform:none}
+.lvlup .lvl{width:96px;height:96px;border-radius:32px}
+.lvlup .lvl b{font-size:3.4rem}
+.lvlup h2{font-size:1.6rem}
+.lvlup p{margin:0;color:var(--muted)}
+.lvlup button{margin-top:8px;width:100%}
+@media (prefers-reduced-motion: reduce){.lvlup,.lvlup .lu,.xpbar i{transition:none}}
+
+/* coach con strumenti */
+#agentCard .chips2{display:flex;gap:6px;flex-wrap:wrap}
+#agentCard .chips2 button{border-radius:99px;padding:6px 12px;font-size:.84rem;background:var(--bg);border:0}
+.agentlog{display:flex;flex-direction:column;gap:8px}
+.agentlog:empty{display:none}
+.agentform{display:flex;gap:8px}
+.agentform input{flex:1}
+.prop{align-self:stretch;border-radius:16px;padding:12px 14px;background:color-mix(in srgb,var(--indigo) 7%,var(--bg));border:1px solid color-mix(in srgb,var(--indigo) 22%,transparent);display:flex;flex-direction:column;gap:8px}
+.prop .ph{display:flex;gap:6px;align-items:center;color:var(--indigo)} .prop .ph b{color:var(--fg)}
+.prop .pwhy{margin:0;font-size:.88rem}
+.prop.no,.prop.undone{opacity:.6}
+.prop.ok{background:color-mix(in srgb,var(--prot) 8%,var(--bg));border-color:color-mix(in srgb,var(--prot) 30%,transparent)}
+.ptab{border-collapse:collapse;font-size:.88rem;font-variant-numeric:tabular-nums}
+.ptab td{padding:2px 14px 2px 0} .ptab td.old{color:var(--muted);text-decoration:line-through}
+.plist2{margin:0;padding-left:18px;font-size:.88rem;display:flex;flex-direction:column;gap:3px}
+.pstate2{font-size:.84rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.pstate2.ok{color:var(--prot);font-weight:600}
+.daily{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.daily li{display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.daily li small{color:var(--muted);font-size:.76rem}
+.daily li.empty{color:var(--muted);font-size:.86rem}
+.dailyset{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.dailyset input[type=time]{width:auto}
 </style>
 </head>
 <body>
@@ -922,6 +1001,8 @@ details.setgrp > .setin > .sub{margin:0}
     <div><div class="weeklabel"><span id="weekLabel"></span><button type="button" class="ghost" id="weekToday" hidden>Torna a oggi</button></div>
     <div class="week" id="week" aria-label="Calendario: scorri per cambiare settimana"></div></div>
     <div class="weekinfo"><span id="weekAvg"></span><span id="weekTrain"></span></div>
+
+    <section class="game" id="gameCard" aria-label="Progressi" hidden></section>
 
     <section class="summary" aria-live="polite">
       <div class="dayrow"><div class="seg" role="group" aria-label="Tipo di giorno">
@@ -961,6 +1042,7 @@ details.setgrp > .setin > .sub{margin:0}
       <div id="coachWrap" hidden>
         <div class="ai-row"><button type="button" id="coachBtn"><svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg> Chiedi al coach</button><button type="button" id="coachStop" hidden>Ferma</button><span class="note" id="coachStatus"></span></div>
         <div class="ai-out" id="coachOut"></div>
+        <div class="ai-row"><button type="button" class="ghost" id="askCoach">Chiedi al coach: obiettivi, piano pasti, allenamenti</button></div>
       </div>
     </section>
 
@@ -1002,6 +1084,7 @@ details.setgrp > .setin > .sub{margin:0}
       <div class="pstate" id="pushState"></div>
       <div id="remList"></div>
       <div class="ai-row" style="margin-top:6px"><button type="button" id="remAdd">＋ Nuovo promemoria</button></div>
+      <label class="chk" style="margin-top:10px"><input type="checkbox" id="funPush"> Notifiche vivaci: testi che cambiano ogni giorno, serie a rischio, missioni quasi completate</label>
       <label style="margin-top:12px">Avviso prima dell'allenamento<select id="planLead"><option value="0">All'ora dell'allenamento</option><option value="15">15 minuti prima</option><option value="30">30 minuti prima</option><option value="45">45 minuti prima</option><option value="60">1 ora prima</option></select></label>
       <details style="padding:10px 12px;margin-top:10px"><summary class="note">Avanzate</summary>
         <label style="margin-top:8px">Nome della funzione su Supabase<input id="pushFn" spellcheck="false" autocomplete="off" autocapitalize="none" placeholder="send-push"></label>
@@ -1199,6 +1282,21 @@ details.setgrp > .setin > .sub{margin:0}
   <!-- DASHBOARD -->
   <div class="view" id="viewMesi" hidden>
     <div class="dashhead"><select id="dashMonth" aria-label="Mese"></select></div>
+    <section class="card ai" id="agentCard" hidden>
+      <h3>Coach</h3>
+      <p class="sub">Legge diario, allenamenti, peso e obiettivi, poi ti propone modifiche. Non cambia niente finché non tocchi Accetta.</p>
+      <div class="agentlog" id="agentLog"></div>
+      <div class="chips2" id="agentChips"><button type="button">Cosa cambio questa settimana?</button><button type="button">Preparami i pasti di domani</button><button type="button">Come sta andando il bulk?</button><button type="button">Pianifica gli allenamenti della settimana</button></div>
+      <p class="note" id="agentNoKey" hidden>Per usare il coach aggiungi la chiave API in Impostazioni → Funzioni AI.</p>
+      <form class="agentform" id="agentForm" hidden><input id="agentIn" placeholder="Chiedi al coach…" autocomplete="off" aria-label="Domanda per il coach"><button type="submit" class="primary" id="agentSend">Invia</button><button type="button" id="agentStop" hidden>Ferma</button></form>
+      <div class="ai-row"><span class="note" id="agentStatus"></span><button type="button" class="ghost" id="agentClear" style="margin-left:auto">Pulisci la conversazione</button></div>
+    </section>
+    <section class="card" id="dailyCard">
+      <h3>Coach del mattino</h3>
+      <p class="sub">Un consiglio su ieri e un'azione per oggi, come notifica.</p>
+      <ul class="daily" id="dailyList"></ul>
+      <div class="dailyset"><label class="chk"><input type="checkbox" id="dailyOn"> Attivo</label><label class="chk">alle <input type="time" id="dailyTime" value="08:00" aria-label="Ora del coach del mattino"></label></div>
+    </section>
     <div id="dashBody" class="view"></div>
     <section class="card" id="weekCard">
       <h3>Riepilogo settimanale</h3>
@@ -1225,6 +1323,7 @@ details.setgrp > .setin > .sub{margin:0}
 <nav class="tabbar" id="tabbar" aria-label="Sezioni"><button type="button" data-tab="diario" aria-current="page"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 12h4"/></svg><span>Diario</span></button><button type="button" data-tab="wk"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg><span>Allenamento</span></button><button type="button" data-tab="corpo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="2"/><path d="M12 7.5V14M6.5 9.5 12 11l5.5-1.5M9 21l3-7 3 7"/></svg><span>Corpo</span></button><button type="button" data-tab="mesi"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg><span>Dashboard</span></button><button type="button" data-tab="set"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Impostazioni</span></button></nav>
 <button type="button" class="fab" id="fab"><span aria-hidden="true">＋</span> Aggiungi</button>
 <button type="button" class="livebar" id="liveBar" hidden><i class="pulse"></i><span>In corso</span><span id="liveClock"></span></button>
+<div class="lvlup" id="lvlUp" role="dialog" aria-modal="true" aria-labelledby="lvlUpName" hidden><div class="lu"><div class="lvl"><b id="lvlUpNum">2</b></div><h2 id="lvlUpName"></h2><p id="lvlUpTxt"></p><button type="button" class="primary" id="lvlUpClose">Continua</button></div></div>
 <div class="toast" id="toast" hidden><span id="toastText" role="status"></span><button type="button" id="toastUndo" hidden>Annulla</button></div>
 <div class="sheet" id="addSheet" role="dialog" aria-modal="true" aria-labelledby="addTitle" hidden>
   <div class="sheet-in">
@@ -1393,7 +1492,7 @@ const BASE = {
 "Bake rolls":[443,12,63,15,3],"Sugo Cacio e pepe":[218,15,1.2,17,0],"farina 00":[345,11,69.9,1.7,2.2],"Buitoni impasto pizza":[280,8.5,46.1,5.4,2.5],"Pane ai 5 cereali":[277,10,44,4,6],"Pesto tigullio":[477,5.2,10,46,2],"Wasa":[330,9,60,1.5,14],"Dumplings":[600,20,50,20,2],"Aloe Vera":[36,0,9,0,0.2],"Pudding proteico":[76,10,5.5,1.5,0.5],"Tacos":[461,6.5,61,20,5],"Tortellini":[309,12,43,9,2],"Ragu di soja":[255,3.5,7.6,23,2],"patate surgelate":[139,2.6,23.4,3.4,2.5],"Alici":[435,14,0,42,0],"Lamponi":[34,1,6.5,0.6,6.5],"Gin tonic":[135,0,13,0,0],"Trota":[86,14.7,0,3,0],"Ragu di carne":[196,12,1.9,15.4,0.8]
 };
 const MEALS = ["Colazione","Pranzo","Cena","Spuntini"];
-const MAPS = ["weights","water","weeks","templates","reports","body","workouts","adj","plan","tot"];
+const MAPS = ["weights","water","weeks","templates","reports","body","workouts","adj","plan","tot","coach"];
 const DEF_SETTINGS = {train:2900, rest:2550, prot:155, fat:75, fib:30, waterGoal:2500, mode:"train", defMode:"train", used:false,
   height:185, age:28, sex:"M", act:"sed", trainK:350, goal:1, auto:true, planLead:30, iosTimer:false, iosShortcut:"Riposo", timerPush:true};
 // alimenti usati dal suggeritore, con una porzione tipica in grammi
@@ -1419,7 +1518,7 @@ const weekStart = s => { const [y,m,d]=s.split("-").map(Number); const w=(new Da
 const pad5 = v => { const a=(v||[]).map(Number); while(a.length<5) a.push(0); return a.slice(0,5); };
 
 /* ---------- stato ---------- */
-let S = { days:{}, custom:{}, settings:{...DEF_SETTINGS}, weights:{}, modes:{}, water:{}, weeks:{}, templates:{}, reports:{}, body:{}, workouts:{}, adj:{}, plan:{} };
+let S = { days:{}, custom:{}, settings:{...DEF_SETTINGS}, weights:{}, modes:{}, water:{}, weeks:{}, templates:{}, reports:{}, body:{}, workouts:{}, adj:{}, plan:{}, coach:{} };
 /* ---------- storico degli obiettivi: ogni modifica vale da quel giorno in poi ---------- */
 const GOAL_FIELDS = ["train","rest","prot","fat","fib","goal"], GOAL_BASE = "2000-01-01";
 let goalBoot = true; // durante l'avvio i ricalcoli aggiornano la base, non creano una voce
@@ -3727,7 +3826,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Diario delle calorie · versione 1.13.0";
+$("#verNote").textContent = "Diario delle calorie · versione 1.14.0";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -4309,6 +4408,530 @@ window.addEventListener("scroll", ()=>{ if(swOpen) swClose(swOpen, true); }, {pa
 /* --- apertura da notifica (?go=...) --- */
 (function(){ const g = new URLSearchParams(location.search).get("go"); if(g && TABS[g]) setTab(g); })();
 if("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", e=>{ if(e.data && e.data.type==="go" && TABS[e.data.go]) setTab(e.data.go); });
+
+/* ================= 1.14: progressi (XP, livelli, serie, missioni), coach con strumenti, coach del mattino, notifiche nuove ================= */
+
+/* ---------- progressi: tutto è calcolato dai dati del diario, quindi si sincronizza da solo ---------- */
+const XP_RULES = {log:10, meal:5, prot:15, kcal:15, wk:25, weigh:5, body:20, quest:50};
+const LEVELS = [[1,"Principiante"],[3,"Apprendista"],[5,"Costante"],[8,"Atleta"],[11,"Macchina"],[15,"Bestia"],[20,"Leggenda"]];
+const lvlName = l => { let n = LEVELS[0][1]; for(const [from,name] of LEVELS) if(l>=from) n = name; return n; };
+const lvlNeed = l => 200 + 50*(l-1);           // XP per passare dal livello l al successivo
+function dayFacts(d){
+  const logged = hasDay(d), G = goalsAt(d);
+  const o = {logged, meals:0, prot:false, kcal:false, fib:false, water:false, k:0, p:0};
+  if(logged){
+    const list = normEntries(S.days[d]), t = sum(list), g = goalFor(d);
+    o.k = t[0]; o.p = t[1];
+    o.meals = MEALS.filter(m=>list.some(e=>e.m===m)).length;
+    o.prot = t[1] >= G.prot*0.95;
+    o.kcal = t[0] >= g*0.9 && t[0] <= g*1.1;
+    o.fib = t[4] >= (G.fib||30);
+    o.water = (S.water[d]||0) >= (S.settings.waterGoal||2500);
+  }
+  o.wk = hasWk(d); o.weigh = !!S.weights[d]; o.body = !!(S.body && S.body[d]);
+  return o;
+}
+function dayXP(f){
+  let x = 0;
+  if(f.logged) x += XP_RULES.log + Math.min(4,f.meals)*XP_RULES.meal + (f.prot?XP_RULES.prot:0) + (f.kcal?XP_RULES.kcal:0);
+  if(f.wk) x += XP_RULES.wk; if(f.weigh) x += XP_RULES.weigh; if(f.body) x += XP_RULES.body;
+  return x;
+}
+function firstActive(){
+  let m = null;
+  const take = d => { if(d && (!m || d<m)) m = d; };
+  for(const d in S.days) if(hasDay(d)) take(d);
+  for(const k in S.workouts) take(S.workouts[k].d);
+  for(const d in S.weights) take(d);
+  return m;
+}
+// missioni della settimana: 3, scelte dove la settimana prima è andata peggio
+const QUESTS = {
+  log:  {ic:"book",   txt:n=>`Registra i pasti per ${n} giorni`, n:()=>6, v:m=>m.logged},
+  prot: {ic:"target", txt:n=>`Centra le proteine per ${n} giorni`, n:()=>5, v:m=>m.prot},
+  kcal: {ic:"target", txt:n=>`Calorie nel range per ${n} giorni`, n:()=>5, v:m=>m.kcal},
+  wk:   {ic:"bolt",   txt:n=>`Fai ${n} allenamenti`, n:ws=>Math.max(3, [...Array(7)].map((_,i)=>shiftDay(ws,i)).filter(d=>S.plan && S.plan[d]).length), v:m=>m.wk},
+  weigh:{ic:"scale",  txt:n=>`Pesati ${n} volte`, n:()=>3, v:m=>m.weigh},
+  fib:  {ic:"leaf",   txt:n=>`Fibre all'obiettivo per ${n} giorni`, n:()=>4, v:m=>m.fib},
+  water:{ic:"drop",   txt:n=>`Acqua all'obiettivo per ${n} giorni`, n:()=>4, v:m=>m.water}
+};
+const QORDER = ["wk","prot","log","kcal","weigh","fib","water"];
+function weekMetrics(ws, upTo){
+  const m = {logged:0, prot:0, kcal:0, wk:0, weigh:0, fib:0, water:0};
+  for(let i=0;i<7;i++){
+    const d = shiftDay(ws,i); if(upTo && d>upTo) break;
+    const f = dayFacts(d);
+    if(f.logged) m.logged++; if(f.prot) m.prot++; if(f.kcal) m.kcal++; if(f.weigh) m.weigh++; if(f.fib) m.fib++; if(f.water) m.water++;
+  }
+  m.wk = wkSorted().filter(w=>w.d>=ws && w.d<=shiftDay(ws,6) && (!upTo || w.d<=upTo)).length;
+  return m;
+}
+function weekQuests(ws){
+  const prev = weekMetrics(shiftDay(ws,-7));
+  const ranked = QORDER.map((id,i)=>{ const q = QUESTS[id], n = q.n(ws); return {id, n, r:Math.min(1.5, q.v(prev)/n), i}; })
+    .sort((a,b)=> a.r-b.r || a.i-b.i).slice(0,3).sort((a,b)=>a.i-b.i);
+  const cur = weekMetrics(ws, today());
+  return ranked.map(q=>({id:q.id, ic:QUESTS[q.id].ic, txt:QUESTS[q.id].txt(q.n), n:q.n, v:Math.min(q.n, QUESTS[q.id].v(cur)), done:QUESTS[q.id].v(cur)>=q.n}));
+}
+let gameCache = null, gameKey = "";
+function gameState(){
+  const key = [Object.keys(S.days).length, JSON.stringify(S.tot||{}).length, Object.keys(S.workouts).length, Object.keys(S.weights).length, Object.keys(S.body||{}).length, today(), (S.settings.goalLog||[]).length, Object.keys(S.plan||{}).length, JSON.stringify(S.water).length].join("|");
+  if(gameCache && key===gameKey) return gameCache;
+  const t = today(), start = firstActive();
+  const g = {xp:0, level:1, into:0, need:lvlNeed(1), log:0, best:0, prot:0, train:0, freezes:0, frozen:[], quests:[], todayXP:0, started:!!start};
+  if(start){
+    // XP dei giorni
+    for(let d=start; d<=t; d=shiftDay(d,1)){ const x = dayXP(dayFacts(d)); g.xp += x; if(d===t) g.todayXP = x; }
+    // XP delle missioni (settimane passate e questa)
+    for(let ws=weekStart(start); ws<=weekStart(t); ws=shiftDay(ws,7)){ const qs = weekQuests(ws); g.xp += qs.filter(q=>q.done).length*XP_RULES.quest; if(ws===weekStart(t)) g.quests = qs; }
+    // serie del diario con i congelamenti: 1 ogni 7 giorni registrati, al massimo 2; coprono un giorno saltato
+    let run = 0, fr = 0, earn = 0, best = 0, prun = 0;
+    const step = d => { run++; earn++; if(earn>=7){ fr = Math.min(2, fr+1); earn = 0; } best = Math.max(best, run); };
+    for(let d=start; d<t; d=shiftDay(d,1)){
+      if(hasDay(d)){ step(d); prun = dayFacts(d).prot ? prun+1 : 0; }
+      else if(run>0 && fr>0){ fr--; g.frozen.push(d); }
+      else { run = 0; earn = 0; prun = 0; }
+    }
+    if(hasDay(t)){ step(t); const f = dayFacts(t); if(f.prot) prun++; }
+    g.log = run; g.best = best; g.freezes = fr; g.prot = prun;
+    // serie di allenamento: settimane di fila con almeno 3 allenamenti (questa conta quando è raggiunta)
+    let w = weekStart(t), tr = 0;
+    if(weekMetrics(w).wk>=3) tr++;
+    for(w=shiftDay(w,-7); w>=weekStart(start); w=shiftDay(w,-7)){ if(weekMetrics(w).wk>=3) tr++; else break; }
+    g.train = tr;
+    // livello
+    let x = g.xp, l = 1; while(x >= lvlNeed(l)){ x -= lvlNeed(l); l++; }
+    g.level = l; g.into = x; g.need = lvlNeed(l);
+  }
+  gameCache = g; gameKey = key; return g;
+}
+
+const GIC = {
+  flame:'<path d="M12 3c.6 3.2 4.5 5 4.5 9.6A4.6 4.6 0 0 1 12 17a4.6 4.6 0 0 1-4.5-4.4c0-2 1-3.2 2-4.1.2 1.5.9 2.4 1.8 2.6C11.2 9 11 6 12 3z"/><path d="M8 20h8"/>',
+  ice:'<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/><path d="M9.5 4.5 12 7l2.5-2.5M9.5 19.5 12 17l2.5 2.5"/>',
+  meat:'<path d="M12 3c3.6 0 6.5 5.6 6.5 9.6A6.5 6.5 0 0 1 5.5 12.6C5.5 8.6 8.4 3 12 3z"/>',
+  bolt:'<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>',
+  target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6" fill="currentColor"/>',
+  book:'<path d="M5 4.5h9.5A2.5 2.5 0 0 1 17 7v12.5H7.5A2.5 2.5 0 0 1 5 17z"/><path d="M5 17a2.5 2.5 0 0 1 2.5-2.5H17"/>',
+  scale:'<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 9.5a4 4 0 0 1 6 0L12.6 12"/>',
+  leaf:'<path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14z"/><path d="M5 19 13 11"/>',
+  drop:'<path d="M12 3.5c3 4 6 7 6 10.5a6 6 0 0 1-12 0c0-3.5 3-6.5 6-10.5z"/>',
+  check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  spark:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/>'
+};
+const gic = (n, z) => `<svg class="gi" width="${z||16}" height="${z||16}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GIC[n]||""}</svg>`;
+
+function renderGame(){
+  const el = $("#gameCard"); if(!el) return;
+  const g = gameState();
+  if(!g.started || isExample){ el.hidden = true; return; }
+  el.hidden = false;
+  const pct = Math.round(g.into/g.need*100);
+  const loggedToday = hasDay(today());
+  const streakNote = !loggedToday && g.log>0 ? `<small class="risk">a rischio oggi</small>` : `<small>record ${g.best}</small>`;
+  const qh = g.quests.map(q=>`<li class="${q.done?"done":""}"><span class="qi">${gic(q.done?"check":q.ic, 15)}</span><span class="qt">${esc(q.txt)}</span><span class="qv">${q.v}/${q.n}</span><i style="--p:${Math.round(q.v/q.n*100)}%"></i></li>`).join("");
+  const qDone = g.quests.filter(q=>q.done).length;
+  el.innerHTML = `
+    <div class="gtop">
+      <div class="lvl" aria-label="Livello ${g.level}"><b>${g.level}</b></div>
+      <div class="gxp">
+        <div class="gname"><b>${esc(lvlName(g.level))}</b><span>${fmt(g.into)} / ${fmt(g.need)} XP</span></div>
+        <div class="xpbar" role="progressbar" aria-valuemin="0" aria-valuemax="${g.need}" aria-valuenow="${g.into}" aria-label="XP verso il livello ${g.level+1}"><i style="width:${pct}%"></i></div>
+        <div class="gtoday">${g.todayXP ? `+${g.todayXP} XP oggi` : "Registra un pasto per i primi XP di oggi"}</div>
+      </div>
+    </div>
+    <div class="streaks">
+      <div class="stk fire${!loggedToday && g.log>0 ? " atrisk" : ""}">${gic("flame",18)}<b>${g.log}</b><span>giorni di fila</span>${streakNote}</div>
+      <div class="stk prot">${gic("meat",18)}<b>${g.prot}</b><span>proteine ok</span><small>giorni di fila</small></div>
+      <div class="stk train">${gic("bolt",18)}<b>${g.train}</b><span>settimane</span><small>con 3+ allenamenti</small></div>
+      <div class="stk ice" title="Un jolly salva la serie se salti un giorno. Ne guadagni 1 ogni 7 giorni registrati, al massimo 2.">${gic("ice",18)}<b>${g.freezes}</b><span>jolly</span><small>salva-serie</small></div>
+    </div>
+    <details class="quests"${local.get("cal_qopen", true) ? " open" : ""}>
+      <summary><span>Missioni della settimana</span><span class="qsum">${qDone}/3 · +${XP_RULES.quest} XP l'una</span></summary>
+      <ul>${qh}</ul>
+    </details>`;
+  el.querySelector("details").addEventListener("toggle", e=>local.set("cal_qopen", e.target.open));
+  levelUpCheck(g);
+}
+function levelUpCheck(g){
+  const seen = local.get("cal_lvlseen", 0);
+  if(!seen){ local.set("cal_lvlseen", g.level); return; }
+  if(g.level > seen){ local.set("cal_lvlseen", g.level); showLevelUp(g.level); }
+  else if(g.level < seen) local.set("cal_lvlseen", g.level);
+}
+function showLevelUp(l){
+  const o = $("#lvlUp"); if(!o) return;
+  $("#lvlUpNum").textContent = l; $("#lvlUpName").textContent = lvlName(l);
+  const newTitle = LEVELS.some(x=>x[0]===l && l>1);
+  $("#lvlUpTxt").textContent = `Sei al livello ${l}${newTitle ? " e hai un titolo nuovo" : ""}. Prossimo traguardo: ${fmt(lvlNeed(l))} XP.`;
+  o.hidden = false; requestAnimationFrame(()=>o.classList.add("in"));
+  try{ navigator.vibrate && navigator.vibrate([30,40,60]); }catch(e){}
+}
+$("#lvlUpClose").addEventListener("click", ()=>{ const o = $("#lvlUp"); o.classList.remove("in"); setTimeout(()=>{ o.hidden = true; }, 250); });
+
+// il Diario disegna anche i progressi
+{ const _render = render; render = function(){ _render.apply(this, arguments); try{ renderGame(); }catch(e){ console.warn(e); } }; }
+setTimeout(()=>{ try{ renderGame(); }catch(e){} }, 0);
+
+/* ---------- notifiche più vivaci ---------- */
+const hashStr = s => { let h = 2166136261; for(const c of s){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h>>>0; };
+const pick = (arr, seed) => arr[hashStr(seed) % arr.length];
+const fillT = (s, o) => s.replace(/\{(\w+)\}/g, (_,k)=> o[k]!=null ? o[k] : "");
+const PUSH_COPY = {
+  m1:[["☀️ Buongiorno, campione","La colazione non si registra da sola: 10 secondi e sei a posto."],
+      ["🥣 Colazione fatta?","I muscoli si costruiscono anche a tavola. Segna cosa hai mangiato."],
+      ["⏰ Toc toc","È passata l'ora di colazione e il diario è ancora vuoto 👀"],
+      ["🍳 Primo pasto, primi XP","Registra la colazione e inizia la giornata con +15 XP."]],
+  m2:[["🍝 Pausa pranzo","Riso, pollo o pizza? Qualsiasi cosa, mettila nel diario."],
+      ["🥗 Com'è andato il pranzo?","Segnalo adesso, finché te lo ricordi."],
+      ["🍱 Metà giornata","Pranzo registrato = nessuna sorpresa stasera sulle calorie."]],
+  m4:[["🍌 Spuntino in vista?","Nel bulk anche gli spuntini contano. Aggiungili al diario."],
+      ["🥜 Snack time","Uno spuntino furbo oggi vale doppio: calorie e proteine."],
+      ["🧀 Merenda?","Yogurt greco, frutta secca, una whey: quello che hai preso, segnalo."]],
+  m3:[["🌙 Ultimo pasto, ultimo sforzo","Registra la cena e chiudi la giornata in bellezza."],
+      ["🍽️ Cena registrata?","Pochi tap e la giornata è completa al 100%."],
+      ["✨ Chiudi il cerchio","Manca solo la cena per vedere com'è andata oggi."]],
+  streak:[["🔥 {n} giorni di fila!","Non spezzare la serie: registra {meal}."],
+          ["🔥 Serie a {n} giorni","Ancora un pasto e la tieni viva."]],
+  risk:[["😱 La tua serie di {n} giorni è a rischio","Oggi il diario è vuoto. Basta un pasto per salvarla."],
+        ["🧯 {n} giorni stanno per spegnersi","Registra qualcosa prima di mezzanotte e la serie è salva."],
+        ["🫣 Ehi, ci sei?","Il diario di oggi è vuoto e la serie di {n} giorni trema."]],
+  riskIce:[["🧊 Serie di {n} giorni in bilico","Hai un jolly, ma perché sprecarlo? Registra un pasto."]],
+  plan:[["💪 Allenamento tra {lead} minuti","{sport} alle {t}. Borraccia, cuffie, si parte!"],
+        ["🏋️ Si va in {lead} minuti","{sport} alle {t}: +25 XP ti aspettano."],
+        ["⚡ Ci siamo quasi","{sport} alle {t}. Riscaldati bene!"]],
+  planNow:[["💪 È ora di allenarti","{sport} alle {t}. Oggi si cresce!"]],
+  pl:[["🗓️ Pianifica la settimana","Scegli giorni e orari: chi pianifica, si allena."],
+      ["📅 Settimana nuova, piano nuovo","2 minuti per decidere quando allenarti."]],
+  rp:"📊 La tua settimana è pronta", pr:"🥩 Proteine di oggi",
+  body:[["📏 Ora di rimisurarti","4 settimane dall'ultima misurazione ({d}). Vediamo quanto muscolo hai messo 💪"]],
+  quest:[["🎯 Missione quasi completa","{q}: manca {left}. Hai tempo fino a stasera per +50 XP!"]]
+};
+// la serie che avrai quel giorno, prima di registrarlo (se continui a registrare fino ad allora)
+const streakOn = (g, d) => { const t = today(), diff = Math.round((new Date(d+"T12:00") - new Date(t+"T12:00"))/864e5); return Math.max(0, g.log - (hasDay(t)?1:0) + Math.max(0,diff)); };
+const MEAL_WORD = {m1:"la colazione", m2:"il pranzo", m4:"la merenda", m3:"la cena"};
+function catchy(job, d){
+  const g = (()=>{ try{ return gameState(); }catch(e){ return null; } })();
+  const id = (job.tag||"").replace(/^rem-/,"");
+  if(PUSH_COPY[id] && Array.isArray(PUSH_COPY[id]) && /^r:m\d:/.test(job.k)){
+    const n = g ? streakOn(g, d) : 0;
+    const set = n>=3 && hashStr(d+id)%3===0 ? PUSH_COPY.streak : PUSH_COPY[id];
+    const [title, body] = pick(set, d+id);
+    return {...job, title:fillT(title,{n, meal:MEAL_WORD[id]||"prossima voce"}), body:fillT(body,{n, meal:MEAL_WORD[id]||"prossima voce"})};
+  }
+  if(/^r:pl:/.test(job.k)){ const [title, body] = pick(PUSH_COPY.pl, d+"pl"); return {...job, title, body}; }
+  if(/^r:rp:/.test(job.k)) return {...job, title:PUSH_COPY.rp};
+  if(/^r:pr:/.test(job.k)) return {...job, title:PUSH_COPY.pr};
+  if(/^p:/.test(job.k)){
+    const p = S.plan[d] || {}, sport = p.sp && SPORTS[p.sp] ? SPORTS[p.sp].n : "Allenamento", lead = S.settings.planLead==null ? 30 : S.settings.planLead;
+    const [title, body] = pick(lead>0 ? PUSH_COPY.plan : PUSH_COPY.planNow, d+"plan");
+    return {...job, title:fillT(title,{lead, sport, t:p.t}), body:fillT(body,{lead, sport, t:p.t})};
+  }
+  if(/^bm:/.test(job.k)){ const [title, body] = PUSH_COPY.body[0]; const lb = lastBodyDate(); return {...job, title, body:fillT(body,{d:lb?dShort(lb):""})}; }
+  return job;
+}
+{ const _build = buildJobs;
+  buildJobs = function(now){
+    now = now || new Date();
+    const t0 = iso(now), g = (()=>{ try{ return gameState(); }catch(e){ return null; } })();
+    let out = _build(now).map(j=>{ const d = (j.k.match(/\d{4}-\d\d-\d\d/)||[t0])[0]; return {...j, ...(S.settings.funPush===false ? {} : catchy(j, d))}; });
+    // niente promemoria per un pasto già registrato oggi
+    const mealOf = {m1:"Colazione", m2:"Pranzo", m4:"Spuntini", m3:"Cena"};
+    out = out.filter(j=>{ const m = j.k.match(/^r:(m\d):(\d{4}-\d\d-\d\d)$/); if(!m || m[2]!==t0 || !mealOf[m[1]]) return true; return !(S.days[t0]||[]).some(e=>e.m===mealOf[m[1]]); });
+    if(S.settings.funPush!==false && g && g.started){
+      // serie a rischio: la sera, solo se quel giorno il diario è vuoto (se registri, l'app la toglie)
+      for(let i=0;i<PUSH_DAYS;i++){
+        const d = shiftDay(t0,i); if(hasDay(d)) continue;
+        const n = streakOn(g, d); if(n<2) continue;
+        const f = atLocal(d, S.settings.riskTime || "21:45"); if(f<=now) continue;
+        const [title, body] = pick(g.freezes>0 ? PUSH_COPY.riskIce : PUSH_COPY.risk, d+"risk");
+        out.push({k:`g:risk:${d}`, f, title:fillT(title,{n}), body:fillT(body,{n}), tag:"streak-risk", url:"?go=diario"});
+        break; // solo la prossima: le altre dipendono da quello che registri
+      }
+      // missione a un passo: domenica alle 11
+      const sun = shiftDay(weekStart(t0),6), q = g.quests.find(x=>!x.done && x.n-x.v===1);
+      if(q){ const f = atLocal(sun, "11:00"); if(f>now){ const [title, body] = PUSH_COPY.quest[0]; out.push({k:`g:quest:${sun}`, f, title, body:fillT(body,{q:q.txt, left:"1"}), tag:"quest", url:"?go=diario"}); } }
+    }
+    // coach del mattino: Claude scrive sul server, come per il riepilogo della domenica
+    const dj = dailyAgentJob(now); if(dj) out.push(dj);
+    return out;
+  };
+}
+
+/* ---------- coach del mattino (agente giornaliero) ---------- */
+function dailyFallback(d){
+  const y = shiftDay(d,-1), f = dayFacts(y), G = goalsAt(y), g = gameState();
+  if(!f.logged) return "📓 Ieri il diario è rimasto vuoto. Oggi registra ogni pasto e riparti: ogni giorno conta per la serie.";
+  if(f.p < G.prot*0.9) return `🥩 Ieri ${fmt(f.p)} g di proteine su ${fmt(G.prot)}. Oggi aggiungi uno yogurt greco o una whey a metà pomeriggio.`;
+  const gk = goalFor(y);
+  if(f.k < gk*0.9) return `🍚 Ieri ${fmt(f.k)} kcal su ${fmt(gk)}: nel bulk serve il surplus. Oggi aggiungi uno spuntino da 300 kcal.`;
+  if(f.k > gk*1.12) return `⚖️ Ieri ${fmt(f.k)} kcal, ${fmt(f.k-gk)} sopra l'obiettivo. Oggi resta sul piano e punta su cibi magri a cena.`;
+  return `✅ Ieri obiettivi centrati: ${fmt(f.k)} kcal e ${fmt(f.p)} g di proteine. Serie a ${g.log} giorni, continua così!`;
+}
+function dailyPrompt(d){
+  const ds = [...Array(7)].map((_,i)=>shiftDay(d,i-7));
+  const rows = ds.map(x=>{ const f = dayFacts(x), G = goalsAt(x); return f.logged ? `${x}: ${fmt(f.k)} kcal (obiettivo ${fmt(goalFor(x))}), proteine ${fmt(f.p)} g (obiettivo ${fmt(G.prot)}), pasti registrati ${f.meals}/4${f.wk?", allenamento":""}` : `${x}: non registrato${f.wk?", allenamento":""}`; }).join("\n");
+  const wts = Object.keys(S.weights).filter(x=>x>=shiftDay(d,-21)).sort().map(x=>`${x}: ${S.weights[x]} kg`).join(", ") || "nessuna";
+  const wks = wkSorted().filter(w=>w.d>=ds[0] && w.d<d).map(w=>`${w.d} ${SPORTS[w.t] ? SPORTS[w.t].n : w.t} ${fmt(w.min||0)} min`).join("; ") || "nessuno";
+  const g = gameState();
+  const planToday = S.plan && S.plan[d] ? `Oggi ha in piano: ${SPORTS[S.plan[d].sp] ? SPORTS[S.plan[d].sp].n : "allenamento"} alle ${S.plan[d].t}.` : "Oggi nessun allenamento in piano.";
+  return `Sei il coach di nutrizione e allenamento dentro un'app. Scrivi UNA notifica push in italiano per stamattina (${d}).
+${profileText()}
+
+Ultimi 7 giorni:
+${rows}
+Pesate delle ultime 3 settimane: ${wts}
+Allenamenti: ${wks}
+${planToday}
+Gioco: livello ${g.level} (${lvlName(g.level)}), serie del diario ${g.log} giorni, proteine centrate ${g.prot} giorni di fila, missioni della settimana: ${g.quests.map(q=>`${q.txt} ${q.v}/${q.n}`).join("; ")}.
+
+Regole: al massimo 170 caratteri. Inizia con 1 emoji. Una sola osservazione concreta con un numero (su ieri o sugli ultimi giorni, scegli la più utile) e una sola azione precisa per oggi. Tono energico e amichevole, come Duolingo, mai colpevolizzante. Niente saluti, niente markdown, niente virgolette.`;
+}
+function dailyAgentJob(now){
+  if(S.settings.dailyAgent===false) return null;
+  const tm = S.settings.dailyTime || "08:00"; let d = iso(now), f = atLocal(d, tm);
+  if(f<=now){ d = shiftDay(d,1); f = atLocal(d, tm); }
+  let prompt = ""; try{ prompt = dailyPrompt(d); }catch(e){}
+  return {k:`ai:dl:${d}`, f, title:"☀️ Il coach del mattino", body:JSON.stringify({fb:dailyFallback(d), prompt}), tag:"ai-report", url:"?go=mesi"};
+}
+
+/* ---------- messaggi ricevuti: il service worker li conserva, l'app li mostra nel Coach ---------- */
+if(!S.coach || typeof S.coach!=="object") S.coach = {};
+async function inboxPull(){
+  try{
+    if(!("caches" in window)) return;
+    const c = await caches.open("diario-inbox"), r = await c.match("./__inbox");
+    if(!r) return; const list = await r.json(); if(!Array.isArray(list) || !list.length) return;
+    let ch = false;
+    for(const m of list){ const k = "in:"+m.at; if(!S.coach[k] && m.body){ S.coach[k] = {kind:"push", title:m.title||"", text:m.body, at:m.at}; ch = true; } }
+    await c.delete("./__inbox");
+    if(ch){ coachTrim(); saveMap("coach"); renderCoach(); }
+  }catch(e){}
+}
+function coachTrim(){
+  const ks = Object.keys(S.coach).filter(k=>k.startsWith("in:")).sort((a,b)=>S.coach[a].at-S.coach[b].at);
+  while(ks.length>30) delete S.coach[ks.shift()];
+  const ls = Object.keys(S.coach).filter(k=>k.startsWith("ch:")).sort((a,b)=>S.coach[a].at-S.coach[b].at);
+  while(ls.length>40) delete S.coach[ls.shift()];
+}
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) inboxPull(); });
+setTimeout(inboxPull, 2500);
+
+/* ---------- coach con strumenti (agente): legge i tuoi dati e propone modifiche da approvare ---------- */
+const COACH_TOOLS = [
+  {name:"leggi_diario", description:"Legge il diario alimentare tra due date (massimo 31 giorni): per ogni giorno tipo di giorno, obiettivo calorie, totali di calorie, proteine, carboidrati, grassi, fibre e acqua. Con dettaglio=true elenca anche i singoli alimenti per pasto (usalo solo per pochi giorni).",
+   input_schema:{type:"object", properties:{dal:{type:"string", description:"YYYY-MM-DD"}, al:{type:"string", description:"YYYY-MM-DD"}, dettaglio:{type:"boolean"}}, required:["dal","al"]}},
+  {name:"leggi_allenamenti", description:"Elenca gli allenamenti registrati tra due date, con sport, durata, calorie e per la palestra esercizi, serie migliori e confronto con la volta prima. Include il piano dei prossimi giorni.",
+   input_schema:{type:"object", properties:{dal:{type:"string"}, al:{type:"string"}}, required:["dal","al"]}},
+  {name:"leggi_corpo", description:"Profilo, pesate degli ultimi 90 giorni e misurazioni della composizione corporea.", input_schema:{type:"object", properties:{}}},
+  {name:"leggi_obiettivi", description:"Obiettivi attuali (calorie nei giorni con e senza allenamento, proteine, grassi, fibre), obiettivo scelto, storico delle modifiche e stato delle calorie adattive.", input_schema:{type:"object", properties:{}}},
+  {name:"leggi_progressi", description:"Livello, XP, serie e missioni della settimana nel gioco dell'app.", input_schema:{type:"object", properties:{}}},
+  {name:"cerca_alimenti", description:"Cerca alimenti nel database dell'app (valori per 100 g: kcal, proteine, carboidrati, grassi, fibre). Senza testo restituisce quelli che l'utente usa più spesso. Usa SOLO nomi trovati qui nelle proposte di pasti.",
+   input_schema:{type:"object", properties:{testo:{type:"string"}}}},
+  {name:"proponi_obiettivi", description:"Propone nuovi obiettivi giornalieri. L'utente vede una scheda con prima/dopo e decide se accettare. Indica solo i campi da cambiare.",
+   input_schema:{type:"object", properties:{kcal_allenamento:{type:"number"}, kcal_riposo:{type:"number"}, proteine:{type:"number"}, grassi:{type:"number"}, fibre:{type:"number"}, motivo:{type:"string", description:"una frase, con i numeri che giustificano la modifica"}}, required:["motivo"]}},
+  {name:"proponi_pasti", description:"Propone alimenti da aggiungere al diario di un giorno (per esempio il piano di domani). L'utente accetta o rifiuta. Usa nomi esatti trovati con cerca_alimenti.",
+   input_schema:{type:"object", properties:{giorno:{type:"string", description:"YYYY-MM-DD"}, voci:{type:"array", items:{type:"object", properties:{pasto:{type:"string", enum:["Colazione","Pranzo","Cena","Spuntini"]}, alimento:{type:"string"}, grammi:{type:"number"}}, required:["pasto","alimento","grammi"]}}, motivo:{type:"string"}}, required:["giorno","voci","motivo"]}},
+  {name:"proponi_allenamenti", description:"Propone di aggiungere allenamenti al piano settimanale (giorno, ora, sport). L'utente accetta o rifiuta.",
+   input_schema:{type:"object", properties:{sessioni:{type:"array", items:{type:"object", properties:{giorno:{type:"string"}, ora:{type:"string", description:"HH:MM"}, sport:{type:"string", enum:Object.keys(SPORTS)}}, required:["giorno","ora","sport"]}}, motivo:{type:"string"}}, required:["sessioni","motivo"]}}
+];
+const isoOk = s => /^\d{4}-\d\d-\d\d$/.test(s||"");
+function toolRun(name, a){
+  a = a || {};
+  if(name==="leggi_diario"){
+    if(!isoOk(a.dal) || !isoOk(a.al)) return {errore:"date nel formato YYYY-MM-DD"};
+    const out = []; let n = 0;
+    for(let d=a.dal; d<=a.al && n<31; d=shiftDay(d,1), n++){
+      const list = normEntries(S.days[d]); const G = goalsAt(d);
+      if(!list.length){ out.push({giorno:d, registrato:false, allenamento:hasWk(d)}); continue; }
+      const t = sum(list), r = {giorno:d, tipo:dayMode(d)==="rest"?"riposo":"allenamento", obiettivo_kcal:Math.round(goalFor(d)), obiettivo_proteine:G.prot, kcal:Math.round(t[0]), proteine:Math.round(t[1]), carboidrati:Math.round(t[2]), grassi:Math.round(t[3]), fibre:Math.round(t[4]), acqua_l:Math.round((S.water[d]||0)/100)/10};
+      if(a.dettaglio) r.pasti = Object.fromEntries(MEALS.map(m=>[m, list.filter(e=>e.m===m).map(e=>`${e.f} ${Math.round(e.g)} g`)]));
+      out.push(r);
+    }
+    return out;
+  }
+  if(name==="leggi_allenamenti"){
+    if(!isoOk(a.dal) || !isoOk(a.al)) return {errore:"date nel formato YYYY-MM-DD"};
+    const ws = wkSorted().filter(w=>w.d>=a.dal && w.d<=a.al).slice(-30).map(w=>({giorno:w.d, sport:SPORTS[w.t]?SPORTS[w.t].n:w.t, minuti:w.min, kcal:w.kcal,
+      esercizi:(w.ex||[]).map(e=>{ const bw = exIsBW(e.n), b = bestSet((e.sets||[]).filter(x=>Number(x.r)>0), bw), last = lastSession(e.n, shiftDay(w.d,-1), w.id), lb = last ? bestSet(last.sets, bw) : null;
+        return `${e.n}: ${(e.sets||[]).length} serie${b?`, migliore ${setTxt(b,bw)}`:""}${lb?` (volta prima ${setTxt(lb,bw)})`:""}`; })}));
+    const plan = Object.keys(S.plan||{}).filter(d=>d>=today()).sort().slice(0,14).map(d=>({giorno:d, ora:S.plan[d].t, sport:SPORTS[S.plan[d].sp]?SPORTS[S.plan[d].sp].n:S.plan[d].sp}));
+    return {allenamenti:ws, piano:plan};
+  }
+  if(name==="leggi_corpo"){
+    const from = shiftDay(today(),-90);
+    return {profilo:profileText(), pesate:Object.keys(S.weights).filter(d=>d>=from).sort().map(d=>[d, S.weights[d]]), misurazioni:Object.keys(S.body||{}).sort().slice(-6).map(d=>({giorno:d, ...S.body[d]}))};
+  }
+  if(name==="leggi_obiettivi"){
+    const st = S.settings; let adapt = null; try{ adapt = adaptCheck(); }catch(e){}
+    return {kcal_allenamento:st.train, kcal_riposo:st.rest, proteine:st.prot, grassi:st.fat, fibre:st.fib, acqua_ml:st.waterGoal, obiettivo:(GOALS[String(st.goal)]||{}).name, automatici:!!st.auto,
+      storico:(st.goalLog||[]).slice(-5).map(e=>({dal:e.from, kcal_allenamento:e.train, kcal_riposo:e.rest, proteine:e.prot, perche:e.why})), calorie_adattive:adapt};
+  }
+  if(name==="leggi_progressi"){ const g = gameState(); return {livello:g.level, titolo:lvlName(g.level), xp:g.xp, serie_diario:g.log, record:g.best, serie_proteine:g.prot, settimane_attive:g.train, jolly:g.freezes, missioni:g.quests.map(q=>`${q.txt}: ${q.v}/${q.n}`)}; }
+  if(name==="cerca_alimenti"){
+    const all = db(), q = (a.testo||"").toLowerCase().trim();
+    let names;
+    if(!q){ const {cnt} = usage(); names = Object.keys(cnt).sort((x,y)=>cnt[y]-cnt[x]).slice(0,25); }
+    else { const words = q.split(/\s+/); names = Object.keys(all).filter(n=>words.every(w=>n.toLowerCase().includes(w))).slice(0,15); }
+    return names.filter(n=>all[n]).map(n=>({nome:n, per_100g:all[n].slice(0,5).map(x=>Math.round(x*10)/10)}));
+  }
+  return null;
+}
+function proposalFrom(name, a){
+  const id = "p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  if(name==="proponi_obiettivi"){
+    const map = {kcal_allenamento:"train", kcal_riposo:"rest", proteine:"prot", grassi:"fat", fibre:"fib"}, ch = {};
+    for(const k in map) if(typeof a[k]==="number" && a[k]>0) ch[map[k]] = Math.round(a[k]);
+    if(!Object.keys(ch).length) return {err:"nessun campo da cambiare"};
+    return {id, kind:"goals", ch, why:a.motivo||""};
+  }
+  if(name==="proponi_pasti"){
+    if(!isoOk(a.giorno)) return {err:"giorno nel formato YYYY-MM-DD"};
+    const all = db(), bad = [], items = [];
+    for(const v of (a.voci||[])){ if(!all[v.alimento]) bad.push(v.alimento); else if(MEALS.includes(v.pasto) && v.grammi>0) items.push({f:v.alimento, g:Math.round(v.grammi), m:v.pasto}); }
+    if(bad.length) return {err:"alimenti non trovati nel database: "+bad.join(", ")+". Usa cerca_alimenti e riprova con i nomi esatti."};
+    if(!items.length) return {err:"nessuna voce valida"};
+    return {id, kind:"meals", d:a.giorno, items, why:a.motivo||""};
+  }
+  if(name==="proponi_allenamenti"){
+    const ss = (a.sessioni||[]).filter(s=>isoOk(s.giorno) && /^\d\d:\d\d$/.test(s.ora) && SPORTS[s.sport]).map(s=>({d:s.giorno, t:s.ora, sp:s.sport}));
+    if(!ss.length) return {err:"nessuna sessione valida (giorno YYYY-MM-DD, ora HH:MM, sport tra "+Object.keys(SPORTS).join(", ")+")"};
+    return {id, kind:"plan", ss, why:a.motivo||""};
+  }
+  return {err:"strumento sconosciuto"};
+}
+async function callClaudeRaw(body, signal){
+  const cfg = aiCfg();
+  if(!cfg.key) throw {code:"no_key"};
+  if(!navigator.onLine) throw {code:"offline"};
+  let res;
+  try{
+    res = await fetch("https://api.anthropic.com/v1/messages", {method:"POST", signal, headers:{"content-type":"application/json", "x-api-key":cfg.key, "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true"}, body:JSON.stringify({model:cfg.main, max_tokens:2000, ...body})});
+  }catch(e){ throw {code: e && e.name==="AbortError" ? "cancelled" : "offline"}; }
+  if(!res.ok){ let message=""; try{ message=(await res.json()).error.message; }catch(e){}
+    throw {code: res.status===401||res.status===403 ? "auth" : res.status===429||res.status===402 ? "rate_limited" : res.status===400||res.status===404 ? "bad_request" : "upstream_error", message}; }
+  return res.json();
+}
+let coachMsgs = [], coachBusy = null, coachProps = {};
+function coachSystem(){
+  const now = new Date();
+  return `Sei il coach personale di nutrizione e allenamento dentro un'app di diario delle calorie, in fase di massa pulita. Rispondi sempre in italiano, breve e concreto, tono amichevole e diretto.
+Oggi è ${today()} (${now.toLocaleDateString("it-IT",{weekday:"long"})}), ore ${now.getHours()}:${String(now.getMinutes()).padStart(2,"0")}.
+${profileText()}
+
+Hai degli strumenti: prima di rispondere leggi i dati che servono (non inventare numeri). Quando una modifica aiuterebbe davvero, usa uno strumento proponi_*: l'utente vede una scheda e decide lui; tu non cambi niente direttamente. Al massimo 2 proposte per risposta. Nelle proposte di pasti usa solo alimenti trovati con cerca_alimenti, con grammi realistici, e fai tornare i totali vicino all'obiettivo. Non cambiare gli obiettivi più di 150 kcal alla volta salvo richiesta esplicita.
+Risposta finale: al massimo 120 parole, frasi brevi, elenchi corti, **grassetto** solo per i numeri chiave, niente titoli.`;
+}
+async function coachAsk(text){
+  if(coachBusy || !text.trim()) return;
+  if(!sampleFn){ $("#agentStatus").textContent = aiCopy("no_key"); return; }
+  const at = Date.now();
+  S.coach["ch:"+at] = {kind:"me", text:text.trim(), at}; coachMsgs.push({role:"user", content:text.trim()});
+  coachMsgs = coachMsgs.slice(-12); while(coachMsgs.length && coachMsgs[0].role!=="user") coachMsgs.shift();
+  renderCoach(); $("#agentIn").value = "";
+  coachBusy = new AbortController(); $("#agentSend").disabled = true; $("#agentStop").hidden = false;
+  const status = t => { $("#agentStatus").textContent = t; };
+  const LABEL = {leggi_diario:"Leggo il diario…", leggi_allenamenti:"Guardo gli allenamenti…", leggi_corpo:"Controllo peso e misure…", leggi_obiettivi:"Controllo gli obiettivi…", leggi_progressi:"Guardo serie e missioni…", cerca_alimenti:"Cerco gli alimenti…", proponi_obiettivi:"Preparo una proposta…", proponi_pasti:"Preparo un piano pasti…", proponi_allenamenti:"Preparo il piano di allenamento…"};
+  status("Il coach sta pensando…");
+  try{
+    const msgs = coachMsgs.map(m=>({role:m.role, content:m.content}));
+    for(let turn=0; turn<8; turn++){
+      const j = await callClaudeRaw({system:coachSystem(), tools:COACH_TOOLS, messages:msgs}, coachBusy.signal);
+      msgs.push({role:"assistant", content:j.content});
+      const uses = (j.content||[]).filter(c=>c.type==="tool_use");
+      if(!uses.length || j.stop_reason!=="tool_use"){
+        const txt = (j.content||[]).filter(c=>c.type==="text").map(c=>c.text).join("").trim();
+        const k = "ch:"+Date.now(); S.coach[k] = {kind:"ai", text:txt || "Fatto.", at:Date.now()};
+        coachMsgs.push({role:"assistant", content:txt || "Fatto."});
+        break;
+      }
+      const results = [];
+      for(const u of uses){
+        status(LABEL[u.name] || "Lavoro…");
+        let r;
+        if(u.name.startsWith("proponi_")){
+          const p = proposalFrom(u.name, u.input);
+          if(p.err) r = {errore:p.err};
+          else { p.at = Date.now(); p.state = "open"; S.coach["pp:"+p.id] = p; r = {ok:"proposta mostrata all'utente: deciderà lui se accettarla"}; renderCoach(); }
+        } else r = toolRun(u.name, u.input);
+        results.push({type:"tool_result", tool_use_id:u.id, content:JSON.stringify(r==null ? {errore:"sconosciuto"} : r).slice(0,24000)});
+      }
+      msgs.push({role:"user", content:results});
+    }
+    status("");
+  }catch(e){ aiFail(e, $("#agentStatus")); }
+  finally{ coachBusy = null; $("#agentSend").disabled = false; $("#agentStop").hidden = true; coachTrim(); saveMap("coach"); renderCoach(); }
+}
+function propAccept(id){
+  const p = S.coach["pp:"+id]; if(!p || p.state!=="open") return;
+  const st = S.settings;
+  if(p.kind==="goals"){
+    p.before = {train:st.train, rest:st.rest, prot:st.prot, fat:st.fat, fib:st.fib, auto:st.auto};
+    Object.assign(st, p.ch); st.auto = false; saveSettings(true);
+    try{ applyTargets && applyTargets(); }catch(e){}
+  } else if(p.kind==="meals"){
+    p.before = (S.days[p.d]||[]).length;
+    const list = normEntries(S.days[p.d]);
+    for(const it of p.items){ const v = db()[it.f]; if(v) list.push({f:it.f, g:it.g, m:it.m, v:pad5(v)}); }
+    S.days[p.d] = list; markUsed(); saveDay(p.d);
+  } else if(p.kind==="plan"){
+    p.before = {}; for(const s of p.ss){ p.before[s.d] = S.plan[s.d] || null; S.plan[s.d] = {t:s.t, sp:s.sp}; }
+    saveMap("plan", true); try{ renderPlan(); }catch(e){}
+  }
+  p.state = "ok"; p.done = Date.now(); saveMap("coach", true);
+  render(); renderCoach(); toast("Fatto: modifica del coach applicata.", true);
+}
+function propUndo(id){
+  const p = S.coach["pp:"+id]; if(!p || p.state!=="ok") return;
+  if(p.kind==="goals" && p.before){ Object.assign(S.settings, p.before); saveSettings(true); try{ applyTargets && applyTargets(); }catch(e){} }
+  else if(p.kind==="meals"){ const list = S.days[p.d]||[]; S.days[p.d] = list.slice(0, Math.min(list.length, p.before||0)); saveDay(p.d); }
+  else if(p.kind==="plan" && p.before){ for(const d in p.before){ if(p.before[d]) S.plan[d] = p.before[d]; else delete S.plan[d]; } saveMap("plan", true); try{ renderPlan(); }catch(e){} }
+  p.state = "undone"; saveMap("coach", true); render(); renderCoach(); toast("Modifica annullata.", true);
+}
+function propHTML(p){
+  const st = S.settings, L = {train:"Kcal con allenamento", rest:"Kcal a riposo", prot:"Proteine (g)", fat:"Grassi (g)", fib:"Fibre (g)"};
+  let body = "", head = "";
+  if(p.kind==="goals"){ head = "Nuovi obiettivi"; body = `<table class="ptab">${Object.keys(p.ch).map(k=>`<tr><td>${L[k]}</td><td class="old">${fmt((p.before||st)[k])}</td><td>${fmt(p.ch[k])}</td></tr>`).join("")}</table>`; }
+  else if(p.kind==="meals"){
+    const t = p.items.reduce((a,it)=>{ const v = db()[it.f]||[0,0]; return [a[0]+v[0]*it.g/100, a[1]+v[1]*it.g/100]; },[0,0]);
+    head = `Pasti per ${dShort(p.d)}`;
+    body = `<ul class="plist2">${MEALS.filter(m=>p.items.some(i=>i.m===m)).map(m=>`<li><b>${m}</b> ${p.items.filter(i=>i.m===m).map(i=>`${esc(i.f)} ${fmt(i.g)} g`).join(", ")}</li>`).join("")}</ul><p class="note">Totale: ${fmt(t[0])} kcal, ${fmt(t[1])} g di proteine</p>`;
+  } else if(p.kind==="plan"){ head = "Allenamenti in piano"; body = `<ul class="plist2">${p.ss.map(s=>`<li><b>${dShort(s.d)}</b> ${SPORTS[s.sp].n} alle ${s.t}</li>`).join("")}</ul>`; }
+  const act = p.state==="open" ? `<div class="ai-row"><button type="button" class="primary small" data-pa="${p.id}">Accetta</button><button type="button" class="small" data-pr="${p.id}">Rifiuta</button></div>`
+    : p.state==="ok" ? `<div class="pstate2 ok">${gic("check",14)} Applicata <button type="button" class="ghost" data-pu="${p.id}">Annulla</button></div>`
+    : `<div class="pstate2">${p.state==="undone" ? "Annullata" : "Rifiutata"}</div>`;
+  return `<div class="prop ${p.state}"><div class="ph">${gic("spark",15)}<b>${head}</b></div>${p.why ? `<p class="pwhy">${esc(p.why)}</p>` : ""}${body}${act}</div>`;
+}
+function renderCoach(){
+  const el = $("#agentLog"); if(!el) return;
+  const card = $("#agentCard"); card.hidden = false;
+  $("#agentNoKey").hidden = !!sampleFn; $("#agentForm").hidden = !sampleFn;
+  const items = Object.keys(S.coach).filter(k=>/^(ch|pp):/.test(k)).map(k=>S.coach[k]).sort((a,b)=>a.at-b.at).slice(-14);
+  el.innerHTML = items.map(m=> m.kind==="me" ? `<div class="bubble me">${esc(m.text)}</div>` : m.kind==="ai" ? `<div class="bubble ai">${fmtAI(m.text)}</div>` : propHTML(m)).join("");
+  $("#agentChips").hidden = items.length>0;
+  const inbox = Object.keys(S.coach).filter(k=>k.startsWith("in:")).map(k=>S.coach[k]).sort((a,b)=>b.at-a.at).slice(0,5);
+  $("#dailyList").innerHTML = inbox.length ? inbox.map(m=>`<li><small>${new Date(m.at).toLocaleDateString("it-IT",{weekday:"short", day:"numeric", month:"short"})} · ${esc(m.title||"")}</small><span>${fmtAI(m.text)}</span></li>`).join("")
+    : `<li class="empty">${S.settings.dailyAgent===false ? "Il coach del mattino è spento." : `Ogni mattina alle ${esc(S.settings.dailyTime||"08:00")} il coach ti manda un consiglio su ieri. Servono le notifiche attive (Impostazioni → Promemoria). I messaggi arrivati compaiono qui.`}</li>`;
+  $("#dailyOn").checked = S.settings.dailyAgent!==false; $("#dailyTime").value = S.settings.dailyTime || "08:00";
+}
+$("#agentLog").addEventListener("click", ev=>{
+  const a = ev.target.closest("[data-pa]"), r = ev.target.closest("[data-pr]"), u = ev.target.closest("[data-pu]");
+  if(a) propAccept(a.dataset.pa);
+  else if(r){ const p = S.coach["pp:"+r.dataset.pr]; if(p){ p.state = "no"; saveMap("coach", true); renderCoach(); } }
+  else if(u) propUndo(u.dataset.pu);
+});
+$("#agentForm").addEventListener("submit", ev=>{ ev.preventDefault(); coachAsk($("#agentIn").value); });
+$("#agentStop").addEventListener("click", ()=>{ if(coachBusy) coachBusy.abort(); });
+$("#agentChips").addEventListener("click", ev=>{ const b = ev.target.closest("button"); if(b) coachAsk(b.textContent); });
+$("#agentClear").addEventListener("click", ()=>{ for(const k of Object.keys(S.coach)) if(/^(ch|pp):/.test(k) && !(S.coach[k].state==="open")) delete S.coach[k]; coachMsgs = []; saveMap("coach", true); renderCoach(); });
+$("#dailyOn").addEventListener("change", ()=>{ S.settings.dailyAgent = $("#dailyOn").checked; saveSettings(true); renderCoach(); });
+$("#dailyTime").addEventListener("change", ()=>{ if(/^\d\d:\d\d$/.test($("#dailyTime").value)){ S.settings.dailyTime = $("#dailyTime").value; saveSettings(true); renderCoach(); } });
+$("#funPush").checked = S.settings.funPush!==false;
+$("#funPush").addEventListener("change", ()=>{ S.settings.funPush = $("#funPush").checked; saveSettings(true); });
+$("#askCoach").addEventListener("click", ()=>{ setTab("mesi"); setTimeout(()=>{ $("#agentCard").scrollIntoView({behavior:"smooth", block:"start"}); $("#agentIn").focus({preventScroll:true}); }, 60); });
+{ const _sa = setAIVisible; setAIVisible = function(){ _sa.apply(this, arguments); try{ renderCoach(); }catch(e){} }; }
+{ const _rd = renderDash; renderDash = function(){ _rd.apply(this, arguments); try{ renderCoach(); }catch(e){} }; }
+try{ renderCoach(); }catch(e){}
 </script>
 </body>
 </html>

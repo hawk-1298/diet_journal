@@ -7,7 +7,7 @@ The folder contains the whole app:
 | `index.html` | The app: diary, dashboard, helper, backup, AI features |
 | `manifest.webmanifest` | Name, icon and full-screen mode when installed |
 | `sw.js` | Makes the app work offline |
-| `icons/` | Home-screen icons |
+| `icons/` | Home-screen icons and the logo (`logo.svg`). Keep them inside the `icons` folder: the app looks for them there |
 
 ## 1. Put it online (once, about 10 minutes, free)
 
@@ -49,3 +49,10 @@ Your data lives only on the phone. The app reminds you every 14 days. Use **Espo
 ## Updating the app
 
 When you get new files, upload them to the same place, replacing the old ones. The app shows "È pronta una nuova versione": tap **Aggiorna**. Your data stays as it is.
+
+## Coach and progress (version 1.14)
+
+- **Progressi** (top of the Diario): XP, level, streaks, jolly that save a missed day, and 3 weekly missions. Everything is calculated from your diary, so it syncs by itself.
+- **Coach** (Dashboard): ask a question; Claude reads your diary, workouts, weight and goals and proposes changes as cards. Nothing changes until you tap **Accetta**, and every accepted change can be undone. Needs the API key in **Funzioni AI**.
+- **Coach del mattino**: every morning (08:00 by default) one push with a tip about yesterday. It uses the same Supabase function as the Sunday report, so it needs notifications on and the `ANTHROPIC_API_KEY` secret on Supabase. Messages also appear in the Dashboard.
+- **Notifiche vivaci**: reminder texts change every day, plus "serie a rischio" in the evening and "missione quasi completa" on Sunday. Turn them off in Impostazioni → Promemoria.

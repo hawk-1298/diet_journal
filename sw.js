@@ -1,6 +1,6 @@
 // Service worker del Diario delle calorie: fa funzionare l'app offline.
 // Quando aggiorni i file dell'app, cambia VERSION: l'app mostrerà "È pronta una nuova versione".
-const VERSION = "1.13.0";
+const VERSION = "1.14.0";
 const SHELL_CACHE = "diario-shell-" + VERSION;
 const FONT_CACHE = "diario-fonts";
 const SHELL = [
@@ -10,7 +10,8 @@ const SHELL = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
-  "./icons/apple-touch-icon.png"
+  "./icons/apple-touch-icon.png",
+  "./icons/badge-96.png"
 ];
 
 self.addEventListener("install", event => {
@@ -39,14 +40,28 @@ self.addEventListener("message", event => {
 self.addEventListener("push", event => {
   let d = {};
   try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : "" }; }
-  event.waitUntil(self.registration.showNotification(d.title || "Diario", {
-    body: d.body || "",
-    tag: d.tag || undefined,
-    icon: "./icons/icon-192.png",
-    badge: "./icons/icon-192.png",
-    data: { url: d.url || "./" }
-  }));
+  event.waitUntil(Promise.all([
+    self.registration.showNotification(d.title || "Diario", {
+      body: d.body || "",
+      tag: d.tag || undefined,
+      icon: "./icons/icon-192.png",
+      badge: "./icons/badge-96.png",
+      data: { url: d.url || "./" }
+    }),
+    // i messaggi scritti da Claude (coach del mattino, riepilogo) restano anche nell'app, nella scheda Coach
+    d.tag === "ai-report" && d.body ? inboxAdd({ title: d.title || "", body: d.body, at: Date.now() }) : null
+  ]));
 });
+
+async function inboxAdd(m) {
+  try {
+    const c = await caches.open("diario-inbox"), key = "./__inbox";
+    const r = await c.match(key);
+    const list = r ? await r.json().catch(() => []) : [];
+    list.push(m);
+    await c.put(key, new Response(JSON.stringify(list.slice(-20)), { headers: { "Content-Type": "application/json" } }));
+  } catch (e) {}
+}
 
 self.addEventListener("notificationclick", event => {
   event.notification.close();
