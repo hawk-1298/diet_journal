@@ -1026,6 +1026,14 @@ details.setgrp > .setin > .sub{margin:0}
 .fold.shut > .rvhead .rvnav{display:none}
 .fold.shut{padding-bottom:16px}
 @media (prefers-reduced-motion: reduce){.fold .foldchev{transition:none}}
+/* 1.16.1: controllo notifiche */
+.pcheck{background:var(--bg);border-radius:var(--r2,14px);padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.pcheck h4{margin:6px 0 0;font-size:.86rem}
+.pclist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:.86rem}
+.pclist li{display:flex;justify-content:space-between;gap:10px}
+.pclist small{color:var(--muted);white-space:nowrap}
+.pclist li.empty{color:var(--muted)}
+.pcstat{margin:0;font-size:.86rem;font-weight:600} .pcstat.ok{color:var(--prot)} .pcstat.ko{color:var(--danger)}
 </style>
 </head>
 <body>
@@ -1144,7 +1152,8 @@ details.setgrp > .setin > .sub{margin:0}
       <div class="setin">
       <div class="pstate" id="pushState"></div>
       <div id="remList"></div>
-      <div class="ai-row" style="margin-top:6px"><button type="button" id="remAdd">＋ Nuovo promemoria</button></div>
+      <div class="ai-row" style="margin-top:6px"><button type="button" id="remAdd">＋ Nuovo promemoria</button><button type="button" id="pushCheck">Controlla le notifiche</button></div>
+      <div class="pcheck" id="pushCheckOut" hidden></div>
       <label class="chk" style="margin-top:10px"><input type="checkbox" id="funPush"> Notifiche vivaci: testi che cambiano ogni giorno, serie a rischio, missioni quasi completate</label>
       <label style="margin-top:12px">Avviso prima dell'allenamento<select id="planLead"><option value="0">All'ora dell'allenamento</option><option value="15">15 minuti prima</option><option value="30">30 minuti prima</option><option value="45">45 minuti prima</option><option value="60">1 ora prima</option></select></label>
       <details style="padding:10px 12px;margin-top:10px"><summary class="note">Avanzate</summary>
@@ -3899,7 +3908,7 @@ $("#bDate").value = today();
 if(location.hash==="#corpo") setTab("corpo");
 if(location.hash==="#allenamento") setTab("wk");
 if(location.hash==="#impostazioni") setTab("set");
-$("#verNote").textContent = "Lumen · versione 1.16.0";
+$("#verNote").textContent = "Lumen · versione 1.16.1";
 if(location.hash==="#mesi" || location.hash==="#dashboard") setTab("mesi");
 render();
 
@@ -5178,6 +5187,62 @@ function dashTidy(){
 $("#revBtn").addEventListener("click", ()=>{ const c = $("#reviewCard"); if(c.classList.contains("shut")) c.querySelector(".rvhead h3").click(); }, true);
 $("#askCoach").addEventListener("click", ()=>{ const c = $("#agentCard"); if(c.classList.contains("shut")) c.querySelector(":scope > h3").click(); }, true);
 try{ dashTidy(); }catch(e){}
+
+/* ================= 1.16.1: promemoria più robusti + controllo delle notifiche in programma ================= */
+// prima si prepara la lista nuova, poi si cancella la vecchia: se qualcosa va storto i promemoria già in programma restano
+pushRebuild = async function(force){
+  if(pushBusy || pushState().s!=="on") return;
+  let jobs, rows, sig;
+  try{
+    jobs = buildJobs(); sig = JSON.stringify(jobs.map(j=>[j.k, +j.f, j.title, j.body]));
+    rows = jobs.filter(j=>j.f instanceof Date && !isNaN(j.f)).map(j=>({job_key:j.k, fire_at:j.f.toISOString(), title:String(j.title||"Lumen"), body:String(j.body||""), tag:j.tag||null, url:j.url||null}));
+  }catch(e){ local.set("cal_pushlast", {at:Date.now(), ok:false, err:"preparazione: "+(e && e.message || e)}); return; }
+  if(!force && local.get("cal_pushsig","")===sig) return;
+  pushBusy = true;
+  try{
+    let r = await sbFetch("/rest/v1/push_jobs?sent_at=is.null&job_key=neq.timer&fire_at=gt."+encodeURIComponent(new Date().toISOString()), {method:"DELETE"});
+    if(!r.ok) throw new Error("cancellazione "+r.status+" "+(await r.text().catch(()=>"")).slice(0,160));
+    if(rows.length){
+      r = await sbFetch("/rest/v1/push_jobs?on_conflict=user_id,job_key", {method:"POST", headers:{Prefer:"resolution=merge-duplicates,return=minimal"}, body:JSON.stringify(rows)});
+      if(!r.ok){
+        const msg = (await r.text().catch(()=>"")).slice(0,200);
+        // se il lotto intero viene rifiutato, si salvano uno per uno: così un solo promemoria sbagliato non blocca gli altri
+        let ok = 0; const bad = [];
+        for(const row of rows){ const r1 = await sbFetch("/rest/v1/push_jobs?on_conflict=user_id,job_key", {method:"POST", headers:{Prefer:"resolution=merge-duplicates,return=minimal"}, body:JSON.stringify([row])}); if(r1.ok) ok++; else bad.push(row.job_key+" ("+r1.status+")"); }
+        local.set("cal_pushlast", {at:Date.now(), ok:bad.length===0, n:ok, err:"lotto rifiutato "+r.status+": "+msg+(bad.length ? " · non salvati: "+bad.slice(0,4).join(", ") : "")});
+        if(!bad.length) local.set("cal_pushsig", sig);
+        return;
+      }
+    }
+    local.set("cal_pushsig", sig);
+    local.set("cal_pushlast", {at:Date.now(), ok:true, n:rows.length});
+  }catch(e){ local.set("cal_pushlast", {at:Date.now(), ok:false, err:String(e && e.message || e)}); }
+  finally{ pushBusy = false; }
+};
+const hhmm = d => new Date(d).toLocaleString("it-IT",{weekday:"short", day:"numeric", hour:"2-digit", minute:"2-digit"});
+async function pushCheck(){
+  const out = $("#pushCheckOut"); out.hidden = false; out.innerHTML = `<p class="note">Controllo…</p>`;
+  try{
+    if(pushState().s!=="on"){ out.innerHTML = `<p class="note">Le notifiche non sono attive su questo dispositivo.</p>`; return; }
+    await pushRebuild(true);
+    const now = new Date(), since = new Date(Date.now()-36*3600e3).toISOString();
+    const [a, b] = await Promise.all([
+      sbFetch("/rest/v1/push_jobs?select=job_key,fire_at,title&sent_at=is.null&order=fire_at.asc&limit=8"),
+      sbFetch("/rest/v1/push_jobs?select=job_key,fire_at,title,sent_at&sent_at=not.is.null&fire_at=gt."+encodeURIComponent(since)+"&order=fire_at.desc&limit=8")
+    ]);
+    if(!a.ok || !b.ok) throw new Error("lettura "+a.status+"/"+b.status);
+    const next = await a.json(), sent = await b.json(), last = local.get("cal_pushlast", null);
+    const li = (x, s) => `<li><span>${esc(x.title||x.job_key)}</span><small>${hhmm(x.fire_at)}${s ? " · inviata "+new Date(x.sent_at).toLocaleTimeString("it-IT",{hour:"2-digit", minute:"2-digit"}) : ""}</small></li>`;
+    out.innerHTML = `
+      <p class="pcstat ${last && last.ok ? "ok" : "ko"}">${last ? (last.ok ? `Promemoria inviati al server: ${last.n} (${hhmm(last.at)})` : `Problema nell'invio al server: ${esc(last.err||"")}`) : "Nessun invio al server registrato su questo dispositivo."}</p>
+      <h4>In programma</h4><ul class="pclist">${next.length ? next.map(x=>li(x)).join("") : `<li class="empty">Nessuna notifica in programma sul server.</li>`}</ul>
+      <h4>Inviate nelle ultime 36 ore</h4><ul class="pclist">${sent.length ? sent.map(x=>li(x,true)).join("") : `<li class="empty">Nessuna.</li>`}</ul>
+      <p class="note">I promemoria dei pasti di oggi già registrati non partono. Se qui una notifica risulta inviata ma non l'hai vista, controlla su iPhone Impostazioni → Notifiche → Lumen e le modalità Full immersion.</p>`;
+  }catch(e){ out.innerHTML = `<p class="pcstat ko">Non riesco a leggere le notifiche dal server: ${esc(String(e && e.message || e))}</p>`; }
+}
+$("#pushCheck").addEventListener("click", pushCheck);
+// all'avvio si riprova subito se l'ultimo invio era fallito
+setTimeout(()=>{ const l = local.get("cal_pushlast", null); if(l && !l.ok) pushSchedule(true); }, 7000);
 </script>
 </body>
 </html>
